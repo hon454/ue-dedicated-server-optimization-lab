@@ -7,8 +7,8 @@
     [int]$Measure = 60,
     [int]$Runs = 1,
     [int]$TimeoutSeconds = 900,
-    # 서버를 고정할 논리 프로세서의 비트 마스크. 기본값 255는 0~7이다. 진단용으로만 바꾼다.
-    [long]$ServerMask = 0xFF,
+    # 서버를 고정할 논리 프로세서의 비트 마스크. 기본값 252(0xFC)는 2~7이다(ADR-0009). 진단용으로만 바꾼다.
+    [long]$ServerMask = 0xFC,
     [switch]$NoTrace
 )
 
@@ -48,7 +48,7 @@ if ($Running.Count -gt 0) {
     exit 1
 }
 
-# 서버는 논리 프로세서 0~7, 클라이언트는 나머지에 고정한다.
+# 서버는 논리 프로세서 2~7, 클라이언트는 8 이상에 고정한다. 0번과 1번은 비운다(1번에 DPC가 몰린다. ADR-0009).
 $Logical = [Environment]::ProcessorCount
 $ClientMask = ([long][math]::Pow(2, $Logical) - 1) - [long]0xFF
 

@@ -12,7 +12,7 @@
 | [0006](0006-saturation-from-engine-analytics.md) | 송신 한도 포화를 엔진의 연결별 포화 기록으로 판정한다 | 승인됨 |
 | [0007](0007-raise-send-limit-once.md) | 기준선이 포화되면 송신 한도를 올려 한 번만 고정한다 | 승인됨 |
 | [0008](0008-reproducible-runs.md) | 실행을 재현 가능하게 만들고, 3회 중앙값과 실패 규칙으로 판정한다 | 승인됨 |
-| [0009](0009-server-cores-without-dpc-load.md) | 서버를 DPC 부하가 몰리는 코어를 뺀 논리 프로세서 2~7에 고정한다 | 제안됨 |
+| [0009](0009-server-cores-without-dpc-load.md) | 서버를 DPC 부하가 몰리는 코어를 뺀 논리 프로세서 2~7에 고정한다(0008의 코어 고정 항목을 바꾼다) | 승인됨 |
 
 ## 쓰는 법
 
