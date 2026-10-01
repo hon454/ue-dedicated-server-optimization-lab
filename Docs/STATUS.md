@@ -85,7 +85,6 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 - 작은 규모 확인용: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 라벨> -Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`
 - 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 서버만 논리 프로세서 2\~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
 - Insights: `powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라벨>-rN`. 읽는 순서는 [insights-reading.md](Guides/insights-reading.md)에 있다.
-- 열린 에디터에서 Python 실행: `powershell -ExecutionPolicy Bypass -File Scripts/ue-python.ps1 -Eval "<식>"` (`-Command "<코드>"`, `-File <경로>.py`, `-List`도 된다). 엔진 내장 Python 3.11.8로 PythonScriptPlugin 원격 실행(`Config/DefaultEngine.ini`의 `bRemoteExecution=True`)에 붙으므로 따로 Python을 설치하지 않는다. 이 레포를 연 에디터만 대상으로 하고, 시나리오 실행은 `-DisablePython`이라 대상이 아니다. 종료 코드 2는 에디터를 찾지 못한 것이다.
 - 수치 CSV 위치: `Saved/LabMetrics/summary.csv`
 - 리플리케이션 시간으로 쓰는 Insights 타이머: `GameNetDriver`(프레임당 Incl = 선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 확정했고 이후 바꾸지 않는다.
 
