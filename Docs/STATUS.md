@@ -42,12 +42,21 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 
 클라이언트 화면 글자를 바꿨다(2026-10-01, 사용자 요청). 엔진 화면 메시지(`AddOnScreenDebugMessage`, 노란색) 대신 새 클래스 `ALabHUD`가 반투명 검은 상자 위에 하늘색 글자를 1.4배 크기로 그린다. 노란색은 사진에서 경고처럼 보였고, 흰색은 밝은 하늘과 바닥 위에서 눈에 덜 띄었다(색 후보 비교 이미지로 사용자가 고름). 엔진 화면 메시지를 더 쓰지 않으므로 그 아래에 찍히던 엔진의 회색 안내 문구도 없어졌다. 첫 줄은 `<라벨> | slot=N <harvest|move|idle> <tpp|topdown> | t=Ns`(시작 신호 후 경과 시간, 신호 전에는 `t=waiting`), 둘째 줄은 `on this client: nodes=N npcs=N | pos x=Nm y=Nm`다. 클라이언트 화면만 바뀌고 서버 코드는 그대로다. `overlay2-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, 트레이스 끔)이 종료 코드 0으로 끝났고, 자동 스크린샷(3인칭, 내려다보기)에 두 줄이 찍혔다. 수치는 `frames` 680, `work_avg_ms` 1.961, `out_bytes_per_sec_per_conn` 4812, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000이다. 같은 규모의 `smoke9-r1`(`frames` 897, `work_avg_ms` 1.996, `out_bytes_per_sec_per_conn` 5430)과 비교하면 `frames`가 적다. `smoke9-r1`은 서버 마스크 255, 클라이언트 `-log`였으므로 조건이 다르고 원인은 확인하지 않았다. 앞선 `overlay1-r1`(흰 글자 화면 메시지)은 측정 끝 시각에 클라이언트 선호도가 다시 설정되어 실패 처리됐으므로(`FAIL: processor affinity was re-applied at 23:01:27`, `calib-d-r1`과 같은 유형) 수치를 쓰지 않는다. 내려다보기 화면에서는 상자가 왼쪽 위(640×360 창에서 약 470×68픽셀)를 가려 그 안의 점이 흐리게 보인다. README의 스크린샷 두 장을 `overlay2-r1`의 것(3인칭 순번 01, 내려다보기 순번 00)으로 바꾸고 화면 글자 설명을 고쳤다(사용자 요청). 내려다보기 순번 00은 고갈된 노드의 검은 점이 함께 보여서 골랐다. 태스크 9.3에서 확정 규모 이미지로 다시 바꾼다.
 
+태스크 8.5~8.7을 끝냈다(2026-10-01). 에이전트가 Insights로 `calib-f-r1.utrace`를 직접 열어 `Lab_MeasureStart`~`Lab_MeasureEnd` 구간의 값을 읽었고, 사용자가 판단했다. 화면 캡처와 단계별 근거는 [insights-walkthrough-calib-f.md](Guides/insights-walkthrough-calib-f.md)에 있다.
+
+- **가장 큰 비용은 네트워크다(사용자 판단).** `WorldTick` 59.84초 중 `GameNetDriver`가 57.45초(96.01%)다. 패킷 수신(`UNetConnection_ReceivedPacket`)은 2.40%, 액터 틱(`TickCompletionEvents`)은 1.13%다.
+- **리플리케이션 시간 타이머는 `GameNetDriver`다(사용자 확정).** 프레임당 57.45초 ÷ 356 = 161.4ms로 CSV `netflush_avg_ms` 161.744와 0.2% 차이다. 그 안에서 `LabResourceNode`가 30.05초(52.30%, 14,242,848회), `LabNpc`가 5.58초(9.72%, 854,400회), `GameNetDriver` 자체(Excl)가 21.51초(37.4%)다.
+- **서버 프레임 시간.** 선택 구간 60.018초 ÷ `Frame` 357 = 168.1ms로 CSV `work_avg_ms` 168.309와 0.1% 차이다.
+- **연결당 송신량(서버, Connection 0, Outgoing, 2,132패킷, 59.870초).** 내용 기준 (`Actor` 15,713,136비트 + `PacketHeaderAndInfo` 176,608비트) ÷ 8 ÷ 59.870 = 33,176바이트/초, 패킷 크기 기준 상한 2,132 × 1,023 ÷ 59.870 = 36,430바이트/초다. CSV `out_bytes_per_sec_per_conn` 34,164가 그 사이에 있다. 비트의 76.0%가 `LabNpc`(11,945,853비트)이고 `LabResourceNode`는 576비트(9회)다.
+- **기준선을 출발값 규모 그대로 확정했다.** 네 조건이 모두 예다("기준선 조건" 표). 구현 계획 8.6의 표에서 이 경우의 선택지는 "이 규모로 확정한다" 하나다.
+- **Insights를 여는 방법과 읽는 순서를 지침으로 만들었다(사용자 요청).** `Scripts/open-insights.ps1`, [insights-reading.md](Guides/insights-reading.md). AGENTS.md의 역할 분담을 고쳤다: 에이전트가 Insights를 열어 값을 읽고 판단에 도움이 되는 의견을 내며, 판단과 "관찰", "선택" 섹션은 사용자가 한다.
+- **확인하지 않은 것.** `FWindowsPlatformFile_IterateDirectoryCommon_WithCallback`이 측정 구간에 15초(16,216회) 찍혔다. `WorldTick` 아래에는 없어서 게임 스레드의 프레임 시간에는 들어 있지 않다. 어느 스레드인지, 무엇 때문인지는 보지 않았다. `GameNetDriver`의 Excl 21.51초의 내용도 이 트레이스로는 알 수 없다.
+
 ## 다음 할 일
 
-1. **[사람] 태스크 8.5.** `Saved/Traces/calib-f-r1.utrace`를 Unreal Insights로 열어 구현 계획 8.5의 네 가지를 확인한다.
-2. **[사람] 태스크 8.6.** "보정 실행" 표와 "기준선 조건" 표를 보고 기준선을 확정한다.
-3. 확정 뒤 태스크 8.7(확정값과 명령을 이 문서에 적기), 8.8(커밋), 태스크 9(README와 포스팅 0)로 간다.
-4. 푸시는 사용자가 정한 시점에 한다.
+1. 태스크 9(README 갱신과 포스팅 0). 9.4의 사람 몫(8개 창 전체 화면, 걷는 영상)이 남으면 "사용자에게 요청한 일"에 적는다.
+2. 태스크 10.1(기준선 3회 측정): 아래 "명령"의 시나리오 명령에 `-Label baseline -Runs 3`을 더해 실행한다.
+3. 푸시는 사용자가 정한 시점에 한다.
 
 ## 포스팅 진행
 
@@ -61,14 +70,15 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 
 ## 명령
 
-구현 계획의 태스크 8에서 확정한다.
+태스크 8에서 확정했다(2026-10-01).
 
 - 빌드: `powershell -ExecutionPolicy Bypass -File Scripts/build.ps1` (2026-10-01 성공 확인. 에디터가 열려 있으면 DLL 잠금으로 실패한다)
-- 시나리오 실행(`-Label`과 `-Runs` 없이): 미정(태스크 8에서 확정). 작은 규모 확인용: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 라벨> -Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`
-- 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 서버만 논리 프로세서 0~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
-- Insights: `G:\Epic Games\UE_Source\Engine\Binaries\Win64\UnrealInsights.exe`로 `Saved/Traces/<라벨>-rN.utrace`를 연다.
+- 시나리오 실행(확정 규모, `-Label`과 `-Runs` 없이): `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Clients 8 -Nodes 5000 -Npcs 300 -Warmup 30 -Measure 60`. 측정할 때는 `-Label <새 라벨> -Runs 3`을 더한다. 서버 마스크는 스크립트 기본값 252(논리 프로세서 2~7)이고 트레이스는 켜진다. `calib-f-r1`이 이 조건의 실행이다.
+- 작은 규모 확인용: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 라벨> -Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`
+- 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 서버만 논리 프로세서 2~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
+- Insights: `powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라벨>-rN`. 읽는 순서는 [insights-reading.md](Guides/insights-reading.md)에 있다.
 - 수치 CSV 위치: `Saved/LabMetrics/summary.csv`
-- 리플리케이션 시간으로 쓰는 Insights 타이머: 미정
+- 리플리케이션 시간으로 쓰는 Insights 타이머: `GameNetDriver`(프레임당 Incl = 선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 확정했고 이후 바꾸지 않는다.
 
 ## 확정할 값
 
@@ -76,10 +86,13 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 
 | 항목 | 출발값 | 확정값 | 근거 |
 | --- | --- | --- | --- |
-| 클라이언트 수 | 8 | | |
-| 자원 노드 수 | 5,000 | | |
-| AI NPC 수 | 300 | | |
-| 준비 구간 | 30초 | | |
+| 클라이언트 수 | 8 | 8 | 측정값: `calib-a-r1` 실행 중 UE 프로세스 9개의 메모리 합계 27.5GB, 사용 가능 메모리 최저 14.9GB로 줄일 필요가 없었다(태스크 8.2) |
+| 자원 노드 수 | 5,000 | 5,000(와 검증용 1개, 합 5,001) | 측정값: 포화가 없는 실행에서 `over_budget_frames`가 `frames`와 같아(`calib-b-r1` 100/100, `calib-f-r1` 356/356) 늘리지 않았다(태스크 8.4) |
+| AI NPC 수 | 300 | 300 | 출발값 그대로. 네 조건을 모두 만족해 바꾸지 않았다(태스크 8.6) |
+| 준비 구간 | 30초 | 30초 | 측정값: `calib-f-r1`에서 측정 시작 22초 전에 `open_actor_channels_per_conn`이 5,314에 도달해 더 늘지 않았다(태스크 8.3) |
+| 측정 구간 | 60초 | 60초 | 출발값 그대로. Insights에서 두 북마크 사이가 60.018초(`calib-f-r1`) |
+| 서버 코어 | 논리 프로세서 0~7 | 논리 프로세서 2~7(마스크 252) | [ADR-0009](Decisions/0009-server-cores-without-dpc-load.md). 측정값: `diag-d-r1`, `calib-f-r1` |
+| 리플리케이션 시간 타이머 | 미정 | `GameNetDriver` | 측정값: `calib-f-r1` 측정 구간에서 Incl 57.45초, `WorldTick`의 96.01%. 프레임당 161.4ms가 CSV `netflush_avg_ms` 161.744와 0.2% 차이(태스크 8.5, 사용자 확정) |
 | `NetServerMaxTickRate` 기본값 | 30 (기억값) | 30 | 엔진 소스: `Engine/Config/BaseEngine.ini:1867`. 실행 중 적용값도 30(30초에 898프레임, `smoke2-r1`) |
 | `NetCullDistanceSquared` 기본값 | 225,000,000 (기억값) | 225,000,000 (150m) | 엔진 소스: `Engine/Source/Runtime/Engine/Private/Actor.cpp:312` |
 | `NetUpdateFrequency` 기본값 | 100 (기억값) | 100 (`MinNetUpdateFrequency` 2) | 엔진 소스: `Actor.cpp:295-296` |
@@ -95,7 +108,7 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 | --- | --- | --- |
 | 초기 전송 완료 | 예 | `calib-f-r1` 서버 로그: 측정 시작(13:57:10 UTC) 22초 전의 줄(13:56:48)에서 `open_actor_channels_per_conn`이 이미 5,314이고 더 늘지 않음 |
 | 지속적인 예산 초과 | 예 | `calib-f-r1`: `over_budget_frames` 356 = `frames` 356. `work_avg_ms` 168.309는 틱 예산 33.3ms(1 ÷ 30Hz)의 5.0배 |
-| 가장 큰 비용이 네트워크 | 미정 | 태스크 8.5에서 사용자가 Insights로 판단한다 |
+| 가장 큰 비용이 네트워크 | 예(사용자 판단, 2026-10-01) | `calib-f-r1`의 Insights 측정 구간: `WorldTick` 59.84초 중 `GameNetDriver` 57.45초(96.01%). [insights-walkthrough-calib-f.md](Guides/insights-walkthrough-calib-f.md) 6단계 |
 | 송신 한도에 포화되지 않음(포화되면 한도를 올린다. 2026-10-01 결정) | 예(한도를 350,000으로 올린 뒤) | 엔진 기본 한도에서는 `saturated_ratio` 1.000(`calib-a-r1`). 350,000에서 0.000(`calib-f-r1`), 측정 구간에 `saturated_replications`의 앞 숫자가 211에서 늘지 않음 |
 
 ### 보정 실행
@@ -136,8 +149,7 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 사용자에게 요청한 일
 
-- **태스크 8.5.** `G:\Epic Games\UE_Source\Engine\Binaries\Win64\UnrealInsights.exe`로 `Saved/Traces/calib-f-r1.utrace`를 열어 `Lab_MeasureStart`와 `Lab_MeasureEnd` 사이에서 확인한다: 가장 큰 비용이 네트워크 쪽인가, 리플리케이션 시간으로 쓸 타이머 이름, 그 타이머와 `netflush_avg_ms`(161.744)의 관계와 프레임 시간과 `work_avg_ms`(168.309)의 관계, Network Insights의 연결당 송신량이 `out_bytes_per_sec_per_conn`(34,164)과 비슷한가.
-- **태스크 8.6.** 기준선을 확정한다.
+- **기준선 확정을 확인해 준다.** 사용자는 "네트워크 맞고 `GameNetDriver`로 확정"이라고 답했고, 네 조건이 모두 예라서 에이전트가 출발값 규모 그대로 확정으로 적었다. 규모를 바꾸려는 뜻이었다면 알려 준다.
 - **선호도 재설정 실패가 두 번 있었다(`calib-c-r1`, `calib-d-r1`).** 그 뒤 일곱 번의 실행(`calib-e-r1`, `diag-a-r1`~`diag-e-r1`, `calib-f-r1`)에서는 다시 나오지 않았다. 기준선 3회 측정에서 다시 나오면 `-Warmup`을 늘릴지 정한다(구현 계획 7.3의 표).
 - ADR-0001~0008의 내용을 읽고 확인한다. 이미 확정된 결정을 옮긴 것이라 상태는 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.
 - 푸시는 사용자가 정한 시점에 한다.
