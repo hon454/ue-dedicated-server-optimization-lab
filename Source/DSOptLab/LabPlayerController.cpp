@@ -194,21 +194,19 @@ void ALabPlayerController::TickOverlay(const APawn& ControlledPawn)
 		}
 	}
 
-	if (GEngine)
-	{
-		// 채집 담당은 이동하지 않으므로 채집을 먼저 본다(PlayerTick과 같은 순서).
-		const TCHAR* Duty = Config.bAutoHarvest ? TEXT("harvest") : Config.bAutoMove ? TEXT("move") : TEXT("idle");
-		const TCHAR* View = Config.bTopDown ? TEXT("topdown") : TEXT("tpp");
-		const FString Elapsed = bScenarioStarted
-			? FString::Printf(TEXT("t=%.0fs"), GetWorld()->GetTimeSeconds() - ScenarioStartTime)
-			: FString(TEXT("t=waiting"));
-		const FVector Location = ControlledPawn.GetActorLocation() / 100.f;
+	// 채집 담당은 이동하지 않으므로 채집을 먼저 본다(PlayerTick과 같은 순서).
+	const TCHAR* Duty = Config.bAutoHarvest ? TEXT("harvest") : Config.bAutoMove ? TEXT("move") : TEXT("idle");
+	const TCHAR* View = Config.bTopDown ? TEXT("topdown") : TEXT("tpp");
+	const FString Elapsed = bScenarioStarted
+		? FString::Printf(TEXT("t=%.0fs"), World->GetTimeSeconds() - ScenarioStartTime)
+		: FString(TEXT("t=waiting"));
+	const FVector Location = ControlledPawn.GetActorLocation() / 100.f;
 
-		// 노란색은 경고처럼 보여서 흰색을 쓴다. 엔진이 검은 그림자를 붙인다(UnrealEngine.cpp의 DrawOnscreenDebugMessages).
-		const FString Message = FString::Printf(TEXT("%s | slot=%d %s %s | %s\non this client: nodes=%d npcs=%d | pos=(%.0f,%.0f)m"),
-			*Config.Label, Config.ClientSlot, Duty, View, *Elapsed, NumNodes, NumNpcs, Location.X, Location.Y);
-		GEngine->AddOnScreenDebugMessage(1001, 0.f, FColor::White, Message);
-	}
+	// 화면에는 ALabHUD가 그린다.
+	OverlayLines = {
+		FString::Printf(TEXT("%s | slot=%d %s %s | %s"), *Config.Label, Config.ClientSlot, Duty, View, *Elapsed),
+		FString::Printf(TEXT("on this client: nodes=%d npcs=%d | pos x=%.0fm y=%.0fm"), NumNodes, NumNpcs, Location.X, Location.Y),
+	};
 }
 
 void ALabPlayerController::TickTopDown(const APawn& ControlledPawn)

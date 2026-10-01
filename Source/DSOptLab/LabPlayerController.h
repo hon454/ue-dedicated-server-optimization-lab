@@ -39,6 +39,9 @@ public:
 	bool IsReady() const { return Slot != INDEX_NONE; }
 	int32 GetSlot() const { return Slot; }
 
+	/** ALabHUD가 그리는 화면 글자. 로컬 컨트롤러에서 매 틱 갱신한다. */
+	const TArray<FString>& GetOverlayLines() const { return OverlayLines; }
+
 private:
 	static constexpr float HarvestRange = 500.f;
 	static constexpr float HarvestInterval = 2.f;
@@ -50,7 +53,7 @@ private:
 
 	void TickAutoMove(APawn& ControlledPawn);
 
-	/** 라벨, 자리와 역할, 시작 신호 후 경과 시간, 이 클라이언트에 존재하는 노드와 NPC 수, 폰 위치를 화면에 찍고,
+	/** 라벨, 자리와 역할, 시작 신호 후 경과 시간, 이 클라이언트에 존재하는 노드와 NPC 수, 폰 위치로 화면 글자를 만들고,
 	 *  내려다보기 화면에서는 노드와 NPC 위치에 점을 그린다. */
 	void TickOverlay(const APawn& ControlledPawn);
 
@@ -77,4 +80,5 @@ private:
 	float HarvestAccumulator = 0.f;
 	float ScreenshotAccumulator = 0.f;
 	int32 ScreenshotIndex = 0;
+	TArray<FString> OverlayLines;
 };

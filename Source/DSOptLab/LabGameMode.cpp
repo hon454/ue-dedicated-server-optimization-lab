@@ -4,6 +4,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
 #include "Math/RandomStream.h"
+#include "LabHUD.h"
 #include "LabNpc.h"
 #include "LabPlayerController.h"
 #include "LabResourceNode.h"
@@ -13,6 +14,7 @@
 ALabGameMode::ALabGameMode()
 {
 	PlayerControllerClass = ALabPlayerController::StaticClass();
+	HUDClass = ALabHUD::StaticClass();
 
 	static ConstructorHelpers::FClassFinder<APawn> PawnFinder(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
 	if (PawnFinder.Succeeded())
