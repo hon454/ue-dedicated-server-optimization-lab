@@ -43,6 +43,7 @@ powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라�
 
 - Insights는 시작 메뉴에 없는 실행 파일이라, 실행한 뒤 컴퓨터 조작 권한을 `UnrealInsights.exe` 이름으로 요청한다.
 - 권한이 없는 다른 창은 Insights 뒤에 있어도 그 자리가 스크린샷에서 가려진다. 가리는 창을 치우거나 보기 권한을 받는다.
-- 문서에 넣을 캡처는 화면을 그대로 복사해 찍는다. 이 PC는 3840×2160에 150% 배율이다. Claude 앱의 작은 창이 화면 오른쪽 위에 항상 떠 있으므로, Insights 창을 그 왼쪽에 들어가는 크기로 줄여 놓고 찍는다.
+- 문서에 넣을 캡처는 화면 복사가 아니라 창 내용만 찍는다: `powershell -ExecutionPolicy Bypass -File Scripts/capture-insights.ps1 -Label <라벨>-rN -Out <경로>.png`(`-Height N`이면 위쪽 N픽셀만). 화면 복사에는 에이전트가 화면을 조작하는 동안 화면 가장자리에 그려지는 주황 테두리가 들어간다(2026-10-02, `Posts/00-testbed`와 `Posts/01-baseline`의 이미지를 이 스크립트로 다시 찍었다). 타임라인 툴팁도 함께 찍힌다.
+- 이 PC는 3840×2160에 150% 배율이다. Claude 앱의 작은 창이 화면 오른쪽 위에 항상 떠 있어서, 조작하는 동안 Insights 창을 그 왼쪽에 들어가는 크기(3000×2080픽셀, 왼쪽 위 0,0)로 둔다. 뒤에 있는 권한 없는 창(작업 관리자 같은 관리자 권한 창은 옮길 수 없다)이 조작용 스크린샷을 가리면 그 앱의 보기 권한을 받는다.
 - 툴바의 `Callers`, `Callees` 단추는 패널을 켜고 끄는 단추다. 줄을 고르려다 누르면 패널이 사라진다.
 - Networking Insights의 가로축은 패킷 순번이다. 화면 한 픽셀에 패킷 여러 개가 들어가므로, 툴팁의 Timestamp로 위치를 확인한다.

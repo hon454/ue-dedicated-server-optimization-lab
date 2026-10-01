@@ -69,6 +69,7 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 - **세 실행의 구성이 같다.** 호출 횟수(액터 수 × 연결 수 × 프레임 수), 프레임당 송신(약 5,570\~5,580바이트), 구성 비율(Excl 37.0\~37.1%)이 같고, 느린 실행은 모든 하위 타이머가 1.12\~1.18배 느리다(`r2` ÷ `r3`). 흔들림의 원인은 여전히 모른다.
 - **스크린샷 후보 8장**을 `Posts/01-baseline/images/insights-*.png`로 저장했다(목록은 candidates.md 8절).
 - 엔진 소스 위치는 서브에이전트가 찾고 에이전트가 인용한 줄을 다시 읽어 확인했다.
+- **Insights 캡처를 다시 찍었다(사용자 지적).** 화면 복사로 찍은 캡처에 에이전트 조작 중 화면 가장자리의 주황 테두리가 들어가 있었다(가장자리 픽셀 115,78,66 근처). 창 내용만 찍는 `Scripts/capture-insights.ps1`(`PrintWindow`, 툴팁 포함)을 만들어 `Posts/01-baseline/images/insights-*.png` 8장과 테스트베드의 `timing.png`, `network.png`를 같은 장면으로 다시 찍었다(가장자리 54,54,54). `Docs/Guides/images/insights-calib-f/`의 10장은 테두리가 남아 있고 다시 찍지 않았다(사용자 결정).
 
 ## 다음 할 일
 
@@ -97,6 +98,7 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 - 작은 규모 확인용: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 라벨> -Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`
 - 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 서버만 논리 프로세서 2\~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
 - Insights: `powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라벨>-rN`. 읽는 순서는 [insights-reading.md](Guides/insights-reading.md)에 있다.
+- 문서용 Insights 캡처: `powershell -ExecutionPolicy Bypass -File Scripts/capture-insights.ps1 -Label <라벨>-rN -Out <경로>.png`. 화면 복사 대신 창 내용만 찍는다.
 - 수치 CSV 위치: `Saved/LabMetrics/summary.csv`
 - 리플리케이션 시간으로 쓰는 Insights 타이머: `GameNetDriver`(프레임당 Incl = 선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 확정했고 이후 바꾸지 않는다.
 

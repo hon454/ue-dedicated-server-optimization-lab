@@ -165,7 +165,7 @@ CSV `frames`(302, 292, 334)는 세 실행 모두 `WorldTick` Count와 같다. `c
 
 ## 8. 스크린샷 후보
 
-에이전트가 Insights 창(3000×2080)을 그대로 캡처했다. 포스팅에 넣을 것은 사용자가 고르거나 직접 찍는다. 모두 `images/`에 있다.
+에이전트가 Insights 창(3000×2080)의 내용만 `Scripts/capture-insights.ps1`로 캡처했다. 포스팅에 넣을 것은 사용자가 고르거나 직접 찍는다. 모두 `images/`에 있다.
 
 ### `insights-r1-timers.png`
 

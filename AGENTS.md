@@ -21,7 +21,7 @@
 | 포스팅 틀 | 설계 문서 7절. 테스트베드 포스팅은 구현 계획 태스크 9.2 |
 | 기법별 코드 초안 | 구현 계획 태스크 11 "기법별 코드" |
 | 엔진 기본값, 동작 순서, 소스 위치 | [engine-notes.md](Docs/Planning/engine-notes.md) |
-| Insights로 트레이스를 여는 법과 읽는 순서, 역할 분담 | [insights-reading.md](Docs/Guides/insights-reading.md). 여는 명령은 `Scripts/open-insights.ps1 -Label <라벨>-rN` |
+| Insights로 트레이스를 여는 법과 읽는 순서, 역할 분담 | [insights-reading.md](Docs/Guides/insights-reading.md). 여는 명령은 `Scripts/open-insights.ps1 -Label <라벨>-rN`, 문서용 캡처는 `Scripts/capture-insights.ps1` |
 | Insights 화면을 단계별로 읽은 예(캡처와 행동마다의 이유) | [insights-walkthrough-calib-f.md](Docs/Guides/insights-walkthrough-calib-f.md) |
 | 일정이 넘칠 때 줄이는 순서 | 구현 계획 "일정이 넘칠 때" |
 | 단기 범위 밖의 주제, 작업 중 떠오른 기법 | [backlog.md](Docs/Planning/backlog.md) |
