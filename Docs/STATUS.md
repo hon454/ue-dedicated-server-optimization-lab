@@ -13,7 +13,7 @@
 - **`saturated_ratio`의 정의를 바꿨다.** 프레임 끝의 `IsNetReady()`는 그 프레임의 송신 예산을 뺀 뒤라 지속적인 포화를 잡지 못한다. 엔진이 `ServerReplicateActors`에서 연결마다 남기는 기록으로 바꿨다(포화로 끊긴 리플리케이션 횟수 ÷ 시도 횟수). `smoke8-r1`의 서버 로그에서 접속 직후 `saturated_replications=14/184`가 찍혔고 측정 구간 값은 0.000이다. `smoke7`까지의 행은 옛 정의다.
 - **태스크 8.4와 8.4a의 순서를 고쳤다.** 포화를 먼저 없앤 뒤 예산 초과를 판단하고, 한도는 규모가 정해진 뒤 30Hz 환산 송신량의 약 두 배로 한 번만 고정한다. 포화 판정 기준은 `saturated_ratio` 0.01 이상이다.
 - **`run-scenario.ps1`의 실패 처리를 보강했다.** 시작 신호 전에 죽은 클라이언트는 다시 띄운다(실행당 최대 3번, `RESTART:` 줄). 서버 종료 시점의 클라이언트 생존, `.utrace` 존재, 측정 시작 뒤의 선호도 재설정, 라벨의 로그와 트레이스 재사용, 이미 떠 있는 `UnrealEditor`를 검사한다. 클라이언트에는 `-traceautostart=0`을 준다. 다시 띄우기와 각 실패 경로는 아직 실행으로 확인하지 않았다.
-- **트레이스 인자가 동작한다.** `smoke8-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, 트레이스 켬)이 종료 코드 0으로 끝나고 `Saved/Traces/smoke8-r1.utrace`(5.5MB)가 생겼다. 수치는 이전 `smoke` 실행과 같은 범위다(`frames` 898, `work_avg_ms` 2.212, `out_bytes_per_sec_per_conn` 5417, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000). 사용자가 Insights로 열어 `Lab_MeasureStart`, `Lab_MeasureEnd` 북마크를 확인했다(2026-10-01). Networking 창은 열리지만 서버의 송신 패킷과 패킷 내용(액터 이름)이 보이는지는 아직 확인 중이다.
+- **트레이스 인자가 동작한다.** `smoke8-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, 트레이스 켬)이 종료 코드 0으로 끝나고 `Saved/Traces/smoke8-r1.utrace`(5.5MB)가 생겼다. 수치는 이전 `smoke` 실행과 같은 범위다(`frames` 898, `work_avg_ms` 2.212, `out_bytes_per_sec_per_conn` 5417, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000). 사용자가 Insights로 열어 `Lab_MeasureStart`, `Lab_MeasureEnd` 북마크를 확인했다(2026-10-01). Networking 창에서 패킷 막대와 패킷 내용의 액터 이름도 확인했다. `-trace=default,net -NetTrace=1 -tracefile=` 인자를 그대로 쓴다.
 - **`-traceautostart=0`을 넣은 뒤에도 실행이 정상이다.** `smoke9-r1`(같은 규모, `-NoTrace`)이 종료 코드 0으로 끝났다(`frames` 897, `work_avg_ms` 1.996, `out_bytes_per_sec_per_conn` 5430, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000). 같은 라벨로 다시 실행하면 스크립트가 거부하는 것도 확인했다. Insights가 떠 있을 때 자동 연결이 실제로 막히는지는 확인하지 않았다.
 - **Unreal Insights를 소스 빌드에서 빌드했다.** `G:\Epic Games\UE_Source\Engine\Binaries\Win64\UnrealInsights.exe`.
 - **README.md를 만들었다.** 규모는 보정 전의 출발값으로 적었고, 스크린샷 두 장은 `smoke8-r1`의 것이다(`Posts/00-testbed/images/`). 태스크 8 뒤에 확정값과 확정 규모의 이미지로 바꾼다.
@@ -22,9 +22,9 @@
 
 ## 다음 할 일
 
-1. 푸시는 사용자가 한다. 원격 저장소(`origin`)는 이미 있고 `main`이 `bd25f13`까지 올라가 있다. 그 뒤의 커밋은 로컬에만 있다.
+1. 푸시는 사용자가 정한 시점에 한다. 원격 저장소(`origin`)는 이미 있고, 2026-10-01 2일차 준비 커밋까지 올렸다.
 2. **태스크 8.1 전에 메모리를 확보한다.** 2026-10-01 점검 때 UE 프로세스 없이 사용 가능 메모리가 23.7GB, 커밋이 56.0GB였다(Rider, Chrome 등). 클라이언트 하나가 맵 로드 전에 이미 2.5GB를 쓰므로(`client0-smoke1-r1.log`) 9개 프로세스에는 모자랄 수 있다. 다른 프로그램을 닫고 사용 가능 메모리를 확인한 뒤 실행한다.
-3. 2일차: 태스크 8(출발값으로 트레이스와 함께 실행, 기준선 조건 확인). 엔진 기본 송신 한도가 100,000바이트/초라 8.4a(한도 올리기)가 필요할 가능성이 높다. 태스크 8.1은 새 세션에서 시작한다(2026-10-01 사용자 결정). 시작 전에 `smoke8-r1.utrace`의 Networking 창 확인(Packet Overview에 송신 패킷 막대가 있고, 패킷을 고르면 Packet Content에 `LabNpc` 같은 액터 이름이 보이는가)이 끝났는지 사용자에게 묻는다. 보이지 않으면 `-trace=default,net -NetTrace=1` 인자를 다시 확인한 뒤에 8.1을 실행한다.
+3. 2일차: 태스크 8(출발값으로 트레이스와 함께 실행, 기준선 조건 확인). 엔진 기본 송신 한도가 100,000바이트/초라 8.4a(한도 올리기)가 필요할 가능성이 높다. 태스크 8.1은 새 세션에서 시작한다(2026-10-01 사용자 결정). 트레이스 확인은 끝났으므로 2번의 메모리 확인만 하고 바로 실행한다.
 
 ## 포스팅 진행
 
