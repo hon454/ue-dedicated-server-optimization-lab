@@ -50,7 +50,7 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     Write-Host "=== $RunLabel ==="
 
     $ServerArgs = @(
-        "`"$Project`"", "/Game/Maps/L_Lab", "-server", "-log", "-unattended",
+        "`"$Project`"", "/Game/Maps/L_Lab", "-server", "-log", "-unattended", "-DisablePython",
         "-LOG=server-$RunLabel.log",
         "-LabMeasure", "-LabLabel=$RunLabel",
         "-LabNodes=$Nodes", "-LabNpcs=$Npcs",
@@ -80,7 +80,7 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
             $ClientArgs = @(
                 "`"$Project`"", "127.0.0.1", "-game", "-windowed",
                 "-ResX=640", "-ResY=360", "-WinX=$X", "-WinY=$Y",
-                "-log", "-LOG=client$Index-$RunLabel.log", "-nosound", "-unattended",
+                "-log", "-LOG=client$Index-$RunLabel.log", "-nosound", "-unattended", "-DisablePython",
                 "-LabSlot=$Index", "-LabAutoMove", "-LabLabel=$RunLabel",
                 "-ExecCmds=`"t.MaxFPS 30`""
             )

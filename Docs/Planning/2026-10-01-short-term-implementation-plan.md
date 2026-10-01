@@ -397,7 +397,7 @@ git commit -m "Add server metrics subsystem with start signal, failure handling,
 Get-Process UnrealEditor | Select-Object Id, ProcessorAffinity
 ```
 
-- [ ] **7.6 [사람] 화면을 확인한다.** 새 라벨로 다시 실행하고 클라이언트 창에서 다음을 본다.
+- [x] **7.6 [사람] 화면을 확인한다.** 새 라벨로 다시 실행하고 클라이언트 창에서 다음을 본다.
   - 0번 클라이언트는 실린더 옆에 서 있고, 그 실린더가 약 6초 뒤 사라졌다가 20초 뒤 다시 나타난다.
   - 1번 클라이언트는 위에서 내려다보는 화면이고, 초록 점과 빨간 점이 보이고, 캐릭터가 스스로 걷는다.
   - 화면 위에 노란 글자로 `<라벨>-r1 | on this client: nodes=101 npcs=10`이 보인다.
@@ -405,12 +405,12 @@ Get-Process UnrealEditor | Select-Object Id, ProcessorAffinity
 
 - [x] **7.7 자동 스크린샷을 확인한다.** `Saved/Screenshots/Lab/`에 `<라벨>-r1-tpp-00.png`와 `<라벨>-r1-topdown-00.png`가 있는지 보고, 두 이미지를 직접 열어 글자와 점이 찍혔는지 확인한다. 점이 보이지 않거나 알아보기 어려우면 `TickOverlay`의 점 크기(5, 7)와 `TopDownHeight`를 조정하고 다시 실행한다.
 
-- [ ] **7.8 수동 실행을 확인한다.**
+- [x] **7.8 수동 실행을 확인한다.**
 
 실행: `powershell -ExecutionPolicy Bypass -File Scripts/run-manual.ps1 -Nodes 100 -Npcs 10`
 기대: 창 두 개가 같은 장소에서 뜨고, 두 창 모두에서 검증용 실린더가 사라졌다 나타난다. Enter를 누르면 모두 종료된다.
 
-- [ ] **7.9 커밋한다.**
+- [x] **7.9 커밋한다.**
 
 ```bash
 git add Scripts/run-scenario.ps1 Scripts/run-manual.ps1 Docs/Planning/engine-notes.md
