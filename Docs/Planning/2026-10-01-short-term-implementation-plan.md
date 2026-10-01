@@ -431,13 +431,13 @@ git commit -m "build: add scenario runner with core pinning and failure detectio
 
 설계 문서 8.1절의 출발값을 실측으로 확정한다. 이 태스크가 끝나면 규모는 다시 바꾸지 않는다. 현재 코드는 기준선 상태(`bAlwaysRelevant = true`)다.
 
-- [ ] **8.1 출발값으로 트레이스와 함께 실행한다.**
+- [x] **8.1 출발값으로 트레이스와 함께 실행한다.**
 
 실행: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label calib-a`
 기대: `calib-a-r1` 한 줄과 `Saved/Traces/calib-a-r1.utrace`.
 확인: `.utrace`가 생기지 않으면 `-trace`, `-NetTrace`, `-tracefile` 인자를 `Engine/Source/Runtime/Core/Private/ProfilingDebugging/TraceAuxiliary.cpp`에서 확인해 스크립트를 고친다.
 
-- [ ] **8.2 PC 자원을 확인한다.** 실행 중에 다음을 실행해 메모리를 본다. 합계가 64GB의 80%(51GB)를 넘으면 클라이언트 수를 줄인다. 작업 관리자에서 논리 프로세서 0~7의 사용률도 본다. 서버 코어가 계속 100%에 붙어 있으면 그 사실을 `Docs/STATUS.md`에 적는다.
+- [x] **8.2 PC 자원을 확인한다.** 실행 중에 다음을 실행해 메모리를 본다. 합계가 64GB의 80%(51GB)를 넘으면 클라이언트 수를 줄인다. 작업 관리자에서 논리 프로세서 0~7의 사용률도 본다. 서버 코어가 계속 100%에 붙어 있으면 그 사실을 `Docs/STATUS.md`에 적는다.
 
 ```powershell
 Get-Process UnrealEditor | Select-Object Id, @{n='RAM_GB';e={[math]::Round($_.WorkingSet64/1GB,1)}}
@@ -453,9 +453,9 @@ nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv
 
 에이전트가 실행 중에 이 명령을 돌리려면 시나리오를 백그라운드로 실행한다.
 
-- [ ] **8.3 초기 전송이 준비 구간 안에 끝나는지 확인한다.** `Saved/Logs/server-calib-a-r1.log`에서 `LogLabMetrics`의 5초 간격 줄을 본다. `open_actor_channels_per_conn`이 측정 시작(`Measuring` 줄) 전에 노드 수 + NPC 수 + 플레이어 수 근처에 도달해 더 늘지 않아야 한다. 측정 중에도 늘고 있으면 `-Warmup`을 늘려 새 라벨로 다시 실행한다. 채널 수가 어느 값에서 멈춰 올라가지 않으면 태스크 2.5에서 확인한 채널 수 상한과 비교한다.
+- [x] **8.3 초기 전송이 준비 구간 안에 끝나는지 확인한다.** `Saved/Logs/server-calib-a-r1.log`에서 `LogLabMetrics`의 5초 간격 줄을 본다. `open_actor_channels_per_conn`이 측정 시작(`Measuring` 줄) 전에 노드 수 + NPC 수 + 플레이어 수 근처에 도달해 더 늘지 않아야 한다. 측정 중에도 늘고 있으면 `-Warmup`을 늘려 새 라벨로 다시 실행한다. 채널 수가 어느 값에서 멈춰 올라가지 않으면 태스크 2.5에서 확인한 채널 수 상한과 비교한다.
 
-- [ ] **8.4 기준선의 조건을 확인한다.** 아래 세 가지를 **표의 순서대로** 판단해 `Docs/STATUS.md`에 적는다. 네 번째 조건(가장 큰 비용이 네트워크)은 8.5에서 사람이 Insights로 판단한다.
+- [x] **8.4 기준선의 조건을 확인한다.** 아래 세 가지를 **표의 순서대로** 판단해 `Docs/STATUS.md`에 적는다. 네 번째 조건(가장 큰 비용이 네트워크)은 8.5에서 사람이 Insights로 판단한다.
 
 | 순서 | 조건 | 판단 방법 |
 | --- | --- | --- |
@@ -467,7 +467,7 @@ nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv
 
 포화가 없는 실행에서 예산 초과가 지속적이지 않으면 노드 수를 두 배씩 늘려(`-Nodes 10000`, `-Nodes 20000`) 새 라벨로 다시 실행하고 같은 표를 다시 판단한다. 노드 수를 바꾸면 NPC의 배치도 달라진다(같은 난수열을 쓴다).
 
-- [ ] **8.4a 포화 상태면 송신 한도를 올린다.** 사용자가 미리 정한 방침이므로 다시 묻지 않고 진행한다. 이 시리즈는 서버 처리 비용의 전후 비교를 보여주려는 것인데, 포화 상태에서는 서버가 한도에 걸린 연결의 리플리케이션을 미뤄서 기준선의 비용이 실제보다 작게 나오기 때문이다. 네트워크가 루프백이라 한도를 올려도 부작용이 없다.
+- [x] **8.4a 포화 상태면 송신 한도를 올린다.** 사용자가 미리 정한 방침이므로 다시 묻지 않고 진행한다. 이 시리즈는 서버 처리 비용의 전후 비교를 보여주려는 것인데, 포화 상태에서는 서버가 한도에 걸린 연결의 리플리케이션을 미뤄서 기준선의 비용이 실제보다 작게 나오기 때문이다. 네트워크가 루프백이라 한도를 올려도 부작용이 없다.
   1. 태스크 2.5에서 찾은 설정 키 세 개(`[/Script/Engine.Player] ConfiguredInternetSpeed`, `[/Script/OnlineSubsystemUtils.IpNetDriver] MaxClientRate`와 `MaxInternetClientRate`)로 `Config/`의 프로젝트 설정에서 연결당 송신 한도를 충분히 큰 값(초당 10,000,000바이트)으로 올린다. 엔진 설정 파일은 고치지 않는다.
   2. 새 라벨로 한 번 실행해 `saturated_ratio`가 0이고 서버 로그의 `net_speed`가 올린 값인지 확인한다. `net_speed`가 그대로면 다른 설정 키나 클라이언트 쪽 설정이 한도를 정하고 있는 것이므로 태스크 2.5의 확인 결과로 돌아간다.
   3. **한도를 10,000,000으로 둔 채 8.4의 예산 초과 판단과 노드 증설을 끝내 규모를 먼저 정한다.** 한도의 고정은 규모가 정해진 뒤에 한 번만 한다. 노드 수가 바뀌면 송신량도 바뀌기 때문이다.
