@@ -6,7 +6,7 @@
 
 1일차 범위(태스크 1~7)를 끝냈다. 사용자가 7.6(화면)과 7.8(수동 조작)을 확인했다(2026-10-01). 작은 규모 실행(클라이언트 2, 노드 101, NPC 10)이 종료 코드 0으로 끝나고 CSV 행과 자동 스크린샷(글자와 점)이 남는 것을 `smoke2`~`smoke5`로 확인했다(`smoke5`는 템플릿 정리 후). 확인 내용은 [engine-notes.md](Planning/engine-notes.md) 마절에 있다.
 
-실행 로그마다 남던 `LogPython: Error` 58줄(`AllToolsets` 플러그인의 Python 시작 스크립트가 `-server`, `-game`에서 실패)을 실행 스크립트에 `-DisablePython`을 넣어 없앴다. `smoke7-r1`이 종료 코드 0으로 끝나고 CSV 행이 남았으며, 세 로그 모두 `LogPython: Error`가 0줄이다. `smoke7-r1` 수치는 `smoke2`~`smoke5`와 같은 범위다(`frames` 898, `work_avg_ms` 2.741, `out_bytes_per_sec_per_conn` 5446, `open_actor_channels_per_conn` 118). `smoke6-r1`은 측정 구간 시작 직후(서버 로그 마지막 줄 11:24:07 UTC) 세 프로세스가 종료 메시지 없이 함께 끝나 CSV 행이 없다. 강제 종료로 보이며 수치는 쓰지 않는다.
+실행 로그마다 남던 `LogPython: Error` 58줄(`AllToolsets` 플러그인의 Python 시작 스크립트가 `-server`, `-game`에서 실패)을 실행 스크립트에 `-DisablePython`을 넣어 없앴다. 사용자가 이 플러그인을 에디터에서 쓰므로 `.uproject`는 그대로 둔다(2026-10-01 사용자 확인). Python의 매 프레임 티커가 빠지므로 측정 조건이 바뀐 것이고, 기준선 전이라 비교에는 문제가 없지만 앞으로 측정은 `run-scenario.ps1`로만 실행한다(engine-notes.md 마절). `smoke7-r1`이 종료 코드 0으로 끝나고 CSV 행이 남았으며, 세 로그 모두 `LogPython: Error`가 0줄이다. `smoke7-r1` 수치는 `smoke2`~`smoke5`와 같은 범위다(`frames` 898, `work_avg_ms` 2.741, `out_bytes_per_sec_per_conn` 5446, `open_actor_channels_per_conn` 118). `smoke6-r1`은 측정 구간 시작 직후(서버 로그 마지막 줄 11:24:07 UTC) 세 프로세스가 종료 메시지 없이 함께 끝나 CSV 행이 없다. 강제 종료로 보이며 수치는 쓰지 않는다.
 
 엔진은 소스 빌드로 통일했다. `DSOptLab.uproject`의 `EngineAssociation`이 `UE_DSOptLab`이고, 스크립트는 `Scripts/common.ps1`에서 같은 값을 레지스트리로 찾는다. 런처 설치본(`G:\Epic Games\UE_5.8`)으로 프로젝트를 열면 같은 `Binaries/`에 다시 빌드되므로 열지 않는다.
 
