@@ -91,7 +91,7 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 
 | 조건 | 결과 | 근거 |
 | --- | --- | --- |
-| 초기 전송 완료 | 예 | `calib-f-r1` 서버 로그: 측정 시작(13:57:10 UTC) 21초 전의 줄(13:56:48)에서 `open_actor_channels_per_conn`이 이미 5,314이고 더 늘지 않음 |
+| 초기 전송 완료 | 예 | `calib-f-r1` 서버 로그: 측정 시작(13:57:10 UTC) 22초 전의 줄(13:56:48)에서 `open_actor_channels_per_conn`이 이미 5,314이고 더 늘지 않음 |
 | 지속적인 예산 초과 | 예 | `calib-f-r1`: `over_budget_frames` 356 = `frames` 356. `work_avg_ms` 168.309는 틱 예산 33.3ms(1 ÷ 30Hz)의 5.0배 |
 | 가장 큰 비용이 네트워크 | 미정 | 태스크 8.5에서 사용자가 Insights로 판단한다 |
 | 송신 한도에 포화되지 않음(포화되면 한도를 올린다. 2026-10-01 결정) | 예(한도를 350,000으로 올린 뒤) | 엔진 기본 한도에서는 `saturated_ratio` 1.000(`calib-a-r1`). 350,000에서 0.000(`calib-f-r1`), 측정 구간에 `saturated_replications`의 앞 숫자가 211에서 늘지 않음 |
@@ -136,6 +136,6 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 - **태스크 8.5.** `G:\Epic Games\UE_Source\Engine\Binaries\Win64\UnrealInsights.exe`로 `Saved/Traces/calib-f-r1.utrace`를 열어 `Lab_MeasureStart`와 `Lab_MeasureEnd` 사이에서 확인한다: 가장 큰 비용이 네트워크 쪽인가, 리플리케이션 시간으로 쓸 타이머 이름, 그 타이머와 `netflush_avg_ms`(161.744)의 관계와 프레임 시간과 `work_avg_ms`(168.309)의 관계, Network Insights의 연결당 송신량이 `out_bytes_per_sec_per_conn`(34,164)과 비슷한가.
 - **태스크 8.6.** 기준선을 확정한다.
-- **선호도 재설정 실패가 두 번 있었다(`calib-c-r1`, `calib-d-r1`).** 그 뒤 여섯 번의 실행(`calib-e-r1`, `diag-a-r1`~`diag-e-r1`, `calib-f-r1` 중 `calib-e-r1` 이후)에서는 다시 나오지 않았다. 기준선 3회 측정에서 다시 나오면 `-Warmup`을 늘릴지 정한다(구현 계획 7.3의 표).
+- **선호도 재설정 실패가 두 번 있었다(`calib-c-r1`, `calib-d-r1`).** 그 뒤 일곱 번의 실행(`calib-e-r1`, `diag-a-r1`~`diag-e-r1`, `calib-f-r1`)에서는 다시 나오지 않았다. 기준선 3회 측정에서 다시 나오면 `-Warmup`을 늘릴지 정한다(구현 계획 7.3의 표).
 - ADR-0001~0008의 내용을 읽고 확인한다. 이미 확정된 결정을 옮긴 것이라 상태는 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.
 - 푸시는 사용자가 정한 시점에 한다.
