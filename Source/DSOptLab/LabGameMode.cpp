@@ -1,0 +1,118 @@
+#include "LabGameMode.h"
+
+#include "Engine/World.h"
+#include "EngineUtils.h"
+#include "GameFramework/Pawn.h"
+#include "Math/RandomStream.h"
+#include "LabNpc.h"
+#include "LabPlayerController.h"
+#include "LabResourceNode.h"
+#include "LabScenarioConfig.h"
+#include "UObject/ConstructorHelpers.h"
+
+ALabGameMode::ALabGameMode()
+{
+	PlayerControllerClass = ALabPlayerController::StaticClass();
+
+	static ConstructorHelpers::FClassFinder<APawn> PawnFinder(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
+	if (PawnFinder.Succeeded())
+	{
+		DefaultPawnClass = PawnFinder.Class;
+	}
+}
+
+void ALabGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	SpawnWorld();
+
+	// 측정 실행에서는 측정 서브시스템이 모든 클라이언트를 확인한 뒤 시작 신호를 낸다.
+	if (!FLabScenarioConfig::Get().bMeasure)
+	{
+		StartScenario();
+	}
+}
+
+FVector ALabGameMode::GetSlotLocation(int32 Slot)
+{
+	const float Angle = 2.f * PI * static_cast<float>(Slot) / static_cast<float>(FLabScenarioConfig::NumPlayerSlots);
+	const float Radius = FLabScenarioConfig::PlayerRingRadius;
+	return FVector(FMath::Cos(Angle) * Radius, FMath::Sin(Angle) * Radius, 200.f);
+}
+
+void ALabGameMode::SpawnWorld()
+{
+	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	const float Extent = FLabScenarioConfig::WorldHalfExtent;
+
+	// 고정 시드라서 실행마다 같은 배치가 나온다.
+	FRandomStream Rng(Config.Seed);
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	for (int32 Index = 0; Index < Config.NumNodes; ++Index)
+	{
+		// 실린더 높이 300cm의 중심이 150cm에 오게 해 바닥에 세운다.
+		const FVector Location(Rng.FRandRange(-Extent, Extent), Rng.FRandRange(-Extent, Extent), 150.f);
+		GetWorld()->SpawnActor<ALabResourceNode>(ALabResourceNode::StaticClass(), Location, FRotator::ZeroRotator, Params);
+	}
+
+	for (int32 Index = 0; Index < Config.NumNpcs; ++Index)
+	{
+		const FVector Location(Rng.FRandRange(-Extent, Extent), Rng.FRandRange(-Extent, Extent), 50.f);
+		GetWorld()->SpawnActor<ALabNpc>(ALabNpc::StaticClass(), Location, FRotator::ZeroRotator, Params);
+	}
+
+	// 검증용 노드. 0번 자리에서 3m 떨어진 곳에 항상 있다. 채집 담당이 이 노드를 고갈시킨다.
+	FVector VerificationNodeLocation = GetSlotLocation(0) + FVector(300.f, 0.f, 0.f);
+	VerificationNodeLocation.Z = 150.f;
+	GetWorld()->SpawnActor<ALabResourceNode>(ALabResourceNode::StaticClass(), VerificationNodeLocation, FRotator::ZeroRotator, Params);
+}
+
+void ALabGameMode::StartScenario()
+{
+	if (bScenarioStarted)
+	{
+		return;
+	}
+	bScenarioStarted = true;
+
+	for (TActorIterator<ALabNpc> It(GetWorld()); It; ++It)
+	{
+		It->StartWandering();
+	}
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		ALabPlayerController* Player = Cast<ALabPlayerController>(It->Get());
+		if (Player && Player->IsReady())
+		{
+			PlaceAndStart(*Player);
+		}
+	}
+}
+
+void ALabGameMode::HandlePlayerReady(ALabPlayerController& Player)
+{
+	if (bScenarioStarted)
+	{
+		PlaceAndStart(Player);
+	}
+}
+
+void ALabGameMode::PlaceAndStart(ALabPlayerController& Player)
+{
+	APawn* Pawn = Player.GetPawn();
+	if (!Pawn)
+	{
+		return;
+	}
+
+	int32& UseCount = SlotUseCount.FindOrAdd(Player.GetSlot());
+	const FVector Location = GetSlotLocation(Player.GetSlot()) + FVector(0.f, 200.f * UseCount, 0.f);
+	++UseCount;
+
+	Pawn->SetActorLocation(Location, false, nullptr, ETeleportType::TeleportPhysics);
+	Player.ClientStartScenario(Location);
+}
