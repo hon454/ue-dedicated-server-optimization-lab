@@ -10,6 +10,7 @@
 #include "GameFramework/Pawn.h"
 #include "InputMappingContext.h"
 #include "Misc/Paths.h"
+#include "LabCharacter.h"
 #include "LabGameMode.h"
 #include "LabNpc.h"
 #include "LabResourceNode.h"
@@ -194,6 +195,18 @@ void ALabPlayerController::TickOverlay(const APawn& ControlledPawn)
 		}
 	}
 
+	// 플레이어는 노드와 NPC보다 크게, 자기 폰은 흰색, 다른 플레이어는 파란색으로 그린다.
+	int32 NumPlayers = 0;
+	for (TActorIterator<ALabCharacter> It(World); It; ++It)
+	{
+		++NumPlayers;
+		if (Config.bTopDown)
+		{
+			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, 9.f,
+				*It == &ControlledPawn ? FColor::White : FColor(40, 140, 255), false, -1.f, SDPG_Foreground);
+		}
+	}
+
 	// 채집 담당은 이동하지 않으므로 채집을 먼저 본다(PlayerTick과 같은 순서).
 	const TCHAR* Duty = Config.bAutoHarvest ? TEXT("harvest") : Config.bAutoMove ? TEXT("move") : TEXT("idle");
 	const TCHAR* View = Config.bTopDown ? TEXT("topdown") : TEXT("tpp");
@@ -205,7 +218,7 @@ void ALabPlayerController::TickOverlay(const APawn& ControlledPawn)
 	// 화면에는 ALabHUD가 그린다.
 	OverlayLines = {
 		FString::Printf(TEXT("%s | slot=%d %s %s | %s"), *Config.Label, Config.ClientSlot, Duty, View, *Elapsed),
-		FString::Printf(TEXT("on this client: nodes=%d npcs=%d | pos x=%.0fm y=%.0fm"), NumNodes, NumNpcs, Location.X, Location.Y),
+		FString::Printf(TEXT("on this client: nodes=%d npcs=%d players=%d | pos x=%.0fm y=%.0fm"), NumNodes, NumNpcs, NumPlayers, Location.X, Location.Y),
 	};
 }
 

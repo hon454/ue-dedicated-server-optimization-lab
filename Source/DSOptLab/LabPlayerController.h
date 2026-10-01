@@ -53,8 +53,8 @@ private:
 
 	void TickAutoMove(APawn& ControlledPawn);
 
-	/** 라벨, 자리와 역할, 시작 신호 후 경과 시간, 이 클라이언트에 존재하는 노드와 NPC 수, 폰 위치로 화면 글자를 만들고,
-	 *  내려다보기 화면에서는 노드와 NPC 위치에 점을 그린다. */
+	/** 라벨, 자리와 역할, 시작 신호 후 경과 시간, 이 클라이언트에 존재하는 노드와 NPC와 플레이어 수, 폰 위치로 화면 글자를 만들고,
+	 *  내려다보기 화면에서는 노드와 NPC와 플레이어 위치에 점을 그린다. */
 	void TickOverlay(const APawn& ControlledPawn);
 
 	void TickTopDown(const APawn& ControlledPawn);
