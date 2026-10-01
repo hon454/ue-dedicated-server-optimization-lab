@@ -15,6 +15,7 @@ class DSOPTLAB_API ALabResourceNode : public AActor
 public:
 	ALabResourceNode();
 
+	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** 서버 전용. 체력을 1 줄이고, 0이 되면 고갈시킨다. */

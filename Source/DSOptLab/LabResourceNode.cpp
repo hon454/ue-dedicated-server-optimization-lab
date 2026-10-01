@@ -2,6 +2,8 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "LabVisual.h"
+#include "Materials/MaterialInterface.h"
 #include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
@@ -23,6 +25,16 @@ ALabResourceNode::ALabResourceNode()
 	if (MeshFinder.Succeeded())
 	{
 		Mesh->SetStaticMesh(MeshFinder.Object);
+	}
+}
+
+void ALabResourceNode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UMaterialInterface* Material = LabVisual::GetSharedMaterial(LabVisual::NodeColor))
+	{
+		Mesh->SetMaterial(0, Material);
 	}
 }
 

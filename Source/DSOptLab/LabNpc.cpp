@@ -2,6 +2,8 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "LabVisual.h"
+#include "Materials/MaterialInterface.h"
 #include "UObject/ConstructorHelpers.h"
 
 ALabNpc::ALabNpc()
@@ -30,6 +32,11 @@ ALabNpc::ALabNpc()
 void ALabNpc::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (UMaterialInterface* Material = LabVisual::GetSharedMaterial(LabVisual::NpcColor))
+	{
+		Mesh->SetMaterial(0, Material);
+	}
 
 	if (HasAuthority())
 	{
