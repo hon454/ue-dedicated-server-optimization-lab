@@ -167,15 +167,52 @@ CSV `frames`(302, 292, 334)는 세 실행 모두 `WorldTick` Count와 같다. `c
 
 에이전트가 Insights 창(3000×2080)을 그대로 캡처했다. 포스팅에 넣을 것은 사용자가 고르거나 직접 찍는다. 모두 `images/`에 있다.
 
-| 파일 | 내용 |
-| --- | --- |
-| [insights-r1-timers.png](images/insights-r1-timers.png) | `r1` 측정 구간 선택, Timers 패널, `WorldTick`의 Callees(`GameNetDriver` 95.17%, `LabResourceNode` 52.14%) |
-| [insights-r1-frames.png](images/insights-r1-frames.png) | `r1` 타임라인을 프레임 11개가 보이게 확대. 모든 프레임이 같은 모양이고 `GameNetDriver` 툴팁(Exclusive 37.34%) |
-| [insights-r1-one-frame.png](images/insights-r1-one-frame.png) | `r1` 프레임 하나를 확대. `GameNetDriver` 아래 덩어리 8개와 그 사이의 빈 구간 |
-| [insights-r1-net-stats.png](images/insights-r1-net-stats.png) | `r1` `Connection 0` `Outgoing` 측정 구간 1,801패킷 선택과 Net Stats(`LabNpc` 10,090,719비트) |
-| [insights-r1-packet.png](images/insights-r1-packet.png) | `r1` 패킷 3,710 하나의 내용. 액터 번치 55개가 모두 `LabNpc` |
-| [insights-r2-timers.png](images/insights-r2-timers.png) | `r2` 측정 구간의 Timers와 Callees |
-| [insights-r3-timers.png](images/insights-r3-timers.png) | `r3` 측정 구간의 Timers와 Callees |
-| [insights-r3-net-stats.png](images/insights-r3-net-stats.png) | `r3` `Connection 0` `Outgoing` 측정 구간 2,002패킷 선택과 Net Stats |
+### `insights-r1-timers.png`
+
+`r1` 측정 구간 선택, Timers 패널, `WorldTick`의 Callees(`GameNetDriver` 95.17%, `LabResourceNode` 52.14%). 1절의 근거다.
+
+![r1 측정 구간의 Timers와 WorldTick Callees](images/insights-r1-timers.png)
+
+### `insights-r1-frames.png`
+
+`r1` 타임라인을 프레임 11개가 보이게 확대한 화면. 모든 프레임이 같은 모양이고, `GameNetDriver` 툴팁(Exclusive 37.34%)이 떠 있다. 1절의 근거다.
+
+![r1 타임라인을 프레임 11개가 보이게 확대한 화면](images/insights-r1-frames.png)
+
+### `insights-r1-one-frame.png`
+
+`r1` 프레임 하나를 확대한 화면. `GameNetDriver` 아래 덩어리 8개와 그 사이의 빈 구간이 보인다. 2절의 근거다.
+
+![r1 프레임 하나의 GameNetDriver 아래 덩어리 8개](images/insights-r1-one-frame.png)
+
+### `insights-r1-net-stats.png`
+
+`r1` `Connection 0` `Outgoing`에서 측정 구간 1,801패킷을 선택한 화면과 Net Stats(`LabNpc` 10,090,719비트). 3절의 근거다.
+
+![r1 Connection 0 Outgoing 측정 구간의 Net Stats](images/insights-r1-net-stats.png)
+
+### `insights-r1-packet.png`
+
+`r1` 패킷 3,710 하나의 내용. 액터 번치 55개가 모두 `LabNpc`다. 3절의 근거다.
+
+![r1 패킷 3,710의 내용](images/insights-r1-packet.png)
+
+### `insights-r2-timers.png`
+
+`r2` 측정 구간의 Timers와 Callees. 1절과 4절의 근거다.
+
+![r2 측정 구간의 Timers와 WorldTick Callees](images/insights-r2-timers.png)
+
+### `insights-r3-timers.png`
+
+`r3` 측정 구간의 Timers와 Callees. 1절과 4절의 근거다.
+
+![r3 측정 구간의 Timers와 WorldTick Callees](images/insights-r3-timers.png)
+
+### `insights-r3-net-stats.png`
+
+`r3` `Connection 0` `Outgoing`에서 측정 구간 2,002패킷을 선택한 화면과 Net Stats. 3절의 근거다.
+
+![r3 Connection 0 Outgoing 측정 구간의 Net Stats](images/insights-r3-net-stats.png)
 
 구현 계획 "시각 자료 규칙"의 포스팅용 이름(`timing.png`, `network.png`)으로는 아직 복사하지 않았다. 사용자가 고른 뒤에 정한다.
