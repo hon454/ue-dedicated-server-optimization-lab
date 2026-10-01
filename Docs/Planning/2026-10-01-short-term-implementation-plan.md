@@ -4,7 +4,7 @@
 
 **목표:** 언리얼 엔진 5.8.3 Dedicated Server에서 레거시 리플리케이션 최적화를 기법 하나당 포스팅 하나로 보여주는 레포를 5일 안에 완성한다.
 
-**구조:** TPP 템플릿 프로젝트에 C++ 클래스 여섯 개를 추가한다. 서버가 시작할 때 자원 노드와 AI NPC를 고정 시드로 생성하고, 모든 클라이언트가 준비되면 공통 시작 신호를 보낸다. 측정 서브시스템이 수치를 CSV로 남긴 뒤 서버를 종료한다. PowerShell 스크립트 하나가 서버와 클라이언트 전부를 띄우고 정리한다.
+**구조:** TPP 템플릿 프로젝트에 C++ 클래스 여섯 개를 추가한다(템플릿의 캐릭터 클래스는 `ALabCharacter`로 이름만 바꿔 남겼다). 서버가 시작할 때 자원 노드와 AI NPC를 고정 시드로 생성하고, 모든 클라이언트가 준비되면 공통 시작 신호를 보낸다. 측정 서브시스템이 수치를 CSV로 남긴 뒤 서버를 종료한다. PowerShell 스크립트 하나가 서버와 클라이언트 전부를 띄우고 정리한다.
 
 **기술:** Unreal Engine 5.8.3 소스 빌드, C++, PowerShell, Unreal Insights, Git LFS
 
@@ -41,7 +41,7 @@
 | 연결당 송신 대역폭 | 측정 구간의 연결당 초당 송신 바이트 | CSV와 Network Insights | 둘 다 |
 | 연결당 열린 액터 채널 수 | 연결 하나에 열려 있는 액터 채널 수. 휴면 액터는 채널이 닫히므로 "클라이언트에 존재하는 액터 수"와 다르다 | CSV | 둘 다 |
 | 클라이언트에 존재하는 액터 수 | 클라이언트 화면 위 글자의 노드 수와 NPC 수 | 스크린샷 | 포스팅 |
-| `saturated_ratio` | 프레임 끝에 송신 한도에 걸려 있던 연결의 비율(측정 구간 평균). 근사 지표다 | CSV | `Docs/STATUS.md`, 해석의 전제 |
+| `saturated_ratio` | 측정 구간에 모든 연결에서 송신 한도 때문에 중간에 끊긴 리플리케이션 횟수 ÷ 리플리케이션 시도 횟수. 엔진이 `ServerReplicateActors`에서 연결마다 남기는 기록(`UNetConnection::GetSaturationAnalytics`)의 차다. 2026-10-01에 정의를 바꿨다. 그 전의 `smoke` 행은 프레임 끝의 `IsNetReady()`로 잰 값이다 | CSV | `Docs/STATUS.md`, 해석의 전제 |
 
 `Docs/STATUS.md`의 측정 결과 표에는 CSV 값을 CSV 열 이름 그대로 적는다. 포스팅과 README의 표에는 사람이 Insights에서 읽은 값을 쓴다. 서버는 측정 구간의 시작과 끝에 `Lab_MeasureStart`, `Lab_MeasureEnd` 북마크를 트레이스에 남기므로, Insights에서 이 두 북마크 사이를 본다.
 
@@ -105,6 +105,7 @@ xychart-beta
 | `Source/DSOptLab/LabGameMode.h/.cpp` | 월드 생성(노드, NPC), 공통 시작 신호, 플레이어 배치 |
 | `Source/DSOptLab/LabPlayerController.h/.cpp` | 준비 보고, 자동 이동, 자동 채집, 채집 RPC, 화면 표시와 자동 스크린샷 |
 | `Source/DSOptLab/LabMetricsSubsystem.h/.cpp` | 서버 측정. 준비와 측정 구간을 관리하고 CSV를 남긴 뒤 서버를 종료한다. 연결이 바뀌면 실패로 끝낸다 |
+| `Source/DSOptLab/LabCharacter.h/.cpp` | 템플릿의 캐릭터 클래스. 이름만 바꿨다. `BP_ThirdPersonCharacter`의 부모다 |
 | `Scripts/common.ps1` | 다른 스크립트가 불러 쓴다. `.uproject`의 `EngineAssociation`을 레지스트리에서 찾아 엔진 경로를 정한다 |
 | `Scripts/build.ps1` | 에디터 타깃 빌드 |
 | `Scripts/run-scenario.ps1` | 측정 실행. 서버와 클라이언트를 서로 다른 코어에 배정해 띄우고, 실패를 검출하고, 정리한다 |
@@ -385,6 +386,11 @@ git commit -m "Add server metrics subsystem with start signal, failure handling,
 | 서버 종료 코드가 0이 아닌데 CSV 행은 있음 | 서버 로그 끝에서 종료 과정의 오류를 찾는다. 에디터 빌드 실행 파일이 종료 시 다른 코드를 돌려주는 것이 원인이면, 종료 코드 검사를 서버 로그의 `Run failed` 문자열 검사로 바꾼다. |
 | 로그 파일 이름이 다름 | `-LOG=` 인자가 5.8.3에서 다르게 동작하면 `Saved/Logs/`의 실제 파일 이름을 쓴다. |
 | 프로세스 선호도 설정에서 오류 | 프로세스가 이미 종료된 것이다. 해당 프로세스의 로그를 본다. |
+| `RESTART: clientN exited before the start signal` | 시작 신호 전에 클라이언트가 죽어 스크립트가 다시 띄운 것이다. 실행은 유효하다. 다시 띄운 횟수를 `Docs/STATUS.md`에 적는다. 원인은 `Saved/Logs/`의 해당 클라이언트 백업 로그에서 본다 |
+| `FAIL: UnrealEditor is already running` | 에디터나 이전 실행의 프로세스가 남아 있다. 닫고 다시 실행한다 |
+| `FAIL: label ... was already used` | 실패한 실행의 로그나 트레이스가 남아 있는 라벨이다. 새 라벨을 쓴다 |
+| `FAIL: processor affinity was re-applied ... after measuring started` | 측정 중에 코어 고정이 풀렸던 실행이다. 새 라벨로 다시 실행한다. 반복되면 `-Warmup`을 늘릴지 사용자에게 묻는다 |
+| `FAIL: trace file is missing or empty` | 서버 로그의 `LogTrace` 줄을 본다 |
 
 - [x] **7.4 서버 로그에서 전제를 확인한다.** `Saved/Logs/server-smoke1-r1.log`에서 다음을 찾아 `Docs/Planning/engine-notes.md`에 적는다.
   - 태스크 2.5에서 정한 방법으로, 레거시 리플리케이션이 쓰이고 있는가.
@@ -437,24 +443,41 @@ git commit -m "Add scenario runner with core pinning and failure detection, and 
 Get-Process UnrealEditor | Select-Object Id, @{n='RAM_GB';e={[math]::Round($_.WorkingSet64/1GB,1)}}
 ```
 
+UE 프로세스의 합계만으로는 부족하다. 다른 프로그램이 메모리를 많이 쓰고 있으면 합계가 51GB보다 훨씬 작아도 모자란다(2026-10-01 점검 때 UE 없이 사용 가능 23.7GB, 커밋 56.0GB였다). 실행 **전**과 실행 중에 시스템의 사용 가능 메모리와 커밋도 본다. 실행 중 사용 가능 메모리가 4GB 아래로 내려가면 그 실행의 수치는 쓰지 않고, 다른 프로그램을 닫은 뒤 새 라벨로 다시 실행한다. GPU 메모리와 사용률도 함께 적는다(클라이언트 8개가 VRAM 24GB를 나눠 쓴다).
+
+```powershell
+"Available GB: {0:N1}" -f ((Get-Counter '\Memory\Available MBytes').CounterSamples[0].CookedValue / 1024)
+"Committed GB: {0:N1}" -f ((Get-Counter '\Memory\Committed Bytes').CounterSamples[0].CookedValue / 1GB)
+nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv
+```
+
+에이전트가 실행 중에 이 명령을 돌리려면 시나리오를 백그라운드로 실행한다.
+
 - [ ] **8.3 초기 전송이 준비 구간 안에 끝나는지 확인한다.** `Saved/Logs/server-calib-a-r1.log`에서 `LogLabMetrics`의 5초 간격 줄을 본다. `open_actor_channels_per_conn`이 측정 시작(`Measuring` 줄) 전에 노드 수 + NPC 수 + 플레이어 수 근처에 도달해 더 늘지 않아야 한다. 측정 중에도 늘고 있으면 `-Warmup`을 늘려 새 라벨로 다시 실행한다. 채널 수가 어느 값에서 멈춰 올라가지 않으면 태스크 2.5에서 확인한 채널 수 상한과 비교한다.
 
-- [ ] **8.4 기준선의 조건을 확인한다.** 아래 세 가지를 각각 판단해 `Docs/STATUS.md`에 적는다.
+- [ ] **8.4 기준선의 조건을 확인한다.** 아래 세 가지를 **표의 순서대로** 판단해 `Docs/STATUS.md`에 적는다. 네 번째 조건(가장 큰 비용이 네트워크)은 8.5에서 사람이 Insights로 판단한다.
 
-| 조건 | 판단 방법 |
-| --- | --- |
-| 초기 전송 완료 | 8.3을 통과했는가 |
-| 지속적인 예산 초과 | `over_budget_frames`가 `frames`의 절반 이상인가. 한두 프레임의 튐으로 P99만 넘는 것은 해당하지 않는다 |
-| 송신 한도 포화 | `saturated_ratio`가 0.1 이상이거나, `out_bytes_per_sec_per_conn`이 `net_speed`에 붙어 있는가 |
+| 순서 | 조건 | 판단 방법 |
+| --- | --- | --- |
+| 1 | 초기 전송 완료 | 8.3을 통과했는가 |
+| 2 | 송신 한도 포화 | `saturated_ratio`가 0.01 이상인가. 서버 로그의 5초 간격 줄에서 `saturated_replications`의 앞 숫자가 측정 구간에도 계속 늘고 있으면 포화다 |
+| 3 | 지속적인 예산 초과 | `over_budget_frames`가 `frames`의 절반 이상인가. 한두 프레임의 튐으로 P99만 넘는 것은 해당하지 않는다. **포화가 없는 실행에서만 판단한다** |
 
-예산 초과가 지속적이지 않으면 노드 수를 두 배씩 늘려(`-Nodes 10000`, `-Nodes 20000`) `calib-b`, `calib-c`로 다시 실행하고 같은 표를 다시 판단한다.
+순서의 이유(2026-10-01): 포화 상태에서는 서버가 한도에 걸린 연결의 리플리케이션을 중간에 끊어 `work`가 작게 나온다. 그 상태에서 예산 초과를 판단해 노드를 늘리면 규모를 잘못 키운다. 그래서 포화면 먼저 8.4a의 1~2단계로 한도를 올리고, 포화가 없는 실행에서 예산 초과를 판단한다.
+
+포화가 없는 실행에서 예산 초과가 지속적이지 않으면 노드 수를 두 배씩 늘려(`-Nodes 10000`, `-Nodes 20000`) 새 라벨로 다시 실행하고 같은 표를 다시 판단한다. 노드 수를 바꾸면 NPC의 배치도 달라진다(같은 난수열을 쓴다).
 
 - [ ] **8.4a 포화 상태면 송신 한도를 올린다.** 사용자가 미리 정한 방침이므로 다시 묻지 않고 진행한다. 이 시리즈는 서버 처리 비용의 전후 비교를 보여주려는 것인데, 포화 상태에서는 서버가 한도에 걸린 연결의 리플리케이션을 미뤄서 기준선의 비용이 실제보다 작게 나오기 때문이다. 네트워크가 루프백이라 한도를 올려도 부작용이 없다.
   1. 태스크 2.5에서 찾은 설정 키 세 개(`[/Script/Engine.Player] ConfiguredInternetSpeed`, `[/Script/OnlineSubsystemUtils.IpNetDriver] MaxClientRate`와 `MaxInternetClientRate`)로 `Config/`의 프로젝트 설정에서 연결당 송신 한도를 충분히 큰 값(초당 10,000,000바이트)으로 올린다. 엔진 설정 파일은 고치지 않는다.
-  2. 새 라벨로 한 번 실행해 `saturated_ratio`가 0에 가깝고 서버 로그의 `net_speed`가 올린 값인지 확인한다. `net_speed`가 그대로면 다른 설정 키나 클라이언트 쪽 설정이 한도를 정하고 있는 것이므로 태스크 2.5의 확인 결과로 돌아간다.
-  3. 그 실행의 `out_bytes_per_sec_per_conn`을 읽고, 한도를 그 값의 약 두 배(올림해서 깔끔한 수)로 고정한다. 근거: 기준선의 실제 송신량에 여유를 두되, 한도가 없는 것과 같은 값은 피한다.
-  4. 고정한 값으로 다시 실행해 `saturated_ratio`가 0에 가까운지 확인하고, 8.3과 8.4를 다시 판단한다.
-  5. 바꾼 설정 키, 엔진 기본값, 고정한 값, 실측 송신량을 `Docs/STATUS.md`의 "확정할 값"과 "기준선 조건"에 적는다. 포스팅 0에 "측정 조건으로 송신 한도를 올렸다"는 사실과 이유를 적는다.
+  2. 새 라벨로 한 번 실행해 `saturated_ratio`가 0이고 서버 로그의 `net_speed`가 올린 값인지 확인한다. `net_speed`가 그대로면 다른 설정 키나 클라이언트 쪽 설정이 한도를 정하고 있는 것이므로 태스크 2.5의 확인 결과로 돌아간다.
+  3. **한도를 10,000,000으로 둔 채 8.4의 예산 초과 판단과 노드 증설을 끝내 규모를 먼저 정한다.** 한도의 고정은 규모가 정해진 뒤에 한 번만 한다. 노드 수가 바뀌면 송신량도 바뀌기 때문이다.
+  4. 규모가 정해진 실행의 `out_bytes_per_sec_per_conn`과 `frames`를 읽어 30Hz 환산 송신량을 계산하고, 한도를 그 값의 약 두 배(올림해서 깔끔한 수)로 고정한다.
+     - 환산 송신량 = `out_bytes_per_sec_per_conn` × 30 ÷ (`frames` ÷ 측정 초).
+     - 환산하는 이유(2026-10-01): 기준선은 틱 예산을 넘겨 30Hz를 지키지 못하므로 움직이는 액터의 송신량이 그만큼 작게 실측된다. 최적화로 30Hz가 돌아오면 송신량이 늘어 실측의 두 배를 넘을 수 있다. 측정 도중에 한도를 다시 바꾸면 그 전 구성과 조건이 달라져 기준선부터 다시 재야 한다.
+     - 변하지 않는 노드는 틱이 올라가도 바이트가 거의 늘지 않으므로 환산값은 실제보다 클 수 있다. 한도가 넉넉해지는 쪽이라 포화를 피한다는 목적에는 안전하다.
+     - 두 배의 근거: 송신량에 여유를 두되, 한도가 없는 것과 같은 값은 피한다.
+  5. 고정한 값으로 다시 실행해 `saturated_ratio`가 0인지 확인하고, 8.3과 8.4를 다시 판단한다.
+  6. 바꾼 설정 키, 엔진 기본값, 실측 송신량, 실제 틱(`frames` ÷ 측정 초), 환산 송신량, 고정한 값을 `Docs/STATUS.md`의 "확정할 값"과 "기준선 조건"에 적는다. 포스팅 0에 "측정 조건으로 송신 한도를 올렸다"는 사실과 이유, 환산식을 적는다.
 
   사전 추정: 기준선에서 연결당 약 135~180KB/s가 필요하다. NPC 300명 × 초당 30회 × 한 번에 15~20바이트로 계산한 값이며 실측 전의 추정이다. 실측값이 크게 다르면 그 사실을 포스팅 0에 적는다.
 
@@ -486,55 +509,13 @@ git commit -m "Fix scenario scale and baseline conditions after calibration"
 
 **파일:** 생성 `README.md`, `Posts/00-testbed/README.md`
 
-- [ ] **9.1 `README.md`를 만든다.** 꺾쇠 안의 값은 `Docs/STATUS.md`의 확정값으로 채운다.
-
-````markdown
-# UE Dedicated Server Lab
-
-언리얼 엔진 5.8.3 Dedicated Server에서 네트워크와 서버 부하를 Unreal Insights로 찾고, 최적화 기법을 하나씩 적용하며 측정한 기록입니다.
-
-아주 단순한 오픈월드 서바이벌 환경(플레이어 <확정 클라이언트 수>명, 자원 노드 <확정 노드 수>개, AI NPC <확정 NPC 수>명)을 최적화가 전혀 없는 상태에서 시작해, 포스팅 하나에 기법 하나씩 적용합니다.
-
-## 포스팅
-
-| # | 제목 | 상태 |
-| --- | --- | --- |
-| 0 | [테스트베드와 측정 방법](Posts/00-testbed/README.md) | 완료 |
-| 1 | 무법지대 측정 | 예정 |
-| 2 | 관련성과 컬 거리 | 예정 |
-| 3 | 자원 노드 휴면 | 예정 |
-| 4 | AI NPC 업데이트 빈도 | 예정 |
-
-## 누적 수치
-
-구성마다 3회 실행한 중앙값입니다. 측정 방법은 [포스팅 0](Posts/00-testbed/README.md)에 있습니다.
-
-| 구성 | 서버 프레임 시간 평균 | 서버 프레임 시간 P99 | 리플리케이션 시간 | 연결당 송신 대역폭 | 연결당 열린 액터 채널 수 |
-| --- | --- | --- | --- | --- | --- |
-
-시간은 Unreal Insights에서 읽은 값입니다. 리플리케이션 시간은 `<Docs/STATUS.md에 적은 타이머 이름>` 타이머의 프레임당 시간입니다.
-
-## 측정의 한계
-
-- 에디터 빌드 실행 파일을 쿠킹 없이 사용했습니다. 절대 수치는 출시 빌드와 다릅니다.
-- 서버와 클라이언트가 같은 PC에서 돕니다. 서로 다른 물리 코어에 고정했지만 캐시와 메모리 경합은 남습니다. 네트워크는 루프백입니다.
-- 기준선은 엔진의 기본 관련성 판정을 의도적으로 끈 인위적인 출발점입니다.
-- AI NPC는 움직이는 리플리케이트 액터의 대역이고, 길 찾기 같은 AI 비용은 없습니다.
-- 수치는 같은 조건의 전후 비교로만 해석해 주세요.
-
-## 실행 방법
-
-1. 언리얼 엔진 5.8.3 소스 빌드가 필요합니다.
-2. `DSOptLab.uproject`를 우클릭해 "Switch Unreal Engine version"으로 그 엔진을 고릅니다. 스크립트는 여기서 고른 엔진을 씁니다.
-3. 빌드: `powershell -ExecutionPolicy Bypass -File Scripts/build.ps1`
-4. 시나리오 실행: `<Docs/STATUS.md의 확정 시나리오 명령>`
-
-각 포스팅 시점의 코드는 `post-NN-이름` 태그로 볼 수 있습니다.
-
-## 환경
-
-[PC 사양](Docs/Planning/pc-specs.md)
-````
+- [ ] **9.1 `README.md`를 확정값으로 갱신한다.** README는 2026-10-01에 먼저 만들었다(소개, 포스팅 표, 진행 방식, 테스트베드, 누적 수치, 한계, 실행 방법, 레포 구조, 다음 주제). 규모가 "보정 전의 출발값"으로 적혀 있고 스크린샷이 작은 규모 실행의 것이다. 다음을 `Docs/STATUS.md`의 확정값으로 바꾼다.
+  - "테스트베드 한눈에 보기"의 규모 문단과 준비 구간 길이, 스크린샷 설명.
+  - "실행 방법"의 시나리오 명령(확정 규모의 명령을 더한다).
+  - "지표"의 리플리케이션 시간 타이머 이름.
+  - "측정의 한계"의 송신 한도 문장(올렸다면 올린 값과 이유).
+  - 포스팅 표의 0번을 링크와 "완료"로.
+  - README처럼 밖에 보이는 문서에는 "1일차", "2일차" 같은 일정 표현을 쓰지 않는다(2026-10-01 사용자 지시). 포스팅도 같다.
 
 - [ ] **9.2 `Posts/00-testbed/README.md`를 쓴다.** 포스팅 0은 기법을 적용하지 않으므로 설계 문서 7절의 틀 대신 아래 구성을 쓴다. 에이전트가 전부 초안을 쓰고, 사람이 스크린샷을 넣고 다듬는다.
 
@@ -552,7 +533,7 @@ git commit -m "Fix scenario scale and baseline conditions after calibration"
 
 모든 수치에 근거를 적는다(`AGENTS.md` 규칙).
 
-- [ ] **9.3 자동 스크린샷을 넣는다.** 태스크 8의 확정 규모 실행에서 나온 3인칭 화면 한 장과 내려다보기 화면 한 장을 골라 `Posts/00-testbed/images/`에 `tpp.png`, `topdown.png`로 복사하고 본문에 넣는다. 내려다보기 화면에는 점 색의 의미를 설명하는 캡션을 단다.
+- [ ] **9.3 자동 스크린샷을 넣는다.** `Posts/00-testbed/images/`에는 README용으로 `smoke8-r1`의 `tpp.png`, `topdown.png`가 이미 있다. 아래의 확정 규모 이미지로 덮어쓴다. 태스크 8의 확정 규모 실행에서 나온 3인칭 화면 한 장과 내려다보기 화면 한 장을 골라 `Posts/00-testbed/images/`에 `tpp.png`, `topdown.png`로 복사하고 본문에 넣는다. 내려다보기 화면에는 점 색의 의미를 설명하는 캡션을 단다.
 
 - [ ] **9.4 [사람] 나머지 시각 자료를 넣는다.** 8개 창이 떠 있는 전체 화면(`all-clients.png`), Timing Insights 한 장, Network Insights 한 장, 클라이언트가 걷는 10초 영상 하나를 `Posts/00-testbed/images/`에 넣는다. 에이전트가 본문의 자리 표시를 이미지 링크로 바꾼다.
 
@@ -564,7 +545,7 @@ git commit -m "Add README hub and post 0: testbed and measurement method"
 git tag post-00-testbed
 ```
 
-- [ ] **9.6 [사람] GitHub에 올린다.** 원격 저장소를 만들고 `git push -u origin main --tags`를 실행한다.
+- [ ] **9.6 [사람] GitHub에 올린다.** 원격 저장소(`origin`)는 이미 있다. `git push origin main --tags`를 실행한다.
 
 ---
 
@@ -638,7 +619,7 @@ git tag post-01-baseline
 - **11.4 직전 구성과 비교해 `Docs/STATUS.md`의 "측정 결과"에 적는다.** 세 실행의 값, 중앙값, 변동 폭, 직전 구성 대비 변화를 적는다. 판단 규칙은 다음과 같다.
   - 중앙값의 변화가 두 구성의 변동 폭 중 큰 쪽보다 크면 차이가 있다고 적는다.
   - 그보다 작으면 "이 측정으로는 차이를 구별하지 못했다"고 적고, 직전 구성과 이번 구성을 각각 3회씩 새 라벨로 한 번 더 측정한다. 그래도 구별되지 않으면 그대로 결과로 삼는다.
-  - 수치가 나빠졌거나 예상과 다른 방향이면 원인을 추측해 고치지 말고 그대로 사람에게 보고한다. `saturated_ratio`가 0에 가깝지 않으면 그 구성이 송신 한도에 걸린 것이므로 함께 보고한다. 효과가 없었다는 결과도 포스팅 내용이다.
+  - 수치가 나빠졌거나 예상과 다른 방향이면 원인을 추측해 고치지 말고 그대로 사람에게 보고한다. `saturated_ratio`가 0.01 이상이면 그 구성이 송신 한도에 걸린 것이므로 함께 보고한다. 효과가 없었다는 결과도 포스팅 내용이다.
 
 - **11.5 자동 시각 자료를 모은다.** "시각 자료 규칙"에 따라 이번 실행의 자동 스크린샷을 `after-tpp.png`, `after-topdown.png`로, 직전 구성 실행의 같은 순번 스크린샷을 `before-tpp.png`, `before-topdown.png`로 `Posts/NN-이름/images/`에 복사한다. 이미지를 직접 열어, 화면 위 글자의 노드 수와 NPC 수가 "기법별 코드"의 해당 항목에 적힌 예상과 맞는지 확인한다. 기법마다 예상이 다르다. 화면의 액터 수와 CSV의 열린 채널 수는 서로 다른 수치라서 같은 방향으로 움직이지 않을 수 있다.
 

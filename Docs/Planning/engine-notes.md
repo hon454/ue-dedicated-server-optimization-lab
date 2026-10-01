@@ -139,10 +139,46 @@
 
 - **내려다보기 뷰 타깃이 폰으로 되돌아간다.** 클라이언트에서만 `SetViewTarget`을 부르면 서버의 `ClientSetViewTarget`이 폰으로 되돌린다(`PlayerController.cpp:2832-2848`). 클라이언트의 `PlayerCameraManager->bClientSimulatingViewTarget = true`로 막고, `bAutoManageActiveCameraTarget = false`로 두고, 매 틱 뷰 타깃을 확인한다. `smoke2`의 내려다보기 스크린샷은 3인칭 화면이었고 `smoke3`부터 내려다보기 화면이다.
 - **프로세스 선호도가 시작 중에 되돌아간다.** 실행 직후 설정한 선호도가 측정 구간에는 전체 코어(4294967295)로 돌아가 있었다(`smoke1`, `smoke3`에서 관찰). 엔진 소스에서 `SetProcessAffinityMask`를 부르는 곳은 `-processaffinity` 인자를 줄 때뿐이라(`WindowsPlatformProcess.cpp:184`, `LaunchWindows.cpp:223-232`) 원인은 찾지 못했다. 시작이 끝난 뒤에 설정하면 유지되므로, 스크립트가 서버를 기다리는 동안 2초마다 다시 읽어 달라져 있으면 다시 설정한다. `smoke4`에서 마지막 재설정은 측정 시작 약 20초 전이었다.
-- **클라이언트가 시작 직후 엔진 내부 단언으로 죽을 수 있다.** `smoke1`에서 0번 클라이언트가 첫 프레임 전에 `Assertion failed: RefCount.load(std::memory_order_relaxed) == 0`(`Engine/Source/Runtime/Core/Private/Async/InheritedContext.cpp:130`, DDC IO 스레드)로 종료했다. 이 프로젝트의 코드가 실행되기 전이다. 네 번 실행 중 한 번 일어났다. 스크립트는 클라이언트가 서버보다 먼저 끝나면 바로 실패로 처리하므로, 같은 일이 생기면 새 라벨로 다시 실행한다.
+- **클라이언트가 시작 직후 엔진 내부 단언으로 죽을 수 있다.** `smoke1`에서 0번 클라이언트가 첫 프레임 전에 `Assertion failed: RefCount.load(std::memory_order_relaxed) == 0`(`Engine/Source/Runtime/Core/Private/Async/InheritedContext.cpp:130`, DDC IO 스레드)로 종료했다. 이 프로젝트의 코드가 실행되기 전이다. 네 번 실행 중 한 번 일어났다. 콜스택은 `DDC IO ThreadPool #1` 스레드의 `FMemoryCacheStore::Get` 아래 mimalloc이고 `HttpConnectionPool` 스레드도 함께 죽었다(`Saved/Logs/client0-smoke1-r1.log:1461-1509`). 130줄은 참조 중인 확장 데이터를 해제할 때 걸리는 검사라 DDC 요청 경로의 수명 경합으로 보이지만 추정이다. 크래시 뒤 2.2초 만에 프로세스가 끝났다. 지금까지 약 27번의 프로세스 실행 중 1번이다(`smoke1`~`smoke7`과 수동 실행). 스크립트는 시작 신호 전에 죽은 클라이언트를 같은 인자로 다시 띄우고(실행당 최대 3번), 시작 신호 뒤에 죽으면 실패로 처리한다. 다시 띄우는 경로는 아직 실행으로 확인하지 않았다.
 - **`-server`, `-game` 실행에서 Python 시작 스크립트가 오류를 낸다.** `DSOptLab.uproject`가 켠 `AllToolsets`(에디터 전용 실험 플러그인 묶음)의 `Content/Python/init_unreal.py`가 시작할 때 실행되는데, 이 스크립트들이 쓰는 `unreal.ToolsetDefinition`, `unreal.AgentSkill`, `unreal.PythonTestRunner`는 `ToolsetRegistry` 모듈(`ToolsetRegistry.uplugin`, `Type: Editor`)에 있어 `-server`, `-game`에서는 로드되지 않는다. 그래서 실행마다 `LogPython: Error`가 58줄 남았다(`smoke5`, `smoke6`의 서버와 클라이언트 로그). 오류는 시작할 때만 나고 이 프로젝트의 코드와는 관계없다. 이 프로젝트는 Python을 쓰지 않는다(`Source`, `Config`, `Content`에 Python 관련 내용 없음). 사용자가 `AllToolsets`와 `ModelContextProtocol`을 에디터에서 쓰고 있어(2026-10-01 사용자 확인) `.uproject`는 그대로 두고, 실행 스크립트의 서버와 클라이언트 인자에 `-DisablePython`(`PythonScriptPlugin.cpp:116`, `IsPythonEnabled`)을 넣었다. `smoke7`에서 세 로그 모두 `LogPython: Error`가 0줄이다. 스크립트를 거치지 않고 `UnrealEditor.exe -server`를 직접 띄우면 같은 오류가 다시 난다.
   - **`.uproject`에서 에디터 전용으로 제한해도 소용없다.** 플러그인 참조의 `TargetAllowList`는 빌드 타깃 종류로 거른다(`PluginReferenceDescriptor.cpp:63-84`, `IsEnabledForTarget`). 이 프로젝트는 `-server`, `-game`도 `UnrealEditor.exe`로 실행하므로 타깃은 항상 `Editor`라 걸러지지 않는다. 실행 모드로 거르는 것은 모듈 단위의 `Type: Editor`이고(`ModuleDescriptor.cpp:723-732`, `GIsEditor`일 때만 로드), 두 플러그인의 에디터 모듈은 이미 그렇게 되어 있다. MCP HTTP 서버를 자동으로 여는 코드도 에디터 모듈(`ModelContextProtocolEditor.cpp:64-68`)에 있어 서버와 클라이언트에서는 포트를 열지 않는다(`smoke7` 로그에 MCP 수신 대기 줄 없음). 새던 것은 플러그인 `Content/Python`의 시작 스크립트뿐이고, 이것은 `-DisablePython`이 막는다.
   - **측정 조건이 바뀐 것이다.** Python이 켜져 있으면 플러그인이 코어 티커를 등록해 매 프레임 `Tick`을 부른다(`PythonScriptPlugin.cpp:1376-1379`). 끄면 서버 프레임에서 이 비용이 빠진다. `smoke7-r1`의 `work_avg_ms` 2.741은 `smoke2`~`smoke5`의 범위(2.581~2.787) 안이라 이 규모에서는 차이가 보이지 않았다. 기준선(태스크 8) 전에 바꿨으므로 비교가 어긋나지 않는다. 앞으로의 측정은 모두 `-DisablePython`이 들어간 `run-scenario.ps1`로만 실행한다. `smoke6`까지의 실행은 Python이 켜진 조건이다. 클라이언트 로그 끝의 `LogNet: Error: ... Host closed the connection.`은 측정이 끝나 서버가 종료하면서 남는 것이다.
+
+## 바. 2일차 시작 전 점검에서 확인한 것 (2026-10-01)
+
+### 포화를 판정하는 시점
+
+- `ServerReplicateActors`는 연결의 `IsNetReady()`가 거짓이 되는 즉시 그 연결의 리플리케이션을 멈춘다(`NetDriver.cpp:5695, 5868`). 연결마다 "포화로 끊겼는가"를 `Connection->TrackReplicationForAnalytics(bWasSaturated)`로 기록한다(`NetDriver.cpp:6022-6023`).
+- 그 뒤 `UNetConnection::Tick`이 `QueuedBits`에서 이번 프레임의 예산(`CurrentNetSpeed × 경과 시간 × 8`)을 빼고, 아래로는 예산의 두 배까지만 내려가게 자른다(`NetConnection.cpp:5112-5145`). 엔진 자신의 프레임 단위 포화 기록 `SaturationAnalytics.TrackFrame(!IsNetReady())`는 이 감산 **앞**에 있다(`NetConnection.cpp:5110`).
+- 그래서 `OnEndFrame`에서 읽은 `IsNetReady()`는 지속적인 포화에서도 거의 항상 참이다. 리플리케이션은 `QueuedBits`가 양수가 되자마자 멈추므로 초과분이 작고, 한 프레임의 예산(100,000 ÷ 30 ≈ 3,333바이트, 계산값)을 빼면 다시 음수가 되기 때문이다. 소스에서 읽은 결론이고 포화된 실행으로 확인한 것은 아니다.
+- 결론: `saturated_ratio`를 `Connection->GetSaturationAnalytics()`(`NetConnection.cpp:6122`, 구조체는 `Engine/Public/Net/NetAnalyticsTypes.h:218`)의 `GetNumberOfSaturatedReplications()` ÷ `GetNumberOfReplications()`로 바꿨다. 측정 구간의 시작과 끝의 차를 모든 연결에 대해 더한다. `Engine/Source/Runtime`에서 이 기록을 리셋하는 호출은 `NetConnection.cpp`의 정의 말고는 찾지 못했다.
+- 실행 확인: `smoke8-r1` 서버 로그에서 접속 직후 `saturated_replications=14/184`가 찍히고 그 뒤로 14에서 늘지 않았다. 옛 정의에서는 같은 구간이 항상 `saturated=0`이었다. 5초에 시도 횟수가 300씩 는다(연결 2 × 30Hz × 5초).
+
+### 대역폭 예산과 서버 틱
+
+- 예산을 계산하는 경과 시간은 `1 / DesiredTickRate`로 잘린다(`NetConnection.cpp:4816, 5117-5119`). 서버가 틱 예산을 넘겨 30Hz보다 느리게 돌면 초당 보낼 수 있는 양이 `net_speed`보다 작아진다.
+- 결론: 포화 여부를 `out_bytes_per_sec_per_conn`과 `net_speed`의 비교로 판단하려면 `net_speed × frames ÷ (30 × 측정 초)`와 비교해야 한다. 기준선의 실측 송신량도 30Hz를 지키지 못한 만큼 작게 나오므로, 한도를 고정할 때는 30Hz로 환산한다(구현 계획 8.4a).
+
+### 트레이스 인자
+
+| 항목 | 5.8.3 | 위치 |
+| --- | --- | --- |
+| `-trace=<채널>` | 채널 목록. `default`는 `cpu,gpu,frame,log,bookmark,screenshot,region` | `Engine/Source/Runtime/Core/Private/ProfilingDebugging/TraceAuxiliary.cpp:138, 1952` |
+| `-tracefile=<경로>` | 파일로 기록. 같은 경로에 파일이 있으면 경고만 남기고 시작하지 않는다(`-tracefiletrunc`를 주면 덮어쓴다) | `TraceAuxiliary.cpp:1064-1068, 1971, 1987` |
+| `-NetTrace=<수준>` | 네트워크 트레이스의 상세 수준 | `Engine/Source/Runtime/Engine/Private/UnrealEngine.cpp:2661` |
+| 네트워크 트레이스의 컴파일 조건 | Shipping이 아니고 트레이스가 켜진 빌드. 에디터 Development 빌드가 해당한다 | `Engine/Source/Runtime/Net/Core/Public/Net/Core/Trace/NetTraceConfig.h:10-16` |
+| 채널 이름 | `NetChannel` | `Engine/Source/Runtime/Net/Core/Private/Net/Core/Trace/Reporters/NetTraceReporter.cpp:16-17` |
+| 자동 연결 | Unreal Insights가 떠 있으면(이름 있는 이벤트 `Local\UnrealInsightsAutoConnect`) 아직 연결하지 않은 프로세스가 `default` 채널로 로컬 트레이스 서버에 연결한다 | `TraceAuxiliary.cpp:2742-2756` |
+| `-traceautostart=0` | 자동 시작을 끈다. 명령줄의 `-tracefile` 시작도 함께 막는다 | `TraceAuxiliary.cpp:2012-2021, 2378` |
+
+- 실행 확인: `smoke8-r1`에서 `-trace=default,net -NetTrace=1 -tracefile=`로 `Saved/Traces/smoke8-r1.utrace`(5.5MB, 측정 30초)가 생겼다. 안의 네트워크 데이터와 북마크는 Insights로 아직 열어 보지 않았다. 채널 토큰 `net`이 `NetChannel`에 대응하는 규칙의 코드와 `-NetTrace=1`의 1이 뜻하는 수준은 확인하지 않았다.
+- 결론: 클라이언트와 `-NoTrace` 서버에는 `-traceautostart=0`을 준다. 트레이스를 켠 서버에는 주지 않는다. 실패한 실행의 라벨을 다시 쓰면 트레이스가 생기지 않으므로 스크립트가 로그와 트레이스 파일로 라벨의 재사용을 막는다.
+
+### 그 밖
+
+- 클라이언트가 닫힘 메시지 없이 죽으면 서버는 `ConnectionTimeout=60.0`(`BaseEngine.ini:1855`)까지 연결을 유지할 수 있다. 더 빨리 알아채는 경로가 있는지는 확인하지 않았다. 그래서 스크립트가 서버 종료 시점에 클라이언트의 생존을 다시 검사한다.
+- 내려다보기 화면에 보이는 범위는 가로 700m × 세로 약 394m다(높이 350m, 수평 시야각 90도, 화면비 16:9. 계산값). 1번 자리에서 검증용 노드까지는 약 196m다(반지름 500m의 원 위 16자리 중 이웃한 두 자리, 2 × 500 × sin(11.25°) ≈ 195m에 노드의 3m 오프셋. 계산값). 관련성을 적용하면 컬 거리 150m 밖이라 내려다보기 화면에서 검증용 노드의 검은 점이 보이지 않게 된다.
+- 자동 이동은 한 변 100m의 정사각형이고 캐릭터 속도는 500cm/s다(`LabCharacter.cpp`의 `MaxWalkSpeed`). 한 바퀴 400m에 80초가 걸린다(계산값). 준비 30초와 측정 60초 동안 약 한 바퀴를 돈다.
 
 ## 라. 계획 초안의 코드에서 바꾼 것 요약
 
@@ -159,3 +195,6 @@
 | 7.1, 7.2 | 스크립트를 UTF-8 BOM으로 저장 | `powershell`(5.1)이 BOM 없는 한글을 잘못 읽음 |
 | 8.4a | 올릴 설정 키가 세 개 | 가절 "한도가 정해지는 과정" |
 | 7.1, 7.2 | 서버와 클라이언트 인자에 `-DisablePython` 추가 | 마절 |
+| 6.2 | `saturated_ratio`를 프레임 끝의 `IsNetReady()`에서 엔진의 포화 기록(`GetSaturationAnalytics`)으로 바꿈. 5초 간격 로그의 `saturated=`가 `saturated_replications=끊긴 횟수/시도 횟수`가 됨 | 바절 "포화를 판정하는 시점" |
+| 7.1 | 시작 신호 전에 죽은 클라이언트를 다시 띄움(실행당 최대 3번). 서버 종료 시점의 클라이언트 생존, `.utrace` 존재, 측정 시작 뒤의 선호도 재설정, 라벨의 로그와 트레이스 재사용, 이미 떠 있는 `UnrealEditor`를 검사. 클라이언트와 `-NoTrace` 서버에 `-traceautostart=0` | 마절(단언 크래시), 바절 |
+| 8.4, 8.4a | 포화를 먼저 없앤 뒤 예산 초과를 판단. 한도는 규모가 정해진 뒤 30Hz 환산 송신량의 약 두 배로 한 번만 고정 | 바절 "대역폭 예산과 서버 틱" |

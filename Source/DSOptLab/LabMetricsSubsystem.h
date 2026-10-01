@@ -35,7 +35,9 @@ private:
 		int32 NumReady = 0;
 		int64 TotalBytes = 0;
 		int32 OpenActorChannels = 0;
-		int32 NumSaturated = 0;
+		/** 연결이 생긴 뒤의 누계. 엔진이 ServerReplicateActors에서 연결마다 기록한다. */
+		int64 Replications = 0;
+		int64 SaturatedReplications = 0;
 		int32 NetSpeed = 0;
 	};
 
@@ -57,8 +59,9 @@ private:
 
 	int32 ConnectionsAtStart = 0;
 	int64 BytesAtMeasureStart = 0;
+	int64 ReplicationsAtMeasureStart = 0;
+	int64 SaturatedReplicationsAtMeasureStart = 0;
 	double OpenChannelsPerConnectionSum = 0.0;
-	double SaturatedRatioSum = 0.0;
 
 	TArray<double> WorkMs;
 	TArray<double> NetFlushMs;

@@ -10,6 +10,7 @@
 #include "Misc/DateTime.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Net/NetAnalyticsTypes.h"
 #include "ProfilingDebugging/MiscTrace.h"
 #include "LabGameMode.h"
 #include "LabPlayerController.h"
@@ -128,11 +129,11 @@ ULabMetricsSubsystem::FConnectionSample ULabMetricsSubsystem::SampleConnections(
 		Sample.OpenActorChannels += Connection->ActorChannelsNum();
 		Sample.NetSpeed = Connection->CurrentNetSpeed;
 
-		// 프레임 끝에 송신 한도에 걸려 있는 연결. 다음 틱의 리플리케이션이 제한될 수 있다는 근사 신호다.
-		if (!Connection->IsNetReady())
-		{
-			++Sample.NumSaturated;
-		}
+		// 엔진이 ServerReplicateActors에서 연결마다 남기는 기록이다(NetDriver.cpp의 TrackReplicationForAnalytics).
+		// 프레임 끝의 IsNetReady()는 그 프레임의 송신 예산을 뺀 뒤라서 지속적인 포화를 잡지 못한다.
+		const FNetConnectionSaturationAnalytics& Saturation = Connection->GetSaturationAnalytics();
+		Sample.Replications += Saturation.GetNumberOfReplications();
+		Sample.SaturatedReplications += Saturation.GetNumberOfSaturatedReplications();
 
 		const ALabPlayerController* Player = Cast<ALabPlayerController>(Connection->PlayerController);
 		if (Player && Player->IsReady())
@@ -165,17 +166,15 @@ void ULabMetricsSubsystem::HandleEndFrame()
 
 	const double OpenChannelsPerConnection = Sample.NumConnections > 0
 		? static_cast<double>(Sample.OpenActorChannels) / Sample.NumConnections : 0.0;
-	const double SaturatedRatio = Sample.NumConnections > 0
-		? static_cast<double>(Sample.NumSaturated) / Sample.NumConnections : 0.0;
 
 	// 준비 구간 길이와 초기 전송 완료 여부를 판단할 수 있게 5초마다 상태를 남긴다.
 	if (Now - LastStatusLogTime >= 5.0)
 	{
 		LastStatusLogTime = Now;
 		UE_LOG(LogLabMetrics, Display,
-			TEXT("phase=%d connections=%d ready=%d open_actor_channels_per_conn=%.0f saturated=%d net_speed=%d out_total_bytes=%lld"),
+			TEXT("phase=%d connections=%d ready=%d open_actor_channels_per_conn=%.0f saturated_replications=%lld/%lld net_speed=%d out_total_bytes=%lld"),
 			static_cast<int32>(Phase), Sample.NumConnections, Sample.NumReady, OpenChannelsPerConnection,
-			Sample.NumSaturated, Sample.NetSpeed, Sample.TotalBytes);
+			Sample.SaturatedReplications, Sample.Replications, Sample.NetSpeed, Sample.TotalBytes);
 	}
 
 	if (Phase != EPhase::WaitingForClients && Sample.NumConnections != ConnectionsAtStart)
@@ -207,8 +206,9 @@ void ULabMetricsSubsystem::HandleEndFrame()
 			Phase = EPhase::Measuring;
 			PhaseStartTime = Now;
 			BytesAtMeasureStart = Sample.TotalBytes;
+			ReplicationsAtMeasureStart = Sample.Replications;
+			SaturatedReplicationsAtMeasureStart = Sample.SaturatedReplications;
 			OpenChannelsPerConnectionSum = 0.0;
-			SaturatedRatioSum = 0.0;
 			WorkMs.Reset();
 			NetFlushMs.Reset();
 			TRACE_BOOKMARK(TEXT("Lab_MeasureStart"));
@@ -220,7 +220,6 @@ void ULabMetricsSubsystem::HandleEndFrame()
 		WorkMs.Add((Now - FrameStartTime) * 1000.0);
 		NetFlushMs.Add((Now - PostActorTickTime) * 1000.0);
 		OpenChannelsPerConnectionSum += OpenChannelsPerConnection;
-		SaturatedRatioSum += SaturatedRatio;
 
 		if (Now - PhaseStartTime >= Config.MeasureSeconds)
 		{
@@ -249,6 +248,11 @@ bool ULabMetricsSubsystem::WriteSummary(const FConnectionSample& Sample, double 
 	const int32 Connections = FMath::Max(1, ConnectionsAtStart);
 	const double BytesPerSecPerConn = static_cast<double>(Sample.TotalBytes - BytesAtMeasureStart) / MeasuredSeconds / Connections;
 
+	// 측정 구간에 모든 연결에서 포화로 끊긴 리플리케이션 횟수 / 시도 횟수.
+	const int64 Replications = Sample.Replications - ReplicationsAtMeasureStart;
+	const int64 SaturatedReplications = Sample.SaturatedReplications - SaturatedReplicationsAtMeasureStart;
+	const double SaturatedRatio = Replications > 0 ? static_cast<double>(SaturatedReplications) / Replications : 0.0;
+
 	int32 OverBudgetFrames = 0;
 	for (const double Value : WorkMs)
 	{
@@ -273,7 +277,7 @@ bool ULabMetricsSubsystem::WriteSummary(const FConnectionSample& Sample, double 
 		Percentile99(NetFlushMs),
 		BytesPerSecPerConn,
 		OpenChannelsPerConnectionSum / Frames,
-		SaturatedRatioSum / Frames,
+		SaturatedRatio,
 		Sample.NetSpeed);
 
 	const FString Directory = FPaths::ProjectSavedDir() / TEXT("LabMetrics");
