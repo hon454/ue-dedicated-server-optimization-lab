@@ -26,4 +26,5 @@
 
 ## 작업 중 떠오른 것
 
-(여기에 추가)
+- **`GameNetDriver` 자체 시간 나누기(에디터 빌드).** 기본 트레이스에서는 `GameNetDriver` Excl(기준선 리플리케이션 시간의 37%)에 고려 목록 만들기, 연결마다의 우선순위 정렬, `Connection->Tick`의 송신이 섞여 나뉘지 않는다([Posts/01-baseline/candidates.md](../../Posts/01-baseline/candidates.md) 2절). `-statnamedevents`(`LaunchEngineLoop.cpp:1759`)를 더한 별도 실행으로 `STAT_NetConsiderActorsTime`(`NetDriver.cpp:5305`), `STAT_NetPrioritizeActorsTime`(`NetDriver.cpp:5530`), `Stat_NetConnectionTick` 같은 stat을 Insights 타이머로 보면 나눌 수 있다. 측정 조건이 달라지므로 그 실행의 수치는 비교에 쓰지 않고 비율만 본다. 클래스 타이머의 이름이 바뀌는지 먼저 확인한다(소스에서 읽은 추론). 위 "Test 패키지로 재측정"의 분해 실행과 같은 방식이다(2026-10-02, 태스크 10.3).
+- **같은 구성의 실행 사이 흔들림의 원인.** `baseline3`에서 느린 실행은 일의 양과 구성 비율이 같고 모든 하위 타이머가 1.12\~1.18배 느렸다(candidates.md 4절). CPU 클럭이나 같은 코어를 쓰는 다른 작업 같은 서버 밖의 요인으로 보이며 확인하지 않았다(2026-10-02, 태스크 10.3).

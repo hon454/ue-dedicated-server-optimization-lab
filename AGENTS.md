@@ -28,7 +28,7 @@
 | 측정 PC 사양 | [pc-specs.md](Docs/Planning/pc-specs.md) |
 | 대상 채용공고 | [job-posting-ue5-dedicated-server.md](Docs/Planning/job-posting-ue5-dedicated-server.md) |
 | 공개 소개, 코드 파일별 역할 | [README.md](README.md) |
-| 포스팅 본문과 이미지 | `Posts/NN-이름/README.md`, `Posts/NN-이름/images/` |
+| 포스팅 본문과 이미지, 후보 기법 자료(Insights에서 읽은 값, 엔진 소스 위치, 에이전트 의견) | `Posts/NN-이름/README.md`, `Posts/NN-이름/images/`, `Posts/NN-이름/candidates.md` |
 | 실행 산출물 | 수치 CSV `Saved/LabMetrics/summary.csv`, 트레이스 `Saved/Traces/<라벨>-rN.utrace`, 스크린샷 `Saved/Screenshots/Lab/`, 로그 `Saved/Logs/` |
 
 새 문서를 만들거나 옮기면 이 표를 함께 고친다.
