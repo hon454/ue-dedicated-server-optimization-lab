@@ -10,7 +10,10 @@
 4. **기본 송신 한도에서의 포화와 우선순위**: 단기에서는 측정 조건으로 연결당 송신 한도를 올렸다. 엔진 기본 한도로 되돌렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지 다룬다.
 5. **건축물**: 플레이어가 배치하는 정적 액터의 휴면과 초기 전송 비용.
 6. **Replication Graph**: 레거시, Replication Graph, Iris 세 시스템 비교.
-7. **Development 패키지로 재측정**: 기준선과 세 기법을 모두 적용한 구성을 Development 구성의 패키지(서버, 클라이언트)로 다시 재서, 에디터 빌드에서 본 개선이 패키지에서도 유지되는지 확인한다. Test 구성은 쓰지 않는다. Test에서는 `STATS`가 꺼져서, 리플리케이션 시간을 클래스별로 나눠 보여 주는 Insights 타이머(`LabResourceNode`, `LabNpc`)가 `-statnamedevents` 없이는 남지 않는다(엔진 소스: `DataChannel.cpp:3624`의 `SCOPE_CYCLE_UOBJECT`, `UObjectBaseUtility.h:1073-1098`, `Build.h:311`). `GameNetDriver` 타이머는 Test에서도 남는다(`NetDriver.cpp:1174`). 서버 타깃(`DSOptLabServer.Target.cs`)을 새로 만들어야 하고, 소스 빌드 엔진이라 서버 타깃과 클라이언트 타깃이 각각 엔진 전체를 컴파일한다.
+7. **Test 패키지로 재측정**: 기준선과 세 기법을 모두 적용한 구성을 Test 구성의 패키지(서버, 클라이언트)로 다시 재서, 에디터 빌드에서 본 개선이 출시 빌드에 가까운 조건에서도 유지되는지 확인한다. Shipping은 트레이스가 컴파일되지 않아 Insights로 볼 수 없으므로(엔진 소스: `TraceLog/Public/Trace/Config.h:12-17`, `NetTraceConfig.h:10-16`) Test가 잴 수 있는 가장 Shipping에 가까운 구성이다. 실행을 두 종류로 나눈다.
+   - **수치 실행**: CSV 수치와 `GameNetDriver` 타이머는 이 실행에서 얻는다. `GameNetDriver` 타이머는 Test에서도 남는다(`NetDriver.cpp:1174`의 `TRACE_CPUPROFILER_EVENT_SCOPE_TEXT`).
+   - **분해 실행**: `-statnamedevents`를 더한 별도 실행(`LaunchEngineLoop.cpp:1759`). Test에서는 `STATS`가 꺼져서 리플리케이션 시간을 클래스별로 나눠 보여 주는 타이머(`LabResourceNode`, `LabNpc`)가 이 인자 없이는 남지 않는다(`DataChannel.cpp:3624`의 `SCOPE_CYCLE_UOBJECT`, `UObjectBaseUtility.h:1073-1098`, `Build.h:311`). 이 인자는 이벤트를 더 기록하므로 이 실행의 수치를 수치 실행과 비교하지 않고, 비율을 보는 데만 쓴다.
+   - 서버 타깃(`DSOptLabServer.Target.cs`)을 새로 만들어야 하고, 엔진을 소스로 빌드하므로 서버 타깃과 클라이언트 타깃이 각각 엔진 전체를 컴파일한다.
 
 ## 순서 미정
 
