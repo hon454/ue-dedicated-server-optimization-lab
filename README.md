@@ -131,7 +131,7 @@ flowchart LR
 
    같은 라벨은 다시 쓸 수 없습니다. 다시 실행할 때는 라벨을 바꿉니다. 실행 중에는 클라이언트 창에 키 입력을 하지 않습니다.
 
-5. 클라이언트 두 개를 같은 자리에 띄워 직접 조작해 보려면 `Scripts/run-manual.ps1`을 씁니다.
+5. 클라이언트 두 개를 같은 자리에 띄워 직접 조작해 보려면 `Scripts/run-manual.ps1`을 씁니다. 왼쪽 Shift를 누르고 있는 동안 걷기의 두 배 속도로 달립니다. 측정 시나리오에서는 달리지 않습니다.
 
 ## 레포 구조
 
@@ -152,6 +152,7 @@ Docs/                      작업 문서
 | [LabNpc](Source/DSOptLab/LabNpc.cpp) | AI NPC |
 | [LabGameMode](Source/DSOptLab/LabGameMode.cpp) | 월드 생성, 공통 시작 신호, 플레이어 배치 |
 | [LabPlayerController](Source/DSOptLab/LabPlayerController.cpp) | 자동 이동과 채집, 화면 표시, 자동 스크린샷 |
+| [LabCharacterMovement](Source/DSOptLab/LabCharacterMovement.cpp) | 수동 조작용 달리기(왼쪽 Shift). 저장된 이동의 플래그 한 비트로 서버에 보냅니다 |
 | [LabHUD](Source/DSOptLab/LabHUD.cpp) | 클라이언트 화면 글자(라벨, 역할, 그 클라이언트에 있는 노드와 NPC 수, 위치) |
 | [LabMetricsSubsystem](Source/DSOptLab/LabMetricsSubsystem.cpp) | 서버 측정과 CSV 기록 |
 | [run-scenario.ps1](Scripts/run-scenario.ps1) | 측정 실행, 코어 배정, 실패 검출 |

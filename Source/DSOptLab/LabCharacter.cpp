@@ -7,12 +7,17 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/PlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputAction.h"
 #include "InputActionValue.h"
+#include "InputMappingContext.h"
 #include "DSOptLab.h"
+#include "LabCharacterMovement.h"
 
-ALabCharacter::ALabCharacter()
+ALabCharacter::ALabCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<ULabCharacterMovement>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -65,6 +70,23 @@ void ALabCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ALabCharacter::Look);
+
+		// 달리기. 에디터 작업을 만들지 않으려고 입력 액션과 매핑을 에셋 대신 여기서 만든다.
+		SprintAction = NewObject<UInputAction>(this, TEXT("IA_LabSprint"));
+		SprintAction->ValueType = EInputActionValueType::Boolean;
+		SprintContext = NewObject<UInputMappingContext>(this, TEXT("IMC_LabSprint"));
+		SprintContext->MapKey(SprintAction, EKeys::LeftShift);
+
+		if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				Subsystem->AddMappingContext(SprintContext, 0);
+			}
+		}
+
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &ALabCharacter::DoSprintStart);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ALabCharacter::DoSprintEnd);
 	}
 	else
 	{
@@ -130,4 +152,20 @@ void ALabCharacter::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void ALabCharacter::DoSprintStart()
+{
+	if (ULabCharacterMovement* Movement = Cast<ULabCharacterMovement>(GetCharacterMovement()))
+	{
+		Movement->bWantsToSprint = true;
+	}
+}
+
+void ALabCharacter::DoSprintEnd()
+{
+	if (ULabCharacterMovement* Movement = Cast<ULabCharacterMovement>(GetCharacterMovement()))
+	{
+		Movement->bWantsToSprint = false;
+	}
 }

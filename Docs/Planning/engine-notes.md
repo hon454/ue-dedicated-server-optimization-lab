@@ -181,6 +181,7 @@
 - 클라이언트가 닫힘 메시지 없이 죽으면 서버는 `ConnectionTimeout=60.0`(`BaseEngine.ini:1855`)까지 연결을 유지할 수 있다. 더 빨리 알아채는 경로가 있는지는 확인하지 않았다. 그래서 스크립트가 서버 종료 시점에 클라이언트의 생존을 다시 검사한다.
 - 내려다보기 화면에 보이는 범위는 가로 700m × 세로 약 394m다(높이 350m, 수평 시야각 90도, 화면비 16:9. 계산값). 1번 자리에서 검증용 노드까지는 약 196m다(반지름 500m의 원 위 16자리 중 이웃한 두 자리, 2 × 500 × sin(11.25°) ≈ 195m에 노드의 3m 오프셋. 계산값). 관련성을 적용하면 컬 거리 150m 밖이라 내려다보기 화면에서 검증용 노드의 검은 점이 보이지 않게 된다.
 - 자동 이동은 한 변 100m의 정사각형이고 캐릭터 속도는 500cm/s다(`LabCharacter.cpp`의 `MaxWalkSpeed`). 한 바퀴 400m에 80초가 걸린다(계산값). 준비 30초와 측정 60초 동안 약 한 바퀴를 돈다.
+- 수동 조작용 달리기(2026-10-02, 사용자 요청). `ALabCharacter`의 이동 컴포넌트를 `ULabCharacterMovement`로 바꾸고, 왼쪽 Shift를 누르는 동안 `GetMaxSpeed()`가 `SprintSpeed` 1,000cm/s(걷기 500의 두 배)를 돌려준다. 달리기 여부는 저장된 이동의 압축 플래그 `FLAG_Custom_0`(`Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementComponent.h:3136`, 5.8.3에서 폐기 예정 표시 없음)으로 보낸다. 서버는 `MoveAutonomous`에서 `UpdateFromCompressedFlags`를 불러(`Engine/Source/Runtime/Engine/Private/Components/CharacterMovementComponent.cpp:10677`) 같은 값을 얻으므로 클라이언트 예측과 서버 이동이 같은 속도를 쓴다. 이미 보내는 플래그 바이트의 한 비트라 송신량이 늘지 않고, 리플리케이트되는 속성이나 RPC는 없다. 입력 액션과 매핑 컨텍스트는 에디터 에셋 없이 `SetupPlayerInputComponent`에서 만든다. 시나리오의 자동 이동(`LabPlayerController.cpp`의 `AddMovementInput`)은 이 플래그를 켜지 않으므로 측정에서는 걷기 속도만 쓰인다. 애니메이션 블렌드 스페이스는 그대로라 달릴 때 발이 미끄러져 보일 수 있다(확인하지 않음).
 
 ## 사. 같은 구성의 실행 사이에 서버 속도가 세 배 달라지는 원인 (2026-10-01)
 

@@ -10,6 +10,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
+class UInputMappingContext;
 struct FInputActionValue;
 
 /**
@@ -47,10 +48,18 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	/** 달리기 입력. 에디터 에셋 없이 SetupPlayerInputComponent에서 만든다. */
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> SprintAction;
+
+	/** 달리기 입력을 왼쪽 Shift에 매핑하는 컨텍스트. SprintAction과 함께 만든다. */
+	UPROPERTY(Transient)
+	TObjectPtr<UInputMappingContext> SprintContext;
+
 public:
 
 	/** Constructor */
-	ALabCharacter();	
+	ALabCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
 
@@ -82,6 +91,14 @@ public:
 	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
+
+	/** 달리기를 시작한다. 왼쪽 Shift를 누르는 동안 달린다. */
+	UFUNCTION(BlueprintCallable, Category="Input")
+	virtual void DoSprintStart();
+
+	/** 달리기를 멈춘다 */
+	UFUNCTION(BlueprintCallable, Category="Input")
+	virtual void DoSprintEnd();
 
 public:
 
