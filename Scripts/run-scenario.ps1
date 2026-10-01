@@ -7,6 +7,8 @@
     [int]$Measure = 60,
     [int]$Runs = 1,
     [int]$TimeoutSeconds = 900,
+    # 서버를 고정할 논리 프로세서의 비트 마스크. 기본값 255는 0~7이다. 진단용으로만 바꾼다.
+    [long]$ServerMask = 0xFF,
     [switch]$NoTrace
 )
 
@@ -48,8 +50,7 @@ if ($Running.Count -gt 0) {
 
 # 서버는 논리 프로세서 0~7, 클라이언트는 나머지에 고정한다.
 $Logical = [Environment]::ProcessorCount
-$ServerMask = [long]0xFF
-$ClientMask = ([long][math]::Pow(2, $Logical) - 1) - $ServerMask
+$ClientMask = ([long][math]::Pow(2, $Logical) - 1) - [long]0xFF
 
 # 에디터 실행 파일은 시작하는 동안 프로세스 선호도가 전체 코어로 되돌아간다(2026-10-01 smoke1, smoke3에서 관찰).
 # 그래서 실행 직후 한 번 설정하고, 서버를 기다리는 동안 2초마다 다시 읽어 달라져 있으면 다시 설정한다.
