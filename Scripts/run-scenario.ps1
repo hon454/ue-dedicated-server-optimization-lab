@@ -77,7 +77,8 @@ function Start-LabClient([int]$Index, [string]$RunLabel) {
     $ClientArgs = @(
         "`"$Project`"", "127.0.0.1", "-game", "-windowed",
         "-ResX=640", "-ResY=360", "-WinX=$X", "-WinY=$Y",
-        "-log", "-LOG=client$Index-$RunLabel.log", "-nosound", "-unattended", "-DisablePython",
+        # -log는 로그 콘솔 창을 띄울 뿐이다(LaunchEngineLoop.cpp의 "Show log if wanted"). 로그 파일은 -LOG=만으로 남는다.
+        "-LOG=client$Index-$RunLabel.log", "-nosound", "-unattended", "-DisablePython",
         # Unreal Insights가 떠 있으면 프로세스가 스스로 트레이스 서버에 연결한다(TraceAuxiliary.cpp의 TryAutoConnect). 그것을 막는다.
         "-traceautostart=0",
         "-LabSlot=$Index", "-LabAutoMove", "-LabLabel=$RunLabel",

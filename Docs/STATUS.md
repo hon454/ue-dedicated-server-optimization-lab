@@ -36,6 +36,8 @@
 
 이 세션은 앱이 만든 워크트리에서 열려 main 체크아웃의 파일 편집이 훅으로 막혔다. 워크트리의 `claude/task8-calibration` 브랜치에서 고치고 main에 fast-forward로 반영했다. 빌드와 실행은 main 체크아웃에서 했다(사용자 결정).
 
+클라이언트 실행 인자에서 `-log`를 뺐다(2026-10-01, `run-scenario.ps1`과 `run-manual.ps1`). 클라이언트마다 뜨던 로그 콘솔 창이 없어지고 로그 파일은 그대로 남는다(`nolog1-r1`에서 확인). 측정 조건이 바뀐 것이고, 클라이언트에 `-log`가 없는 실행은 `diag-d-r1`부터다. 근거는 [engine-notes.md](Planning/engine-notes.md) 마절에 있다.
+
 ## 다음 할 일
 
 1. **[사람] ADR-0009 승인 여부를 정한다.** 승인되면 `-ServerMask` 기본값을 252로 바꾸고 확정 규모로 한 번 더 실행해 기준선 조건을 다시 판단한다.
