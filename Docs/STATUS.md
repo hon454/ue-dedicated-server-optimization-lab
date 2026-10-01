@@ -57,7 +57,7 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 - **`calib-g-r1`은 `calib-f-r1`보다 12% 느리다**(`work_avg_ms` 188.412와 168.309, `frames` 318과 356). 30Hz 환산 송신량은 30,488 × 30 ÷ (318 ÷ 60) = 172,574로 같다. 달라진 조건은 클라이언트의 화면 글자(`ALabHUD`)와, 실행 중에 에이전트가 문서를 편집하고 있었다는 것이다. 어느 쪽 때문인지, 실행 사이의 흔들림인지는 한 번의 실행으로 알 수 없다. 기준선 3회 측정의 변동 폭으로 본다. 기준선 3회 측정 중에는 에이전트가 다른 작업을 하지 않는다.
 - 테스트베드 포스팅은 초안이다. 태스크 9.4의 8개 창 전체 화면과 걷는 영상이 남았고, 9.5의 태그는 그 뒤에 만든다.
 
-수동 조작에 달리기를 넣었다(2026-10-02, 사용자 요청). 왼쪽 Shift를 누르는 동안 걷기(500cm/s)의 두 배인 1,000cm/s로 달린다. 새 클래스 `ULabCharacterMovement`가 달리기 여부를 저장된 이동의 압축 플래그 한 비트로 서버에 보내므로 송신량과 리플리케이트되는 속성은 그대로다. 입력은 에디터 에셋 없이 코드에서 만든다. 근거는 [engine-notes.md](Planning/engine-notes.md) 마절에 있다. 사용자 지시로 워크트리(`feat/sprint` 브랜치)에서 작업하고 빌드한 뒤 main에 병합했다. 측정 경로가 바뀌지 않았는지 작은 규모로 `sprint-a-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, 트레이스 끔)을 실행했다. 종료 코드 0이고 `frames` 792, `work_avg_ms` 1.936, `out_bytes_per_sec_per_conn` 5143, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000이다. 같은 규모의 직전 실행 `vis-b-r1`(`frames` 897, `work_avg_ms` 2.113, `out_bytes_per_sec_per_conn` 5396, `open_actor_channels_per_conn` 118)과 비교하면 `frames`가 적고, 이 규모의 실행 사이에서 이미 680\~898로 흔들린 범위(`overlay2-r1` 680, `smoke7-r1` 898) 안이다. 로그의 경고 종류는 `vis-b-r1`과 같다. Shift로 실제로 달리는지는 사람이 조작해 봐야 해서 확인하지 않았다("사용자에게 요청한 일").
+수동 조작에 달리기를 넣었다(2026-10-02, 사용자 요청). 왼쪽 Shift를 누르는 동안 걷기(500cm/s)의 두 배인 1,000cm/s로 달린다. 새 클래스 `ULabCharacterMovement`가 달리기 여부를 저장된 이동의 압축 플래그 한 비트로 서버에 보내므로 송신량과 리플리케이트되는 속성은 그대로다. 입력은 에디터 에셋 없이 코드에서 만든다. 근거는 [engine-notes.md](Planning/engine-notes.md) 마절에 있다. 사용자 지시로 워크트리(`feat/sprint` 브랜치)에서 작업하고 빌드한 뒤 main에 병합했다. 측정 경로가 바뀌지 않았는지 작은 규모로 `sprint-a-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, 트레이스 끔)을 실행했다. 종료 코드 0이고 `frames` 792, `work_avg_ms` 1.936, `out_bytes_per_sec_per_conn` 5143, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000이다. 같은 규모의 직전 실행 `vis-b-r1`(`frames` 897, `work_avg_ms` 2.113, `out_bytes_per_sec_per_conn` 5396, `open_actor_channels_per_conn` 118)과 비교하면 `frames`가 적고, 이 규모의 실행 사이에서 이미 680\~898로 흔들린 범위(`overlay2-r1` 680, `smoke7-r1` 898) 안이다. 로그의 경고 종류는 `vis-b-r1`과 같다. 사용자가 워크트리 빌드의 `run-manual.ps1`로 Shift 달리기가 잘 되는 것을 확인했다(2026-10-02). 그 뒤 워크트리를 등록 해제하고 `feat/sprint` 브랜치를 지웠다. 이 작업의 빌드(00:11:26\~00:12:20)가 같은 시각에 main에서 돌던 `vis-e-r2`의 측정 구간(00:11:11\~00:12:11)과 약 45초 겹쳤다. `vis-e-r2`의 `frames` 259는 `vis-e-r1`의 328보다 낮고, 이 실행의 수치는 쓰지 않는다. main의 `Binaries/`는 아직 달리기를 넣기 전의 빌드다.
 
 ## 다음 할 일
 
@@ -85,6 +85,7 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 - 작은 규모 확인용: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 라벨> -Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`
 - 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 서버만 논리 프로세서 2\~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
 - Insights: `powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라벨>-rN`. 읽는 순서는 [insights-reading.md](Guides/insights-reading.md)에 있다.
+- 열린 에디터에서 Python 실행: `powershell -ExecutionPolicy Bypass -File Scripts/ue-python.ps1 -Eval "<식>"` (`-Command "<코드>"`, `-File <경로>.py`, `-List`도 된다). 엔진 내장 Python 3.11.8로 PythonScriptPlugin 원격 실행(`Config/DefaultEngine.ini`의 `bRemoteExecution=True`)에 붙으므로 따로 Python을 설치하지 않는다. 이 레포를 연 에디터만 대상으로 하고, 시나리오 실행은 `-DisablePython`이라 대상이 아니다. 종료 코드 2는 에디터를 찾지 못한 것이다.
 - 수치 CSV 위치: `Saved/LabMetrics/summary.csv`
 - 리플리케이션 시간으로 쓰는 Insights 타이머: `GameNetDriver`(프레임당 Incl = 선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 확정했고 이후 바꾸지 않는다.
 
@@ -161,7 +162,6 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 사용자에게 요청한 일
 
-- **달리기를 확인한다.** `powershell -ExecutionPolicy Bypass -File Scripts/run-manual.ps1`로 띄운 클라이언트에서 왼쪽 Shift를 누른 채 움직여 빨라지는지, 다른 클라이언트 창에서도 같은 속도로 보이는지, 끊기거나 제자리로 당겨지지 않는지 본다.
 - **기준선 3회 측정에서 선호도 재설정 실패가 반복됐다(`baseline-r2`, `baseline2-r1`). `-Warmup`을 늘릴지 정해 준다.** 내용은 "막힌 것"에 있다. 기준선 확정은 사용자가 확인했다(출발값 규모 그대로).
 - **태스크 9.4.** 확정 명령으로 실행하는 동안 8개 창이 모두 보이는 전체 화면을 찍어 `Posts/00-testbed/images/all-clients.png`로, 클라이언트가 걷는 10초 영상을 `Posts/00-testbed/images/clip.gif`(또는 `.mp4`)로 넣는다. 본문에 자리 표시 주석이 있다. `timing.png`, `network.png`는 에이전트가 찍은 것을 넣어 두었으니 다른 장면이 좋으면 바꾼다. 테스트베드 포스팅 초안을 읽고 다듬는다.
 - **선호도 재설정 실패가 두 번 있었다(`calib-c-r1`, `calib-d-r1`).** 그 뒤 일곱 번의 실행(`calib-e-r1`, `diag-a-r1`\~`diag-e-r1`, `calib-f-r1`)에서는 다시 나오지 않았다. 기준선 3회 측정에서 다시 나오면 `-Warmup`을 늘릴지 정한다(구현 계획 7.3의 표).
