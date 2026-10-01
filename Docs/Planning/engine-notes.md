@@ -3,7 +3,7 @@
 - 확인일: 2026-10-01
 - 엔진: `G:\Epic Games\UE_Source` (git 태그 `5.8.3-release`, `Engine/Build/Build.version`의 5.8.3)
 - 경로는 엔진 루트 기준이다. 줄 번호는 이 태그의 것이다.
-- 구현 계획 태스크 2.5의 결과다. 포스팅 0의 "엔진에서 확인한 것"과 이후 코드의 근거로 쓴다.
+- 구현 계획 태스크 2.5의 결과다. 테스트베드 포스팅의 "엔진에서 확인한 것"과 이후 코드의 근거로 쓴다.
 
 ## 0. 프로젝트 구성
 
@@ -30,7 +30,7 @@
 | 컬 거리 기본값 | `SetNetCullDistanceSquared(225000000.0f)` | `Engine/Source/Runtime/Engine/Private/Actor.cpp:312` | 기억값과 같다. √225,000,000 = 15,000cm = 150m |
 | 업데이트 빈도 기본값 | `SetNetUpdateFrequency(100.0f)`, `SetMinNetUpdateFrequency(2.0f)` | `Actor.cpp:295-296` | 기억값과 같다 |
 | 설정자 | `SetNetUpdateFrequency`, `SetMinNetUpdateFrequency`, `SetNetCullDistanceSquared`, `SetNetDormancy`, `FlushNetDormancy`, `SetReplicatingMovement` 모두 있음. 멤버 `NetCullDistanceSquared`, `NetUpdateFrequency`, `MinNetUpdateFrequency`의 직접 접근은 5.5부터 사용 중단 | `Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h:898-910, 3174, 3178, 4557, 4624, 4636, 4648` | 계획의 코드 그대로 쓴다. `NetDormancy`(869줄)는 사용 중단 표시가 없는 public 멤버라 생성자에서 직접 대입할 수 있다 |
-| 연결당 송신 한도(엔진 기본값) | `ConfiguredInternetSpeed=100000`, `ConfiguredLanSpeed=100000`, `MaxClientRate=100000`, `MaxInternetClientRate=100000` (바이트/초) | `BaseEngine.ini:1839-1840` (`[/Script/Engine.Player]`), `1860-1861` (`[/Script/OnlineSubsystemUtils.IpNetDriver]`) | 기본 한도는 연결당 초당 100,000바이트다. 계획 8.4a의 사전 추정(135~180KB/s)보다 낮으므로 기준선이 포화될 가능성이 높다 |
+| 연결당 송신 한도(엔진 기본값) | `ConfiguredInternetSpeed=100000`, `ConfiguredLanSpeed=100000`, `MaxClientRate=100000`, `MaxInternetClientRate=100000` (바이트/초) | `BaseEngine.ini:1839-1840` (`[/Script/Engine.Player]`), `1860-1861` (`[/Script/OnlineSubsystemUtils.IpNetDriver]`) | 기본 한도는 연결당 초당 100,000바이트다. 계획 8.4a의 사전 추정(135\~180KB/s)보다 낮으므로 기준선이 포화될 가능성이 높다 |
 | 한도가 정해지는 과정 | 클라이언트가 자기 `ConfiguredInternetSpeed`를 `NMT_Netspeed`로 보내고, 서버가 `Clamp(Rate, 1800, NetDriver->MaxClientRate)`로 받는다. LAN이 아니면 서버의 `MaxClientRate`는 `MaxInternetClientRate`로 낮춰진다 | `Engine/Source/Runtime/Engine/Private/NetConnection.cpp:588`, `PendingNetGame.cpp:396`, `World.cpp:7465-7473`, `World.cpp:7987-7990` | **한도를 올리려면 세 키를 모두 올려야 한다**: `[/Script/Engine.Player] ConfiguredInternetSpeed`(클라이언트가 읽는다), `[/Script/OnlineSubsystemUtils.IpNetDriver] MaxClientRate`와 `MaxInternetClientRate`(서버가 읽는다). 서버 로그에 `Client netspeed is N`이 찍힌다 |
 | `OutTotalBytes` | `int32`. `FlushNet`에서 패킷마다 `SendBuffer.GetNumBytes() + PacketOverhead`를 더한다 | `Engine/Source/Runtime/Engine/Classes/Engine/NetConnection.h:571`, `NetConnection.cpp:2562, 2586` | 패킷 헤더와 오버헤드를 포함한 송신 바이트의 누계다. `int32`라서 연결 하나가 약 2.1GB를 넘기면 넘친다. 10MB/s로 110초를 보내도 1.1GB라 이 시나리오에서는 넘치지 않는다 |
 | `ActorChannelsNum()` | `ActorChannels.Num()` | `NetConnection.h:751` | 계획 그대로 쓴다 |
@@ -77,7 +77,7 @@
 - 서버 쪽 플래그가 거짓이면 서버가 자기 뷰 타깃(폰)으로 직접 카메라를 계산한다(`PlayerCameraManager.cpp:812-818`, `LevelTick.cpp:1847`).
 - `AActor::IsNetRelevantFor`는 `bAlwaysRelevant`면 참, 아니면 마지막에 `IsWithinNetRelevancyDistance(SrcLocation)`로 판정한다(`Engine/Source/Runtime/Engine/Private/ActorReplication.cpp:388-419`). `bUseDistanceBasedRelevancy`의 기본값은 참이다(`GameNetworkManager.cpp:54`).
 
-결론: **계획과 다르다.** 계획의 태스크 5.2는 클라이언트의 `TickTopDown`에서만 플래그를 껐다. 그러면 플래그를 끄기 전에(스폰 직후 낙하 중에) 이미 보낸 카메라 위치가 서버의 캐시에 남을 수 있고, 서버 쪽 플래그는 참이라 서버가 캐시를 스스로 갱신하지 않는다. 그래서 `ALabPlayerController::SpawnPlayerCameraManager`를 재정의해 서버와 클라이언트 양쪽에서, 모든 플레이어에 대해 `bUseClientSideCameraUpdates = false`로 둔다. 서버는 폰을 뷰 타깃으로 계산한 3인칭 카메라 위치(폰 뒤 수 미터)를 기준으로 판정하고, 내려다보기 카메라는 서버에 전달되지 않는다. 모든 클라이언트가 같은 방식이라 클라이언트마다 기준이 다르지 않다. 포스팅 0에 이 사실을 적는다.
+결론: **계획과 다르다.** 계획의 태스크 5.2는 클라이언트의 `TickTopDown`에서만 플래그를 껐다. 그러면 플래그를 끄기 전에(스폰 직후 낙하 중에) 이미 보낸 카메라 위치가 서버의 캐시에 남을 수 있고, 서버 쪽 플래그는 참이라 서버가 캐시를 스스로 갱신하지 않는다. 그래서 `ALabPlayerController::SpawnPlayerCameraManager`를 재정의해 서버와 클라이언트 양쪽에서, 모든 플레이어에 대해 `bUseClientSideCameraUpdates = false`로 둔다. 서버는 폰을 뷰 타깃으로 계산한 3인칭 카메라 위치(폰 뒤 수 미터)를 기준으로 판정하고, 내려다보기 카메라는 서버에 전달되지 않는다. 모든 클라이언트가 같은 방식이라 클라이언트마다 기준이 다르지 않다. 테스트베드 포스팅에 이 사실을 적는다.
 
 ### 그 밖의 시그니처
 
@@ -91,7 +91,7 @@
 ### 업데이트 빈도의 스케줄링
 
 - `ServerReplicateActors_BuildConsiderList`가 `World->TimeSeconds <= ActorInfo->NextUpdateTime`인 액터를 건너뛴다(`NetDriver.cpp:5319-5323`).
-- 다음 시각은 `NextUpdateTime = TimeSeconds + RandDelay + NextUpdateDelta`이고, `NextUpdateDelta`는 적응형이 꺼져 있으면 `1 / NetUpdateFrequency`다(`NetDriver.cpp:5420-5425`). `RandDelay`는 `0 ~ ServerTickTime` 사이의 난수다.
+- 다음 시각은 `NextUpdateTime = TimeSeconds + RandDelay + NextUpdateDelta`이고, `NextUpdateDelta`는 적응형이 꺼져 있으면 `1 / NetUpdateFrequency`다(`NetDriver.cpp:5420-5425`). `RandDelay`는 `0`에서 `ServerTickTime` 사이의 난수다.
 - `net.UseAdaptiveNetUpdateFrequency`의 기본값은 0이다(`NetDriver.cpp:523-526`).
 
 결론: 정적 노드는 적응형 감소를 받지 않는다. 기본 빈도 100Hz는 서버 틱 30Hz보다 높으므로, 노드와 NPC 모두 매 틱(또는 `RandDelay` 때문에 한 틱 건너) 고려 대상이 된다. 포스팅 4에서 NPC 빈도를 10으로 낮추면 고려 횟수가 약 3분의 1이 된다(30Hz 기준 계산값).
@@ -121,7 +121,7 @@
 - 템플릿의 `ADSOptLabPlayerController`와 `ADSOptLabGameMode`, 그 블루프린트는 지웠다. 템플릿 컨트롤러가 블루프린트에서 지정하던 입력 매핑(`IMC_Default`, `IMC_MouseLook`)은 `ALabPlayerController`가 생성자에서 읽어 `SetupInputComponent`에서 등록한다. 터치 조작 위젯은 옮기지 않았다.
 - 모듈 의존성에서 `AIModule`, `StateTreeModule`, `GameplayStateTreeModule`, `UMG`, `Slate`를, `.uproject`에서 `StateTree`, `GameplayStateTree` 플러그인을 뺐다.
 
-## 마. 첫 실행에서 확인한 것 (태스크 7.3~7.7, 2026-10-01)
+## 마. 첫 실행에서 확인한 것 (태스크 7.3\~7.7, 2026-10-01)
 
 조건: 클라이언트 2, 노드 100 + 검증용 1, NPC 10, 준비 20초, 측정 30초, 트레이스 없음. 라벨 `smoke2-r1`, `smoke3-r1`, `smoke4-r1` 세 실행이 종료 코드 0으로 끝났다. 수치는 동작 확인용이고 결과로 쓰지 않는다.
 
@@ -139,12 +139,12 @@
 
 - **내려다보기 뷰 타깃이 폰으로 되돌아간다.** 클라이언트에서만 `SetViewTarget`을 부르면 서버의 `ClientSetViewTarget`이 폰으로 되돌린다(`PlayerController.cpp:2832-2848`). 클라이언트의 `PlayerCameraManager->bClientSimulatingViewTarget = true`로 막고, `bAutoManageActiveCameraTarget = false`로 두고, 매 틱 뷰 타깃을 확인한다. `smoke2`의 내려다보기 스크린샷은 3인칭 화면이었고 `smoke3`부터 내려다보기 화면이다.
 - **프로세스 선호도가 시작 중에 되돌아간다.** 실행 직후 설정한 선호도가 측정 구간에는 전체 코어(4294967295)로 돌아가 있었다(`smoke1`, `smoke3`에서 관찰). 엔진 소스에서 `SetProcessAffinityMask`를 부르는 곳은 `-processaffinity` 인자를 줄 때뿐이라(`WindowsPlatformProcess.cpp:184`, `LaunchWindows.cpp:223-232`) 원인은 찾지 못했다. 시작이 끝난 뒤에 설정하면 유지되므로, 스크립트가 서버를 기다리는 동안 2초마다 다시 읽어 달라져 있으면 다시 설정한다. `smoke4`에서 마지막 재설정은 측정 시작 약 20초 전이었다.
-- **클라이언트가 시작 직후 엔진 내부 단언으로 죽을 수 있다.** `smoke1`에서 0번 클라이언트가 첫 프레임 전에 `Assertion failed: RefCount.load(std::memory_order_relaxed) == 0`(`Engine/Source/Runtime/Core/Private/Async/InheritedContext.cpp:130`, DDC IO 스레드)로 종료했다. 이 프로젝트의 코드가 실행되기 전이다. 네 번 실행 중 한 번 일어났다. 콜스택은 `DDC IO ThreadPool #1` 스레드의 `FMemoryCacheStore::Get` 아래 mimalloc이고 `HttpConnectionPool` 스레드도 함께 죽었다(`Saved/Logs/client0-smoke1-r1.log:1461-1509`). 130줄은 참조 중인 확장 데이터를 해제할 때 걸리는 검사라 DDC 요청 경로의 수명 경합으로 보이지만 추정이다. 크래시 뒤 2.2초 만에 프로세스가 끝났다. 지금까지 약 27번의 프로세스 실행 중 1번이다(`smoke1`~`smoke7`과 수동 실행). 스크립트는 시작 신호 전에 죽은 클라이언트를 같은 인자로 다시 띄우고(실행당 최대 3번), 시작 신호 뒤에 죽으면 실패로 처리한다. 다시 띄우는 경로는 아직 실행으로 확인하지 않았다.
+- **클라이언트가 시작 직후 엔진 내부 단언으로 죽을 수 있다.** `smoke1`에서 0번 클라이언트가 첫 프레임 전에 `Assertion failed: RefCount.load(std::memory_order_relaxed) == 0`(`Engine/Source/Runtime/Core/Private/Async/InheritedContext.cpp:130`, DDC IO 스레드)로 종료했다. 이 프로젝트의 코드가 실행되기 전이다. 네 번 실행 중 한 번 일어났다. 콜스택은 `DDC IO ThreadPool #1` 스레드의 `FMemoryCacheStore::Get` 아래 mimalloc이고 `HttpConnectionPool` 스레드도 함께 죽었다(`Saved/Logs/client0-smoke1-r1.log:1461-1509`). 130줄은 참조 중인 확장 데이터를 해제할 때 걸리는 검사라 DDC 요청 경로의 수명 경합으로 보이지만 추정이다. 크래시 뒤 2.2초 만에 프로세스가 끝났다. 지금까지 약 27번의 프로세스 실행 중 1번이다(`smoke1`\~`smoke7`과 수동 실행). 스크립트는 시작 신호 전에 죽은 클라이언트를 같은 인자로 다시 띄우고(실행당 최대 3번), 시작 신호 뒤에 죽으면 실패로 처리한다. 다시 띄우는 경로는 아직 실행으로 확인하지 않았다.
 - **`-server`, `-game` 실행에서 Python 시작 스크립트가 오류를 낸다.** `DSOptLab.uproject`가 켠 `AllToolsets`(에디터 전용 실험 플러그인 묶음)의 `Content/Python/init_unreal.py`가 시작할 때 실행되는데, 이 스크립트들이 쓰는 `unreal.ToolsetDefinition`, `unreal.AgentSkill`, `unreal.PythonTestRunner`는 `ToolsetRegistry` 모듈(`ToolsetRegistry.uplugin`, `Type: Editor`)에 있어 `-server`, `-game`에서는 로드되지 않는다. 그래서 실행마다 `LogPython: Error`가 58줄 남았다(`smoke5`, `smoke6`의 서버와 클라이언트 로그). 오류는 시작할 때만 나고 이 프로젝트의 코드와는 관계없다. 이 프로젝트는 Python을 쓰지 않는다(`Source`, `Config`, `Content`에 Python 관련 내용 없음). 사용자가 `AllToolsets`와 `ModelContextProtocol`을 에디터에서 쓰고 있어(2026-10-01 사용자 확인) `.uproject`는 그대로 두고, 실행 스크립트의 서버와 클라이언트 인자에 `-DisablePython`(`PythonScriptPlugin.cpp:116`, `IsPythonEnabled`)을 넣었다. `smoke7`에서 세 로그 모두 `LogPython: Error`가 0줄이다. 스크립트를 거치지 않고 `UnrealEditor.exe -server`를 직접 띄우면 같은 오류가 다시 난다.
   - **`.uproject`에서 에디터 전용으로 제한해도 소용없다.** 플러그인 참조의 `TargetAllowList`는 빌드 타깃 종류로 거른다(`PluginReferenceDescriptor.cpp:63-84`, `IsEnabledForTarget`). 이 프로젝트는 `-server`, `-game`도 `UnrealEditor.exe`로 실행하므로 타깃은 항상 `Editor`라 걸러지지 않는다. 실행 모드로 거르는 것은 모듈 단위의 `Type: Editor`이고(`ModuleDescriptor.cpp:723-732`, `GIsEditor`일 때만 로드), 두 플러그인의 에디터 모듈은 이미 그렇게 되어 있다. MCP HTTP 서버를 자동으로 여는 코드도 에디터 모듈(`ModelContextProtocolEditor.cpp:64-68`)에 있어 서버와 클라이언트에서는 포트를 열지 않는다(`smoke7` 로그에 MCP 수신 대기 줄 없음). 새던 것은 플러그인 `Content/Python`의 시작 스크립트뿐이고, 이것은 `-DisablePython`이 막는다.
-  - **측정 조건이 바뀐 것이다.** Python이 켜져 있으면 플러그인이 코어 티커를 등록해 매 프레임 `Tick`을 부른다(`PythonScriptPlugin.cpp:1376-1379`). 끄면 서버 프레임에서 이 비용이 빠진다. `smoke7-r1`의 `work_avg_ms` 2.741은 `smoke2`~`smoke5`의 범위(2.581~2.787) 안이라 이 규모에서는 차이가 보이지 않았다. 기준선(태스크 8) 전에 바꿨으므로 비교가 어긋나지 않는다. 앞으로의 측정은 모두 `-DisablePython`이 들어간 `run-scenario.ps1`로만 실행한다. `smoke6`까지의 실행은 Python이 켜진 조건이다. 클라이언트 로그 끝의 `LogNet: Error: ... Host closed the connection.`은 측정이 끝나 서버가 종료하면서 남는 것이다.
+  - **측정 조건이 바뀐 것이다.** Python이 켜져 있으면 플러그인이 코어 티커를 등록해 매 프레임 `Tick`을 부른다(`PythonScriptPlugin.cpp:1376-1379`). 끄면 서버 프레임에서 이 비용이 빠진다. `smoke7-r1`의 `work_avg_ms` 2.741은 `smoke2`\~`smoke5`의 범위(2.581\~2.787) 안이라 이 규모에서는 차이가 보이지 않았다. 기준선(태스크 8) 전에 바꿨으므로 비교가 어긋나지 않는다. 앞으로의 측정은 모두 `-DisablePython`이 들어간 `run-scenario.ps1`로만 실행한다. `smoke6`까지의 실행은 Python이 켜진 조건이다. 클라이언트 로그 끝의 `LogNet: Error: ... Host closed the connection.`은 측정이 끝나 서버가 종료하면서 남는 것이다.
 - **클라이언트 인자에서 `-log`를 뺐다(2026-10-01).** 클라이언트마다 뜨던 로그 콘솔 창을 없애려는 것이다. `-log`는 콘솔 창을 보이게 할 뿐이다(`LaunchEngineLoop.cpp:6793-6796`, `GLogConsole->Show(true)`). 파일 출력 장치는 `-NODEFAULTLOG`가 없으면 항상 붙고(`GenericPlatformOutputDevices.cpp:28-31`), 파일 이름은 `-LOG=`에서 읽는다(같은 파일 84줄, `GetAbsoluteLogFilename`). `FParse::Param`은 이름 뒤에 공백이나 문자열 끝이 와야 일치하므로(`Parse.cpp:341`) `-LOG=파일`은 `-log`로 읽히지 않는다. `nolog1-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, `-NoTrace`)이 종료 코드 0으로 끝났고 `client0-nolog1-r1.log`(1,631줄)와 `client1-nolog1-r1.log`(1,637줄), 자동 스크린샷 6장이 남았다. 실행 중 클라이언트 프로세스의 보이는 창은 게임 창(창 클래스 `UnrealWindow`) 하나뿐이었고 콘솔 창(`ConsoleWindowClass`)은 서버에만 있었다. 수치는 이전 `smoke` 실행과 같은 범위다(`frames` 897, `work_avg_ms` 1.931, `out_bytes_per_sec_per_conn` 5391, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000). 서버의 `-log`는 그대로 둔다([ADR-0002](../Decisions/0002-editor-build-without-packaging.md)).
-  - **측정 조건이 바뀐 것이다.** 클라이언트가 콘솔 창에 로그를 쓰지 않는다. 클라이언트에 `-log`가 있던 실행은 `smoke1`~`smoke9`, `calib-a`~`calib-e`, `diag-a`~`diag-c`이고, 없는 실행은 `diag-d-r1`, `diag-e-r1`, `nolog1-r1`부터다(각 `client0-<라벨>.log`의 `Command Line` 줄로 확인). 서버 수치에 차이가 나는지는 따로 비교하지 않았다.
+  - **측정 조건이 바뀐 것이다.** 클라이언트가 콘솔 창에 로그를 쓰지 않는다. 클라이언트에 `-log`가 있던 실행은 `smoke1`\~`smoke9`, `calib-a`\~`calib-e`, `diag-a`\~`diag-c`이고, 없는 실행은 `diag-d-r1`, `diag-e-r1`, `nolog1-r1`부터다(각 `client0-<라벨>.log`의 `Command Line` 줄로 확인). 서버 수치에 차이가 나는지는 따로 비교하지 않았다.
 
 ## 바. 태스크 8 시작 전 점검에서 확인한 것 (2026-10-01)
 
@@ -192,12 +192,12 @@
 
 | 확인 | 결과 | 근거 |
 | --- | --- | --- |
-| 느린 구간에 특정 코드가 더 도는가 | 아니다. 게임 스레드의 모든 타이머가 프레임당 호출 횟수는 같고 호출당 시간만 2.3~2.9배 길다. `LabResourceNode` 6.9µs 대 2.4µs, `LabNpc` 18.0µs 대 7.2µs, `ServerMovePacked` 234µs 대 99µs, `USkeletalMeshComponent_TickAnimation` 43µs 대 18µs | `calib-e-r1.utrace`의 게임 스레드 타이밍 이벤트를 `UnrealInsights.exe -NoUI -ExecOnAnalysisCompleteCmd`의 `TimingInsights.ExportTimingEvents`로 내보내, 트레이스 시각 65~85초(39프레임)와 125~155초(155프레임)를 비교 |
-| 느린 구간에 게임 스레드가 CPU를 얼마나 받는가 | 초당 0.20~0.49초. 빠른 구간에는 0.95~1.01초. 그동안 논리 프로세서 1번의 사용률은 최대치에 붙어 있고, 그 시간을 쓰는 다른 프로세스는 없다 | `diag-a-r1` 실행 중 약 1초 간격으로 서버 스레드별 `TotalProcessorTime`의 차, `\Processor Information(0,N)\% Processor Utility`, 프로세스별 CPU 시간의 차를 기록 |
-| 논리 프로세서 1번에 무엇이 있는가 | 시나리오가 도는 동안 DPC가 초당 약 15,000개, 인터럽트가 초당 약 12,000~16,000개 처리되고 DPC 시간이 32~65%다. 0번과 2~7번의 DPC 시간은 0~2%다. UE 프로세스가 없을 때 1번의 DPC는 초당 약 480개다 | `diag-b-r1` 실행 중 `\Processor Information(0,0..7)\% DPC Time`, `DPCs Queued/sec`, `Interrupts/sec` 기록. 이 실행은 내내 빨랐고 1번의 사용자 시간은 대체로 0~11%였다 |
-| 서버를 1번에만 고정하면 | 내내 느리다. `frames` 90, `work_avg_ms` 670.713, 5초 간격 틱 1.3~1.5Hz | `diag-c-r1` (`-ServerMask 2`) |
-| 서버를 2~7번에 고정하면 | 내내 빠르다. `frames` 340, `work_avg_ms` 176.630, `work_p99_ms` 216.841, 5초 간격 틱 4.7~5.8Hz | `diag-d-r1` (`-ServerMask 252`). 이 실행부터 클라이언트 인자에 `-log`가 없다(다른 세션이 22:39:45에 스크립트를 고쳤다). `diag-c-r1`과는 서버 마스크와 클라이언트 `-log` 두 가지가 다르다 |
-| 클라이언트 인자가 `diag-d-r1`과 같을 때 서버를 1번에만 고정하면 | 느리다. `frames` 153, `work_avg_ms` 392.972, `work_p99_ms` 1088.979. 5초 간격 틱이 1.1~1.5Hz로 시작해 측정 구간 10초 무렵부터 2.3~3.1Hz가 됐다. 그동안 1번의 DPC는 초당 약 15,000~16,000개, DPC 시간 33~46%, 사용자 시간 18~24%로 `-log`가 있을 때와 같다 | `diag-e-r1` (`-ServerMask 2`, 클라이언트 `-log` 없음), 5초 간격 `\Processor Information(0,1)` 기록 |
+| 느린 구간에 특정 코드가 더 도는가 | 아니다. 게임 스레드의 모든 타이머가 프레임당 호출 횟수는 같고 호출당 시간만 2.3\~2.9배 길다. `LabResourceNode` 6.9µs 대 2.4µs, `LabNpc` 18.0µs 대 7.2µs, `ServerMovePacked` 234µs 대 99µs, `USkeletalMeshComponent_TickAnimation` 43µs 대 18µs | `calib-e-r1.utrace`의 게임 스레드 타이밍 이벤트를 `UnrealInsights.exe -NoUI -ExecOnAnalysisCompleteCmd`의 `TimingInsights.ExportTimingEvents`로 내보내, 트레이스 시각 65\~85초(39프레임)와 125\~155초(155프레임)를 비교 |
+| 느린 구간에 게임 스레드가 CPU를 얼마나 받는가 | 초당 0.20\~0.49초. 빠른 구간에는 0.95\~1.01초. 그동안 논리 프로세서 1번의 사용률은 최대치에 붙어 있고, 그 시간을 쓰는 다른 프로세스는 없다 | `diag-a-r1` 실행 중 약 1초 간격으로 서버 스레드별 `TotalProcessorTime`의 차, `\Processor Information(0,N)\% Processor Utility`, 프로세스별 CPU 시간의 차를 기록 |
+| 논리 프로세서 1번에 무엇이 있는가 | 시나리오가 도는 동안 DPC가 초당 약 15,000개, 인터럽트가 초당 약 12,000\~16,000개 처리되고 DPC 시간이 32\~65%다. 0번과 2\~7번의 DPC 시간은 0\~2%다. UE 프로세스가 없을 때 1번의 DPC는 초당 약 480개다 | `diag-b-r1` 실행 중 `\Processor Information(0,0..7)\% DPC Time`, `DPCs Queued/sec`, `Interrupts/sec` 기록. 이 실행은 내내 빨랐고 1번의 사용자 시간은 대체로 0\~11%였다 |
+| 서버를 1번에만 고정하면 | 내내 느리다. `frames` 90, `work_avg_ms` 670.713, 5초 간격 틱 1.3\~1.5Hz | `diag-c-r1` (`-ServerMask 2`) |
+| 서버를 2\~7번에 고정하면 | 내내 빠르다. `frames` 340, `work_avg_ms` 176.630, `work_p99_ms` 216.841, 5초 간격 틱 4.7\~5.8Hz | `diag-d-r1` (`-ServerMask 252`). 이 실행부터 클라이언트 인자에 `-log`가 없다(다른 세션이 22:39:45에 스크립트를 고쳤다). `diag-c-r1`과는 서버 마스크와 클라이언트 `-log` 두 가지가 다르다 |
+| 클라이언트 인자가 `diag-d-r1`과 같을 때 서버를 1번에만 고정하면 | 느리다. `frames` 153, `work_avg_ms` 392.972, `work_p99_ms` 1088.979. 5초 간격 틱이 1.1\~1.5Hz로 시작해 측정 구간 10초 무렵부터 2.3\~3.1Hz가 됐다. 그동안 1번의 DPC는 초당 약 15,000\~16,000개, DPC 시간 33\~46%, 사용자 시간 18\~24%로 `-log`가 있을 때와 같다 | `diag-e-r1` (`-ServerMask 2`, 클라이언트 `-log` 없음), 5초 간격 `\Processor Information(0,1)` 기록 |
 
 **결론.** 서버 선호도 마스크 `0xFF`에 들어 있는 논리 프로세서 1번이 시나리오 실행 중 DPC와 인터럽트를 도맡는다. 서버 게임 스레드가 1번에 올라가 있는 동안에는 CPU를 절반 넘게 빼앗긴다. `work`는 경과 시간이라 빼앗긴 시간이 그대로 들어간다. Windows 스케줄러가 스레드를 어느 코어에 두는지가 실행마다, 실행 도중에도 달라져 수치가 세 배까지 흔들렸다.
 
@@ -215,7 +215,7 @@
 | 5.2 | `PlayerTick` 앞에 `IsLocalController()` 검사 추가, 지역 변수 `Role`을 `View`로 바꿈 | 서버에서 실행되지 않게 함. `AActor::Role` 멤버와 이름이 겹침 |
 | 5.2 | `TickTopDown`에서 `bClientSimulatingViewTarget`을 켜고 매 틱 뷰 타깃을 확인 | 마절 |
 | 6.2 | `IsNetReady(false)` → `IsNetReady()` | 가절 |
-| 2.1~2.3 | `env.ps1` 대신 `common.ps1`이 `EngineAssociation`으로 엔진을 찾음 | 0절 |
+| 2.1\~2.3 | `env.ps1` 대신 `common.ps1`이 `EngineAssociation`으로 엔진을 찾음 | 0절 |
 | 7.1 | 선호도를 기다리는 동안 다시 설정, 클라이언트가 먼저 죽으면 바로 실패 | 마절 |
 | 7.1, 7.2 | 스크립트를 UTF-8 BOM으로 저장 | `powershell`(5.1)이 BOM 없는 한글을 잘못 읽음 |
 | 8.4a | 올릴 설정 키가 세 개 | 가절 "한도가 정해지는 과정" |

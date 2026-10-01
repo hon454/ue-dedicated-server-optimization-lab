@@ -17,7 +17,7 @@
 | 리플리케이션 시간으로 쓸 타이머 | `GameNetDriver` | 6단계 |
 | 그 타이머와 CSV `netflush_avg_ms`의 관계 | 프레임당 161.4ms와 161.744ms로 0.2% 차이 | 5단계 |
 | 프레임 시간과 CSV `work_avg_ms`의 관계 | 168.1ms와 168.309ms로 0.1% 차이 | 5단계 |
-| Network Insights의 연결당 송신량이 CSV와 비슷한가 | 비슷하다. 33,176~36,430바이트/초 사이에 CSV 34,164가 들어간다 | 10단계 |
+| Network Insights의 연결당 송신량이 CSV와 비슷한가 | 비슷하다. 33,176\~36,430바이트/초 사이에 CSV 34,164가 들어간다 | 10단계 |
 
 ## 1단계. 트레이스를 연다
 
@@ -130,7 +130,7 @@ Timers 패널에서 `WorldTick` 줄을 클릭하면 아래 Callees 패널에 그
 **읽은 것.**
 
 - 위에서부터 `FEngineLoop::Tick` > `Frame` > `Tick_Engine` > `UWorld_Tick` > `WorldTick` > `NetBroadcastTickTime` > `GameNetDriver` 순으로 쌓여 있고, 일곱 줄의 막대 길이가 거의 같다. 프레임 전체가 `GameNetDriver`다.
-- 화면에 보이는 프레임이 모두 같은 모양이다. `Frame` 막대의 길이가 145~243ms로, 한두 프레임이 튀는 것이 아니라 매 프레임이 틱 예산 33.3ms의 네 배를 넘는다.
+- 화면에 보이는 프레임이 모두 같은 모양이다. `Frame` 막대의 길이가 145\~243ms로, 한두 프레임이 튀는 것이 아니라 매 프레임이 틱 예산 33.3ms의 네 배를 넘는다.
 - 마우스를 올린 `GameNetDriver` 하나의 툴팁: Inclusive 140.09ms, Exclusive 50.61ms(36.13%), `% of Root` 96.06%. 6단계의 합계 비율(96.01%, 37.4%)과 같은 모양이다.
 - 프레임과 프레임 사이에 빈 곳이 없다. 서버가 다음 틱까지 기다리는 시간이 없다.
 
@@ -138,7 +138,7 @@ Timers 패널에서 `WorldTick` 줄을 클릭하면 아래 Callees 패널에 그
 
 `Networking Insights` 탭으로 가서 위쪽 드롭다운을 `Game Instance 0 [Server]`, `Connection 0`, `Outgoing`으로 맞춘다.
 
-**왜.** CSV `out_bytes_per_sec_per_conn`은 서버가 연결 하나로 보낸 바이트다. 같은 것을 보려면 서버 인스턴스의 Outgoing이어야 한다. 기본값 `Incoming`은 클라이언트가 서버로 보낸 것(이동 입력)이라 막대가 거의 없다. 연결은 0~7 여덟 개이고 0번을 봤다. 기준선은 모든 액터가 모든 연결에 가므로 연결마다 내용이 같다고 보고 하나만 봤다(다른 연결은 확인하지 않았다).
+**왜.** CSV `out_bytes_per_sec_per_conn`은 서버가 연결 하나로 보낸 바이트다. 같은 것을 보려면 서버 인스턴스의 Outgoing이어야 한다. 기본값 `Incoming`은 클라이언트가 서버로 보낸 것(이동 입력)이라 막대가 거의 없다. 연결은 0\~7 여덟 개이고 0번을 봤다. 기준선은 모든 액터가 모든 연결에 가므로 연결마다 내용이 같다고 보고 하나만 봤다(다른 연결은 확인하지 않았다).
 
 ![방향 드롭다운](images/insights-calib-f/08-net-choose-outgoing.png)
 
@@ -191,7 +191,7 @@ Timers 패널에서 `WorldTick` 줄을 클릭하면 아래 Callees 패널에 그
 1. 프레임 시간이 월드 틱 밖에서 쓰이지 않는다. `Frame` 60초 중 `WorldTick`이 59.84초다(5단계).
 2. `WorldTick`의 96.01%가 `GameNetDriver`다. 수신은 2.40%, 액터 틱은 1.13%다(6단계).
 3. 평균이 아니라 매 프레임이 그렇다. 확대해 본 프레임이 모두 같은 모양이다(7단계).
-4. Insights 값과 CSV 값이 맞는다. 프레임 시간 168.1ms와 168.309ms, `GameNetDriver` 161.4ms와 161.744ms, 송신량 33,176~36,430과 34,164(5, 10단계). CSV를 믿고 전후 비교에 써도 된다는 근거다.
+4. Insights 값과 CSV 값이 맞는다. 프레임 시간 168.1ms와 168.309ms, `GameNetDriver` 161.4ms와 161.744ms, 송신량 33,176\~36,430과 34,164(5, 10단계). CSV를 믿고 전후 비교에 써도 된다는 근거다.
 
 따라서 기준선 조건 "가장 큰 비용이 네트워크"는 예이고, 리플리케이션 시간은 `GameNetDriver`의 프레임당 Incl로 읽는다.
 
@@ -207,5 +207,5 @@ Timers 패널에서 `WorldTick` 줄을 클릭하면 아래 Callees 패널에 그
 
 - `FWindowsPlatformFile_IterateDirectoryCommon_WithCallback` 15초가 어느 스레드에서 무엇 때문에 도는지.
 - `GameNetDriver`의 Excl 21.51초의 내용.
-- 연결 1~7의 패킷 내용이 연결 0과 같은지.
-- Insights의 송신량 두 값과 CSV 값이 3~6% 다른 이유.
+- 연결 1\~7의 패킷 내용이 연결 0과 같은지.
+- Insights의 송신량 두 값과 CSV 값이 3\~6% 다른 이유.
