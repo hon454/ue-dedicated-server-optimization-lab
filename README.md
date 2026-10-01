@@ -152,6 +152,7 @@ Docs/                      작업 문서
 | 문서 | 내용 |
 | --- | --- |
 | [설계 문서](Docs/Planning/2026-10-01-short-term-portfolio-design.md) | 확정된 결정과 이유, 측정 규약 |
+| [결정 기록(ADR)](Docs/Decisions/README.md) | 대안을 비교해 내린 결정, 버린 대안, 그 결과 |
 | [구현 계획](Docs/Planning/2026-10-01-short-term-implementation-plan.md) | 태스크별 체크리스트, 수치의 이름과 출처 |
 | [엔진 소스 확인 기록](Docs/Planning/engine-notes.md) | 5.8.3 소스에서 확인한 기본값과 동작 순서(파일과 줄 번호) |
 | [현재 상태](Docs/STATUS.md) | 진행 상황, 확정값, 측정 결과 |

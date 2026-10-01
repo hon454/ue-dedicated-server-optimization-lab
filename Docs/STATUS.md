@@ -18,6 +18,8 @@
 - **Unreal Insights를 소스 빌드에서 빌드했다.** `G:\Epic Games\UE_Source\Engine\Binaries\Win64\UnrealInsights.exe`.
 - **README.md를 만들었다.** 규모는 보정 전의 출발값으로 적었고, 스크린샷 두 장은 `smoke8-r1`의 것이다(`Posts/00-testbed/images/`). 태스크 8 뒤에 확정값과 확정 규모의 이미지로 바꾼다.
 
+결정 기록과 문서 지도를 만들었다(2026-10-01). 설계 문서와 구현 계획, engine-notes.md에 흩어져 있던 결정 8개를 [Docs/Decisions/](Decisions/README.md)에 ADR로 옮겼다(ADR-0005는 0006으로 대체된 포화 판정의 옛 정의). [AGENTS.md](../AGENTS.md)에 "문서 지도"와 ADR 규칙을 넣고, 에이전트 메모리에만 있던 일정 표현 금지 규칙과 스크립트의 UTF-8 BOM 규칙을 옮겼다. 결정 자체는 바꾸지 않았다.
+
 엔진은 소스 빌드로 통일했다. `DSOptLab.uproject`의 `EngineAssociation`이 `UE_DSOptLab`이고, 스크립트는 `Scripts/common.ps1`에서 같은 값을 레지스트리로 찾는다. 런처 설치본(`G:\Epic Games\UE_5.8`)으로 프로젝트를 열면 같은 `Binaries/`에 다시 빌드되므로 열지 않는다.
 
 ## 다음 할 일
@@ -95,4 +97,5 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 사용자에게 요청한 일
 
-없음. 푸시는 사용자가 정한 시점에 한다.
+- ADR-0001~0008의 내용을 읽고 확인한다. 이미 확정된 결정을 옮긴 것이라 상태는 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.
+- 푸시는 사용자가 정한 시점에 한다.
