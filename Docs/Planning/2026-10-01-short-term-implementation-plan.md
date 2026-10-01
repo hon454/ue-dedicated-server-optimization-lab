@@ -509,7 +509,7 @@ git commit -m "chore: fix scenario scale and baseline conditions after calibrati
 
 **파일:** 생성 `README.md`, `Posts/00-testbed/README.md`
 
-- [ ] **9.1 `README.md`를 확정값으로 갱신한다.** README는 2026-10-01에 먼저 만들었다(소개, 포스팅 표, 진행 방식, 테스트베드, 누적 수치, 한계, 실행 방법, 레포 구조, 다음 주제). 규모가 "보정 전의 출발값"으로 적혀 있고 스크린샷이 작은 규모 실행의 것이다. 다음을 `Docs/STATUS.md`의 확정값으로 바꾼다.
+- [x] **9.1 `README.md`를 확정값으로 갱신한다.** README는 2026-10-01에 먼저 만들었다(소개, 포스팅 표, 진행 방식, 테스트베드, 누적 수치, 한계, 실행 방법, 레포 구조, 다음 주제). 규모가 "보정 전의 출발값"으로 적혀 있고 스크린샷이 작은 규모 실행의 것이다. 다음을 `Docs/STATUS.md`의 확정값으로 바꾼다.
   - "테스트베드 한눈에 보기"의 규모 문단과 준비 구간 길이, 스크린샷 설명.
   - "실행 방법"의 시나리오 명령(확정 규모의 명령을 더한다).
   - "지표"의 리플리케이션 시간 타이머 이름.
@@ -517,7 +517,7 @@ git commit -m "chore: fix scenario scale and baseline conditions after calibrati
   - 포스팅 표의 0번을 링크와 "완료"로.
   - README와 포스팅, `Docs/`의 문서 어디에도 며칠째인지를 나타내는 일정 표현을 쓰지 않는다(2026-10-01 사용자 지시). 단계는 이 문서의 큰 제목(테스트베드 구축, 규모 확정과 포스팅 0, 기준선과 첫 번째 기법, 나머지 두 기법, 마무리)과 태스크 번호로 부른다.
 
-- [ ] **9.2 `Posts/00-testbed/README.md`를 쓴다.** 포스팅 0은 기법을 적용하지 않으므로 설계 문서 7절의 틀 대신 아래 구성을 쓴다. 에이전트가 전부 초안을 쓰고, 사람이 스크린샷을 넣고 다듬는다.
+- [x] **9.2 `Posts/00-testbed/README.md`를 쓴다.** 포스팅 0은 기법을 적용하지 않으므로 설계 문서 7절의 틀 대신 아래 구성을 쓴다. 에이전트가 전부 초안을 쓰고, 사람이 스크린샷을 넣고 다듬는다.
 
 | 섹션 | 넣을 내용 | 출처 |
 | --- | --- | --- |
@@ -533,7 +533,7 @@ git commit -m "chore: fix scenario scale and baseline conditions after calibrati
 
 모든 수치에 근거를 적는다(`AGENTS.md` 규칙).
 
-- [ ] **9.3 자동 스크린샷을 넣는다.** `Posts/00-testbed/images/`에는 README용으로 `overlay2-r1`의 `tpp.png`(순번 01), `topdown.png`(순번 00)가 이미 있다. 아래의 확정 규모 이미지로 덮어쓴다. 태스크 8의 확정 규모 실행에서 나온 3인칭 화면 한 장과 내려다보기 화면 한 장을 골라 `Posts/00-testbed/images/`에 `tpp.png`, `topdown.png`로 복사하고 본문에 넣는다. 내려다보기 화면에는 점 색의 의미를 설명하는 캡션을 단다.
+- [x] **9.3 자동 스크린샷을 넣는다.** `Posts/00-testbed/images/`에는 README용으로 `overlay2-r1`의 `tpp.png`(순번 01), `topdown.png`(순번 00)가 이미 있다. 아래의 확정 규모 이미지로 덮어쓴다. 태스크 8의 확정 규모 실행에서 나온 3인칭 화면 한 장과 내려다보기 화면 한 장을 골라 `Posts/00-testbed/images/`에 `tpp.png`, `topdown.png`로 복사하고 본문에 넣는다. 내려다보기 화면에는 점 색의 의미를 설명하는 캡션을 단다.
 
 - [ ] **9.4 [사람] 나머지 시각 자료를 넣는다.** 8개 창이 떠 있는 전체 화면(`all-clients.png`), Timing Insights 한 장, Network Insights 한 장, 클라이언트가 걷는 10초 영상 하나를 `Posts/00-testbed/images/`에 넣는다. 에이전트가 본문의 자리 표시를 이미지 링크로 바꾼다.
 
