@@ -56,8 +56,15 @@ $ClientMask = ([long][math]::Pow(2, $Logical) - 1) - $ServerMask
 # 되돌린 횟수를 돌려준다.
 function Set-Affinity($Process, [long]$Mask) {
     if ($Process.HasExited) { return 0 }
-    $Actual = (Get-Process -Id $Process.Id).ProcessorAffinity.ToInt64()
+    # 종료 중인 프로세스는 선호도를 읽을 수 없다. 읽지 못한 것은 달라진 것이 아니므로 다시 설정하지 않고 줄만 남긴다.
+    $Actual = $null
+    try { $Actual = (Get-Process -Id $Process.Id -ErrorAction Stop).ProcessorAffinity.ToInt64() } catch { }
+    if ($null -eq $Actual) {
+        Write-Host "AFFINITY: pid $($Process.Id) could not be read at $((Get-Date).ToString('HH:mm:ss')) (exited=$($Process.HasExited))"
+        return 0
+    }
     if ($Actual -eq $Mask) { return 0 }
+    Write-Host "AFFINITY: pid $($Process.Id) was $Actual, re-applied $Mask at $((Get-Date).ToString('HH:mm:ss'))"
     $Process.ProcessorAffinity = [IntPtr]$Mask
     return 1
 }
@@ -142,6 +149,7 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
             $ClientProcesses += Start-LabClient $Index $RunLabel
             Start-Sleep -Seconds 3
         }
+        Write-Host "pids: server=$($Server.Id) clients=$(($ClientProcesses | ForEach-Object { $_.Id }) -join ',')"
 
         # 서버가 끝나기를 기다린다.
         # 시작 신호 전에 죽은 클라이언트는 다시 띄운다. 서버는 모든 클라이언트가 준비를 보고해야 시작 신호를 내므로 측정에 영향이 없다.
