@@ -18,7 +18,7 @@
 - **Unreal Insights를 소스 빌드에서 빌드했다.** `G:\Epic Games\UE_Source\Engine\Binaries\Win64\UnrealInsights.exe`.
 - **README.md를 만들었다.** 규모는 보정 전의 출발값으로 적었고, 스크린샷 두 장은 `smoke8-r1`의 것이다(`Posts/00-testbed/images/`). 태스크 8 뒤에 확정값과 확정 규모의 이미지로 바꾼다.
 
-결정 기록과 문서 지도를 만들었다(2026-10-01). 설계 문서와 구현 계획, engine-notes.md에 흩어져 있던 결정 8개를 [Docs/Decisions/](Decisions/README.md)에 ADR로 옮겼다(ADR-0005는 0006으로 대체된 포화 판정의 옛 정의). [AGENTS.md](../AGENTS.md)에 "문서 지도"와 ADR 규칙을 넣고, 에이전트 메모리에만 있던 일정 표현 금지 규칙과 스크립트의 UTF-8 BOM 규칙을 옮겼다. 결정 자체는 바꾸지 않았다.
+결정 기록과 문서 지도를 만들었다(2026-10-01). 설계 문서와 구현 계획, engine-notes.md에 흩어져 있던 결정 8개를 [Docs/Decisions/](Decisions/README.md)에 ADR로 옮겼다(ADR-0005는 0006으로 대체된 포화 판정의 옛 정의). [AGENTS.md](../AGENTS.md)에 "문서 지도"와 ADR 규칙을 넣고, 에이전트 메모리에만 있던 일정 표현 금지 규칙과 스크립트의 UTF-8 BOM 규칙을 옮겼다. 결정 자체는 바꾸지 않았다. 이어서 AGENTS.md를 프롬프트 감사로 점검해 반영했다(곧 낡을 사실 두 개를 고치고, 이유가 없던 규칙 셋에 이유를 붙임). 커밋 메시지를 Conventional Commits로 정하고, 구현 계획의 커밋 예시와 기존 커밋 메시지를 모두 이 형식으로 바꿨다(사용자 지시로 히스토리를 재작성하고 포스 푸시함).
 
 엔진은 소스 빌드로 통일했다. `DSOptLab.uproject`의 `EngineAssociation`이 `UE_DSOptLab`이고, 스크립트는 `Scripts/common.ps1`에서 같은 값을 레지스트리로 찾는다. 런처 설치본(`G:\Epic Games\UE_5.8`)으로 프로젝트를 열면 같은 `Binaries/`에 다시 빌드되므로 열지 않는다.
 

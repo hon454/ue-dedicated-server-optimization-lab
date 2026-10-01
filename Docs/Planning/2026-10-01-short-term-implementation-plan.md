@@ -161,7 +161,7 @@ xychart-beta
 
 ```bash
 git add -A
-git commit -m "Add planning docs and DSOptLab project from Third Person template"
+git commit -m "chore: add planning docs and DSOptLab project from Third Person template"
 ```
 
 ## 태스크 2: 빌드 스크립트와 엔진 소스 확인
@@ -217,7 +217,7 @@ git commit -m "Add planning docs and DSOptLab project from Third Person template
 
 ```bash
 git add Scripts/common.ps1 Scripts/build.ps1 Docs/STATUS.md Docs/Planning/engine-notes.md Config
-git commit -m "Add build script and record engine source findings"
+git commit -m "build: add build script and record engine source findings"
 ```
 
 ## 태스크 3: 시나리오 설정
@@ -264,7 +264,7 @@ git commit -m "Add build script and record engine source findings"
 
 ```bash
 git add Source/DSOptLab/LabScenarioConfig.* Source/DSOptLab/LabResourceNode.* Source/DSOptLab/LabNpc.*
-git commit -m "Add scenario config, resource node, and npc actors"
+git commit -m "feat: add scenario config, resource node, and npc actors"
 ```
 
 ## 태스크 5: 게임 모드와 플레이어 컨트롤러
@@ -317,7 +317,7 @@ GlobalDefaultGameMode=/Script/DSOptLab.LabGameMode
 
 ```bash
 git add Source/DSOptLab/LabGameMode.* Source/DSOptLab/LabPlayerController.* Config/DefaultEngine.ini
-git commit -m "Add game mode with seeded world and common start signal, and player controller"
+git commit -m "feat: add game mode with seeded world and common start signal, and player controller"
 ```
 
 ## 태스크 6: 측정 서브시스템
@@ -353,7 +353,7 @@ git commit -m "Add game mode with seeded world and common start signal, and play
 
 ```bash
 git add Source/DSOptLab/LabMetricsSubsystem.*
-git commit -m "Add server metrics subsystem with start signal, failure handling, and CSV summary"
+git commit -m "feat: add server metrics subsystem with start signal, failure handling, and CSV summary"
 ```
 
 ## 태스크 7: 실행 스크립트
@@ -420,7 +420,7 @@ Get-Process UnrealEditor | Select-Object Id, ProcessorAffinity
 
 ```bash
 git add Scripts/run-scenario.ps1 Scripts/run-manual.ps1 Docs/Planning/engine-notes.md
-git commit -m "Add scenario runner with core pinning and failure detection, and manual runner"
+git commit -m "build: add scenario runner with core pinning and failure detection, and manual runner"
 ```
 
 ---
@@ -502,7 +502,7 @@ nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv
 
 ```bash
 git add Docs/STATUS.md Scripts Docs/Planning/engine-notes.md Config
-git commit -m "Fix scenario scale and baseline conditions after calibration"
+git commit -m "chore: fix scenario scale and baseline conditions after calibration"
 ```
 
 ## 태스크 9: README 허브와 포스팅 0
@@ -541,7 +541,7 @@ git commit -m "Fix scenario scale and baseline conditions after calibration"
 
 ```bash
 git add README.md Posts/00-testbed Docs/STATUS.md
-git commit -m "Add README hub and post 0: testbed and measurement method"
+git commit -m "docs: add README hub and post 0 (testbed and measurement method)"
 git tag post-00-testbed
 ```
 
@@ -592,7 +592,7 @@ git tag post-00-testbed
 
 ```bash
 git add Posts/01-baseline README.md Docs/STATUS.md
-git commit -m "Add post 1: baseline measurement"
+git commit -m "docs: add post 1 (baseline measurement)"
 git tag post-01-baseline
 ```
 
@@ -635,7 +635,7 @@ git tag post-01-baseline
 
 ```bash
 git add Source Posts/NN-이름 README.md Docs/STATUS.md
-git commit -m "Add post NN: <기법 이름>"
+git commit -m "feat: add post NN (<기법 이름>)"
 git tag post-NN-이름
 ```
 
@@ -781,7 +781,7 @@ powershell -ExecutionPolicy Bypass -File Scripts/build.ps1
 
 ```bash
 git add -A
-git commit -m "Polish posts and README hub"
+git commit -m "docs: polish posts and README hub"
 ```
 
 - [ ] **14.7 [사람] 푸시한다.** `git push origin main --tags`
