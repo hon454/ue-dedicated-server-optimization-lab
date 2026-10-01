@@ -73,3 +73,10 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# IDE
+.idea/
+*.slnx
+
+# 트레이스
+*.utrace
