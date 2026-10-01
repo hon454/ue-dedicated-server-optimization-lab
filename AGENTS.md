@@ -35,7 +35,7 @@
 
 - **개발 속도가 최우선이다.** 단위 테스트, CI, PR, 워크트리, 외부 이슈 트래커를 쓰지 않는다. main에 직접 커밋한다.
 - **커밋 메시지는 [Conventional Commits](https://www.conventionalcommits.org/) 형식으로 쓴다.** `type(scope): summary` 한 줄이고, summary는 소문자로 시작하는 영어 명령형이다. type은 `feat`, `fix`, `docs`, `build`, `refactor`, `chore` 중에서 고르고 scope는 필요할 때만 붙인다.
-- **확정된 결정을 다시 열지 않는다.** 설계 문서 3절과 승인된 ADR의 결정을 바꾸자고 제안하지 않는다. 사용자는 계획 단계로 되돌아가는 일을 반복해 왔다.
+- **확정된 결정을 다시 열지 않는다.** 설계 문서 3절과 승인된 ADR의 결정을 바꾸자고 제안하지 않는다. 사용자는 계획 단계로 되돌아가는 일을 반복해 왔다. 예외는 결정의 근거가 사실과 맞지 않음을 확인한 경우 하나다. 근거는 엔진 소스(파일과 줄)나 실행 결과(라벨)여야 한다. 이때는 대체 ADR을 "제안됨"으로 쓰고, 그 결정에 기대는 측정을 멈추고, 사용자에게 알린다. 더 나은 방법이 있다는 판단은 예외가 아니다. 그런 생각은 [backlog.md](Docs/Planning/backlog.md)에 적는다.
 - **포스팅 하나에 기법 하나.** 여러 기법을 함께 넣으면 어느 것이 효과를 냈는지 알 수 없다. 단기에 구현하는 기법은 관련성, 자원 노드 휴면, NPC 업데이트 빈도 세 가지뿐이다. 사용자는 이 셋의 순서를 고른다. 사용자가 다른 기법을 원해도 단기에는 구현하지 않고 [backlog.md](Docs/Planning/backlog.md)의 "작업 중 떠오른 것"에 적는다.
 - **패키징하지 않고 null RHI를 쓰지 않는다.** 에디터 빌드 실행 파일을 쿠킹 없이 실행한다([ADR-0002](Docs/Decisions/0002-editor-build-without-packaging.md)).
 - **레거시 리플리케이션만 쓴다.** 게임 코드는 표준 `UPROPERTY` 리플리케이션과 RPC만 사용한다([ADR-0001](Docs/Decisions/0001-legacy-replication.md)).
