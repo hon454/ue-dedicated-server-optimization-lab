@@ -50,8 +50,9 @@ private:
 
 	void TickAutoMove(APawn& ControlledPawn);
 
-	/** 이 클라이언트에 존재하는 노드와 NPC 수를 화면에 찍고, 내려다보기 화면에서는 위치에 점을 그린다. */
-	void TickOverlay();
+	/** 라벨, 자리와 역할, 시작 신호 후 경과 시간, 이 클라이언트에 존재하는 노드와 NPC 수, 폰 위치를 화면에 찍고,
+	 *  내려다보기 화면에서는 노드와 NPC 위치에 점을 그린다. */
+	void TickOverlay(const APawn& ControlledPawn);
 
 	void TickTopDown(const APawn& ControlledPawn);
 	void TickAutoScreenshot(float DeltaTime);
@@ -70,6 +71,7 @@ private:
 	// 클라이언트에서 쓰는 상태
 	bool bReportedReady = false;
 	bool bScenarioStarted = false;
+	double ScenarioStartTime = 0.0;
 	FVector Home = FVector::ZeroVector;
 	int32 WaypointIndex = 0;
 	float HarvestAccumulator = 0.f;
