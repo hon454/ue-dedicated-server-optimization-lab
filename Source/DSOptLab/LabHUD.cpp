@@ -25,7 +25,7 @@ void ALabHUD::Tick(float DeltaSeconds)
 		return;
 	}
 
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	const FLabClientConfig& Config = FLabClientConfig::Get();
 
 	if (Config.bTopDown)
 	{
@@ -43,7 +43,7 @@ void ALabHUD::Tick(float DeltaSeconds)
 
 void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn& ControlledPawn)
 {
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	const FLabClientConfig& Config = FLabClientConfig::Get();
 	UWorld* World = GetWorld();
 
 	// 메시에 가려지지 않도록 메시 위쪽에, 깊이 검사를 받지 않는 그룹으로 그린다.
@@ -94,7 +94,7 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 	const FVector Location = ControlledPawn.GetActorLocation() / 100.f;
 
 	OverlayLines = {
-		FString::Printf(TEXT("%s | slot=%d %s %s | %s"), *Config.Label, Config.ClientSlot, Duty, View, *Elapsed),
+		FString::Printf(TEXT("%s | slot=%d %s %s | %s"), *FLabScenarioConfig::Get().Label, Config.Slot, Duty, View, *Elapsed),
 		FString::Printf(TEXT("on this client: nodes=%d npcs=%d players=%d | pos x=%.0fm y=%.0fm"), NumNodes, NumNpcs, NumPlayers, Location.X, Location.Y),
 	};
 }
@@ -134,10 +134,10 @@ void ALabHUD::UpdateAutoScreenshot(float DeltaSeconds)
 	}
 	ScreenshotAccumulator = 0.f;
 
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	const FLabClientConfig& Config = FLabClientConfig::Get();
 	const TCHAR* View = Config.bTopDown ? TEXT("topdown") : TEXT("tpp");
 	const FString Path = FPaths::ProjectSavedDir() / TEXT("Screenshots") / TEXT("Lab")
-		/ FString::Printf(TEXT("%s-%s-%02d.png"), *Config.Label, View, ScreenshotIndex++);
+		/ FString::Printf(TEXT("%s-%s-%02d.png"), *FLabScenarioConfig::Get().Label, View, ScreenshotIndex++);
 
 	FScreenshotRequest::RequestScreenshot(Path, true, false);
 }

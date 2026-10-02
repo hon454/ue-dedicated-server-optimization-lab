@@ -8,6 +8,17 @@ const FLabScenarioConfig& FLabScenarioConfig::Get()
 	static const FLabScenarioConfig Config = []()
 	{
 		FLabScenarioConfig C;
+		FParse::Value(FCommandLine::Get(), TEXT("LabLabel="), C.Label);
+		return C;
+	}();
+	return Config;
+}
+
+const FLabServerConfig& FLabServerConfig::Get()
+{
+	static const FLabServerConfig Config = []()
+	{
+		FLabServerConfig C;
 		const TCHAR* Cmd = FCommandLine::Get();
 		FParse::Value(Cmd, TEXT("LabNodes="), C.NumNodes);
 		FParse::Value(Cmd, TEXT("LabNpcs="), C.NumNpcs);
@@ -15,11 +26,21 @@ const FLabScenarioConfig& FLabScenarioConfig::Get()
 		FParse::Value(Cmd, TEXT("LabExpectedClients="), C.ExpectedClients);
 		FParse::Value(Cmd, TEXT("LabWarmup="), C.WarmupSeconds);
 		FParse::Value(Cmd, TEXT("LabMeasureSeconds="), C.MeasureSeconds);
-		FParse::Value(Cmd, TEXT("LabLabel="), C.Label);
-		FParse::Value(Cmd, TEXT("LabSlot="), C.ClientSlot);
 		C.bMeasure = FParse::Param(Cmd, TEXT("LabMeasure"));
 		C.bShowcaseNpc = FParse::Param(Cmd, TEXT("LabShowcaseNpc"));
-		C.bAutoMove =FParse::Param(Cmd, TEXT("LabAutoMove"));
+		return C;
+	}();
+	return Config;
+}
+
+const FLabClientConfig& FLabClientConfig::Get()
+{
+	static const FLabClientConfig Config = []()
+	{
+		FLabClientConfig C;
+		const TCHAR* Cmd = FCommandLine::Get();
+		FParse::Value(Cmd, TEXT("LabSlot="), C.Slot);
+		C.bAutoMove = FParse::Param(Cmd, TEXT("LabAutoMove"));
 		C.bAutoHarvest = FParse::Param(Cmd, TEXT("LabAutoHarvest"));
 		C.bTopDown = FParse::Param(Cmd, TEXT("LabTopDown"));
 		C.bAutoScreenshot = FParse::Param(Cmd, TEXT("LabAutoScreenshot"));

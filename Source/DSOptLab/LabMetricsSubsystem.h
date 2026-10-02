@@ -45,6 +45,9 @@ private:
 	void HandlePostActorTick(UWorld* World, ELevelTick TickType, float DeltaSeconds);
 	void HandleEndFrame();
 
+	/** 게임 모드가 공통 시작 신호를 냈을 때 준비 구간을 시작한다. */
+	void HandleScenarioStarted();
+
 	FConnectionSample SampleConnections() const;
 	bool WriteSummary(const FConnectionSample& Sample, double MeasuredSeconds) const;
 	void Fail(const TCHAR* Reason);
@@ -56,6 +59,9 @@ private:
 	double PostActorTickTime = 0.0;
 	double PhaseStartTime = 0.0;
 	double LastStatusLogTime = 0.0;
+
+	/** 측정을 시작할 때 넷 드라이버의 서버 틱 상한에서 구한 틱 예산(ms). */
+	double TickBudgetMs = 0.0;
 
 	int32 ConnectionsAtStart = 0;
 	int64 BytesAtMeasureStart = 0;

@@ -22,12 +22,11 @@ public:
 	/** 서버 전용. 공통 시작 신호에서 호출한다. 그 전에는 움직이지 않는다. */
 	void StartWandering();
 
-	/** 서버 전용. 배회하지 않고 두 점 사이의 직선을 MoveSpeed로 왕복하게 한다. 시작 신호 전에 호출한다. */
-	void SetPatrol(const FVector& Start, const FVector& End);
+protected:
+	static constexpr float MoveSpeed = 300.f;
 
 private:
 	static constexpr float WanderRadius = 3000.f;
-	static constexpr float MoveSpeed = 300.f;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> Mesh;
@@ -37,8 +36,24 @@ private:
 	FVector Home = FVector::ZeroVector;
 	FVector Target = FVector::ZeroVector;
 	FRandomStream Rng;
+};
 
-	bool bPatrol = false;
+/**
+ * 영상용 NPC. 배회하지 않고 두 점 사이의 직선을 MoveSpeed로 왕복한다.
+ * 리플리케이션 설정은 ALabNpc에서 물려받아 같다. 수치를 쓰지 않는 visualN 실행(-LabShowcaseNpc)에서만 스폰한다.
+ */
+UCLASS()
+class DSOPTLAB_API ALabShowcaseNpc : public ALabNpc
+{
+	GENERATED_BODY()
+
+public:
+	virtual void Tick(float DeltaSeconds) override;
+
+	/** 서버 전용. 왕복할 두 점을 정한다. 시작 신호 전에 호출한다. */
+	void SetPatrol(const FVector& Start, const FVector& End);
+
+private:
 	FVector PatrolStart = FVector::ZeroVector;
 	FVector PatrolEnd = FVector::ZeroVector;
 	float PatrolTime = 0.f;

@@ -197,7 +197,7 @@ Docs/                      작업 문서
 | --- | --- |
 | [LabScenarioConfig](Source/DSOptLab/LabScenarioConfig.h) | 실행 인자에서 시나리오 값을 읽는다 |
 | [LabResourceNode](Source/DSOptLab/LabResourceNode.cpp) | 자원 노드 |
-| [LabNpc](Source/DSOptLab/LabNpc.cpp) | AI NPC |
+| [LabNpc](Source/DSOptLab/LabNpc.cpp) | AI NPC, 영상용 왕복 NPC(`ALabShowcaseNpc`) |
 | [LabGameMode](Source/DSOptLab/LabGameMode.cpp) | 월드 생성, 공통 시작 신호, 플레이어 배치 |
 | [LabPlayerController](Source/DSOptLab/LabPlayerController.cpp) | 준비 보고, 자동 이동과 채집, 채집 RPC |
 | [LabCharacterMovement](Source/DSOptLab/LabCharacterMovement.cpp) | 수동 조작용 달리기(왼쪽 Shift). 저장된 이동의 플래그 한 비트로 서버에 보낸다 |

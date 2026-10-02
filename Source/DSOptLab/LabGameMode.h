@@ -17,17 +17,22 @@ public:
 
 	virtual void BeginPlay() override;
 
-	/** NPC의 배회를 시작하고, 준비된 플레이어를 자리로 옮겨 출발시킨다. 한 번만 동작한다. */
-	void StartScenario();
-
-	/** 플레이어가 준비를 보고했을 때 호출된다. 이미 시작한 뒤라면 그 플레이어를 바로 출발시킨다. */
+	/** 플레이어가 준비를 보고했을 때 호출된다. 시작 조건이 채워지면 시작하고, 이미 시작한 뒤라면 그 플레이어를 바로 출발시킨다. */
 	void HandlePlayerReady(ALabPlayerController& Player);
+
+	/** 공통 시작 신호를 낸 직후에 한 번 불린다. 측정 서브시스템이 준비 구간을 여기서 시작한다. */
+	FSimpleMulticastDelegate OnScenarioStarted;
 
 	static FVector GetSlotLocation(int32 Slot);
 
 private:
 	void SpawnWorld();
+
+	/** NPC의 배회를 시작하고, 준비된 플레이어를 자리로 옮겨 출발시킨다. 한 번만 동작한다. */
+	void StartScenario();
+
 	void PlaceAndStart(ALabPlayerController& Player);
+	int32 CountReadyPlayers() const;
 
 	bool bScenarioStarted = false;
 

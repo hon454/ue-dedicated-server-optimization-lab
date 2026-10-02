@@ -20,9 +20,6 @@ DEFINE_LOG_CATEGORY_STATIC(LogLabMetrics, Log, All);
 
 namespace
 {
-	// 서버 틱 30Hz의 예산. 1000ms / 30. NetServerMaxTickRate=30은 BaseEngine.ini의 [/Script/OnlineSubsystemUtils.IpNetDriver]에서 확인했다.
-	const double TickBudgetMs = 1000.0 / 30.0;
-
 	double Average(const TArray<double>& Values)
 	{
 		if (Values.IsEmpty())
@@ -54,7 +51,7 @@ namespace
 
 bool ULabMetricsSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
-	return Super::ShouldCreateSubsystem(Outer) && IsRunningDedicatedServer() && FLabScenarioConfig::Get().bMeasure;
+	return Super::ShouldCreateSubsystem(Outer) && IsRunningDedicatedServer() && FLabServerConfig::Get().bMeasure;
 }
 
 bool ULabMetricsSubsystem::DoesSupportWorldType(const EWorldType::Type WorldType) const
@@ -70,9 +67,32 @@ void ULabMetricsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	PostActorTickHandle = FWorldDelegates::OnWorldPostActorTick.AddUObject(this, &ULabMetricsSubsystem::HandlePostActorTick);
 	EndFrameHandle = FCoreDelegates::OnEndFrame.AddUObject(this, &ULabMetricsSubsystem::HandleEndFrame);
 
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	// 시작 조건은 게임 모드가 판단한다. 여기서는 시작 신호를 듣고 준비 구간을 시작한다.
+	// 게임 모드는 월드가 초기화될 때 만들어지므로 이 시점에 이미 있다(World.cpp의 UWorld::BeginPlay).
+	ALabGameMode* GameMode = InWorld.GetAuthGameMode<ALabGameMode>();
+	if (!GameMode)
+	{
+		Fail(TEXT("the game mode is not ALabGameMode"));
+		return;
+	}
+	GameMode->OnScenarioStarted.AddUObject(this, &ULabMetricsSubsystem::HandleScenarioStarted);
+
+	const FLabServerConfig& Config = FLabServerConfig::Get();
 	UE_LOG(LogLabMetrics, Display, TEXT("Waiting for %d ready clients (label=%s nodes=%d npcs=%d)"),
-		Config.ExpectedClients, *Config.Label, Config.NumNodes, Config.NumNpcs);
+		Config.ExpectedClients, *FLabScenarioConfig::Get().Label, Config.NumNodes, Config.NumNpcs);
+}
+
+void ULabMetricsSubsystem::HandleScenarioStarted()
+{
+	if (Phase != EPhase::WaitingForClients)
+	{
+		return;
+	}
+
+	Phase = EPhase::Warmup;
+	PhaseStartTime = FPlatformTime::Seconds();
+	ConnectionsAtStart = SampleConnections().NumConnections;
+	UE_LOG(LogLabMetrics, Display, TEXT("All clients ready. Scenario started. Warmup %.0fs"), FLabServerConfig::Get().WarmupSeconds);
 }
 
 void ULabMetricsSubsystem::Deinitialize()
@@ -161,7 +181,7 @@ void ULabMetricsSubsystem::HandleEndFrame()
 	bFrameOpen = false;
 
 	const double Now = FPlatformTime::Seconds();
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	const FLabServerConfig& Config = FLabServerConfig::Get();
 	const FConnectionSample Sample = SampleConnections();
 
 	const double OpenChannelsPerConnection = Sample.NumConnections > 0
@@ -185,21 +205,6 @@ void ULabMetricsSubsystem::HandleEndFrame()
 
 	switch (Phase)
 	{
-	case EPhase::WaitingForClients:
-		if (Sample.NumReady >= Config.ExpectedClients)
-		{
-			if (ALabGameMode* GameMode = GetWorld()->GetAuthGameMode<ALabGameMode>())
-			{
-				GameMode->StartScenario();
-			}
-
-			Phase = EPhase::Warmup;
-			PhaseStartTime = Now;
-			ConnectionsAtStart = Sample.NumConnections;
-			UE_LOG(LogLabMetrics, Display, TEXT("All clients ready. Scenario started. Warmup %.0fs"), Config.WarmupSeconds);
-		}
-		break;
-
 	case EPhase::Warmup:
 		if (Now - PhaseStartTime >= Config.WarmupSeconds)
 		{
@@ -211,6 +216,16 @@ void ULabMetricsSubsystem::HandleEndFrame()
 			OpenChannelsPerConnectionSum = 0.0;
 			WorkMs.Reset();
 			NetFlushMs.Reset();
+
+			// 틱 예산은 서버 틱 상한의 역수다. 엔진이 데디케이티드 서버의 틱을 이 값으로 제한한다(GameEngine.cpp의 UGameEngine::GetMaxTickRate).
+			// 프로젝트는 엔진 기본값 30(BaseEngine.ini의 [/Script/OnlineSubsystemUtils.IpNetDriver] NetServerMaxTickRate)을 쓴다.
+			{
+				const UNetDriver* NetDriver = GetWorld()->GetNetDriver();
+				const int32 TickRate = NetDriver ? FMath::Clamp(NetDriver->GetNetServerMaxTickRate(), 1, 1000) : 30;
+				TickBudgetMs = 1000.0 / TickRate;
+				UE_LOG(LogLabMetrics, Display, TEXT("tick_rate=%d tick_budget_ms=%.3f"), TickRate, TickBudgetMs);
+			}
+
 			TRACE_BOOKMARK(TEXT("Lab_MeasureStart"));
 			UE_LOG(LogLabMetrics, Display, TEXT("Measuring %.0fs"), Config.MeasureSeconds);
 		}
@@ -243,7 +258,7 @@ void ULabMetricsSubsystem::HandleEndFrame()
 
 bool ULabMetricsSubsystem::WriteSummary(const FConnectionSample& Sample, double MeasuredSeconds) const
 {
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	const FLabServerConfig& Config = FLabServerConfig::Get();
 	const int32 Frames = FMath::Max(1, WorkMs.Num());
 	const int32 Connections = FMath::Max(1, ConnectionsAtStart);
 	const double BytesPerSecPerConn = static_cast<double>(Sample.TotalBytes - BytesAtMeasureStart) / MeasuredSeconds / Connections;
@@ -264,7 +279,7 @@ bool ULabMetricsSubsystem::WriteSummary(const FConnectionSample& Sample, double 
 
 	const FString Header = TEXT("label,timestamp,clients,nodes,npcs,frames,work_avg_ms,work_p99_ms,over_budget_frames,netflush_avg_ms,netflush_p99_ms,out_bytes_per_sec_per_conn,open_actor_channels_per_conn,saturated_ratio,net_speed");
 	const FString Row = FString::Printf(TEXT("%s,%s,%d,%d,%d,%d,%.3f,%.3f,%d,%.3f,%.3f,%.0f,%.0f,%.3f,%d"),
-		*Config.Label,
+		*FLabScenarioConfig::Get().Label,
 		*FDateTime::Now().ToString(TEXT("%Y-%m-%d %H:%M:%S")),
 		Sample.NumConnections,
 		Config.NumNodes + 1, // 검증용 노드 포함

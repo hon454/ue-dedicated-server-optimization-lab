@@ -72,12 +72,12 @@ void ALabPlayerController::PlayerTick(float DeltaTime)
 		return;
 	}
 
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	const FLabClientConfig& Config = FLabClientConfig::Get();
 
 	if (!bReportedReady)
 	{
 		bReportedReady = true;
-		ServerReportReady(Config.ClientSlot);
+		ServerReportReady(Config.Slot);
 	}
 
 	// 이동과 채집은 공통 시작 신호 이후에만 한다.

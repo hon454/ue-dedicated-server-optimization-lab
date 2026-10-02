@@ -54,33 +54,9 @@ void ALabNpc::StartWandering()
 	}
 }
 
-void ALabNpc::SetPatrol(const FVector& Start, const FVector& End)
-{
-	PatrolStart = Start;
-	PatrolEnd = End;
-	PatrolTime = 0.f;
-	bPatrol = true;
-}
-
 void ALabNpc::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	if (bPatrol)
-	{
-		// 위치를 시작 신호 뒤의 경과 시간만으로 정해, 실행마다 같은 시각에 같은 위치에 있게 한다.
-		PatrolTime += DeltaSeconds;
-		const float Length = FVector::Dist(PatrolStart, PatrolEnd);
-		if (Length <= 0.f)
-		{
-			return;
-		}
-		const float Phase = FMath::Fmod(MoveSpeed * PatrolTime, 2.f * Length) / Length;
-		const bool bForward = Phase <= 1.f;
-		const FVector Direction = (bForward ? PatrolEnd - PatrolStart : PatrolStart - PatrolEnd) / Length;
-		SetActorLocationAndRotation(FMath::Lerp(PatrolStart, PatrolEnd, bForward ? Phase : 2.f - Phase), Direction.Rotation());
-		return;
-	}
 
 	const FVector Location = GetActorLocation();
 	FVector ToTarget = Target - Location;
@@ -106,4 +82,29 @@ void ALabNpc::PickTarget()
 		Rng.FRandRange(-WanderRadius, WanderRadius),
 		Rng.FRandRange(-WanderRadius, WanderRadius),
 		0.f);
+}
+
+void ALabShowcaseNpc::SetPatrol(const FVector& Start, const FVector& End)
+{
+	PatrolStart = Start;
+	PatrolEnd = End;
+	PatrolTime = 0.f;
+}
+
+void ALabShowcaseNpc::Tick(float DeltaSeconds)
+{
+	// 배회하는 ALabNpc::Tick을 건너뛴다.
+	AActor::Tick(DeltaSeconds);
+
+	// 위치를 시작 신호 뒤의 경과 시간만으로 정해, 실행마다 같은 시각에 같은 위치에 있게 한다.
+	PatrolTime += DeltaSeconds;
+	const float Length = FVector::Dist(PatrolStart, PatrolEnd);
+	if (Length <= 0.f)
+	{
+		return;
+	}
+	const float Phase = FMath::Fmod(MoveSpeed * PatrolTime, 2.f * Length) / Length;
+	const bool bForward = Phase <= 1.f;
+	const FVector Direction = (bForward ? PatrolEnd - PatrolStart : PatrolStart - PatrolEnd) / Length;
+	SetActorLocationAndRotation(FMath::Lerp(PatrolStart, PatrolEnd, bForward ? Phase : 2.f - Phase), Direction.Rotation());
 }

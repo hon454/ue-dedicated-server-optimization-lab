@@ -34,7 +34,7 @@ void ALabGameMode::BeginPlay()
 	if (!DefaultPawnClass || !DefaultPawnClass->IsChildOf(ALabCharacter::StaticClass()))
 	{
 		UE_LOG(LogDSOptLab, Error, TEXT("DefaultPawnClass is '%s', not a child of ALabCharacter. The player pawn blueprint failed to load."), *GetNameSafe(DefaultPawnClass));
-		if (FLabScenarioConfig::Get().bMeasure)
+		if (FLabServerConfig::Get().bMeasure)
 		{
 			FPlatformMisc::RequestExitWithStatus(false, 1);
 			return;
@@ -43,8 +43,8 @@ void ALabGameMode::BeginPlay()
 
 	SpawnWorld();
 
-	// 측정 실행에서는 측정 서브시스템이 모든 클라이언트를 확인한 뒤 시작 신호를 낸다.
-	if (!FLabScenarioConfig::Get().bMeasure)
+	// 측정 실행은 기대한 수의 클라이언트가 준비를 보고한 뒤에 시작한다(HandlePlayerReady). 그 밖의 실행은 바로 시작한다.
+	if (!FLabServerConfig::Get().bMeasure)
 	{
 		StartScenario();
 	}
@@ -59,7 +59,7 @@ FVector ALabGameMode::GetSlotLocation(int32 Slot)
 
 void ALabGameMode::SpawnWorld()
 {
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
+	const FLabServerConfig& Config = FLabServerConfig::Get();
 	const float Extent = FLabScenarioConfig::WorldHalfExtent;
 
 	// 고정 시드라서 실행마다 같은 배치가 나온다.
@@ -94,7 +94,7 @@ void ALabGameMode::SpawnWorld()
 		FVector PatrolStart = GetSlotLocation(0) + FVector(1000.f, 250.f, 0.f);
 		FVector PatrolEnd = GetSlotLocation(0) + FVector(1000.f, 1250.f, 0.f);
 		PatrolStart.Z = PatrolEnd.Z = 50.f;
-		if (ALabNpc* Npc = GetWorld()->SpawnActor<ALabNpc>(ALabNpc::StaticClass(), PatrolStart, FRotator::ZeroRotator, Params))
+		if (ALabShowcaseNpc* Npc = GetWorld()->SpawnActor<ALabShowcaseNpc>(ALabShowcaseNpc::StaticClass(), PatrolStart, FRotator::ZeroRotator, Params))
 		{
 			Npc->SetPatrol(PatrolStart, PatrolEnd);
 		}
@@ -122,6 +122,22 @@ void ALabGameMode::StartScenario()
 			PlaceAndStart(*Player);
 		}
 	}
+
+	OnScenarioStarted.Broadcast();
+}
+
+int32 ALabGameMode::CountReadyPlayers() const
+{
+	int32 NumReady = 0;
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		const ALabPlayerController* Player = Cast<ALabPlayerController>(It->Get());
+		if (Player && Player->IsReady())
+		{
+			++NumReady;
+		}
+	}
+	return NumReady;
 }
 
 void ALabGameMode::HandlePlayerReady(ALabPlayerController& Player)
@@ -129,6 +145,11 @@ void ALabGameMode::HandlePlayerReady(ALabPlayerController& Player)
 	if (bScenarioStarted)
 	{
 		PlaceAndStart(Player);
+	}
+	else if (CountReadyPlayers() >= FLabServerConfig::Get().ExpectedClients)
+	{
+		// 측정 실행의 시작 조건. 측정이 아닌 실행은 BeginPlay에서 이미 시작했으므로 여기에 오지 않는다.
+		StartScenario();
 	}
 }
 
