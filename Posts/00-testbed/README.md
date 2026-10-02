@@ -115,7 +115,7 @@ powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 �
 | 리플리케이션 시스템 | 레거시. `net.Iris.UseIrisReplication`의 기본값이 0 | `IrisConfig.cpp:15-16`. 서버 로그 `using replication model Generic`(`smoke2-r1`) |
 | Adaptive Net Update Frequency | 꺼짐. `net.UseAdaptiveNetUpdateFrequency` 기본값 0 | `NetDriver.cpp:523-526` |
 
-- 기본 Net Update Frequency 100Hz는 서버 틱 30Hz보다 높다. 그래서 노드와 NPC 모두 사실상 매 틱 리플리케이션 고려 대상이 된다(`NetDriver.cpp:5319-5323, 5420-5425`).
+- 기본 Net Update Frequency 100Hz는 서버 틱 30Hz보다 높다. 그래서 자원 노드와 NPC 모두 사실상 매 틱 리플리케이션 고려 대상이 된다(`NetDriver.cpp:5319-5323, 5420-5425`).
 - Relevancy 판정의 기준 위치는 서버가 계산한 3인칭 카메라 위치다. 클라이언트가 보내는 카메라 위치를 서버가 쓰지 않도록 양쪽에서 `bUseClientSideCameraUpdates`를 껐다. 내려다보기 화면은 클라이언트에서만 보이는 카메라이고 Relevancy 판정에 영향을 주지 않는다(`PlayerController.cpp:1836-1870`, `PlayerCameraManager.cpp:812-818`).
 
 ## 측정 절차

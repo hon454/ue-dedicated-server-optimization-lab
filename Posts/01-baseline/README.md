@@ -27,9 +27,9 @@
 
 ### 가장 큰 비용은 변하지 않는 자원 노드를 매 프레임 확인하는 일이다
 
-`GameNetDriver` 아래에서 가장 큰 타이머는 `LabResourceNode`이다. ②의 `% Parent`가 52.14%이고 프레임당 98.5ms(Incl 29.75초 ÷ 302)이다. Count 12,082,416은 노드 5,001개 × 연결 8개 × `WorldTick` 302와 정확히 같다. 모든 노드를 모든 연결에 대해 매 프레임 한 번씩 처리한다는 뜻이다. 한 번은 2.46μs(29.75초 ÷ 12,082,416)로 짧지만 프레임당 40,008번이다.
+`GameNetDriver` 아래에서 가장 큰 타이머는 `LabResourceNode`이다. ②의 `% Parent`가 52.14%이고 프레임당 98.5ms(Incl 29.75초 ÷ 302)이다. Count 12,082,416은 자원 노드 5,001개 × 연결 8개 × `WorldTick` 302와 정확히 같다. 모든 자원 노드를 모든 연결에 대해 매 프레임 한 번씩 처리한다는 뜻이다. 한 번은 2.46μs(29.75초 ÷ 12,082,416)로 짧지만 프레임당 40,008번이다.
 
-그런데 같은 구간에 연결 하나로 실제로 나간 노드 데이터는 9번, 576비트뿐이다(아래 Network Insights). 체력이 바뀐 검증용 노드다. 서버는 거의 바뀌지 않는 노드를 확인하는 데 리플리케이션 시간의 절반을 쓰고 있다. 이것을 이 기준선의 가장 큰 비용으로 본다.
+그런데 같은 구간에 연결 하나로 실제로 나간 노드 데이터는 9번, 576비트뿐이다(아래 Network Insights). 체력이 바뀐 검증용 노드다. 서버는 거의 바뀌지 않는 자원 노드를 확인하는 데 리플리케이션 시간의 절반을 쓰고 있다. 이것을 이 기준선의 가장 큰 비용으로 본다.
 
 `LabNpc`는 ②의 `% Parent` 10.31%(프레임당 19.5ms)이고, 나머지 액터 클래스 일곱 개는 모두 합쳐 약 0.5%이다.
 
@@ -59,7 +59,7 @@
 
 ### 정리
 
-CPU를 가장 많이 쓰는 대상(노드 확인, 리플리케이션 시간의 52%)과 대역폭을 가장 많이 쓰는 대상(NPC 이동, 송신 비트의 76%)이 다르다. 노드는 거의 보내지 않는데 확인 비용이 크고, NPC는 확인 비용이 10%인데 보내는 양의 대부분을 차지한다.
+CPU를 가장 많이 쓰는 대상(자원 노드 확인, 리플리케이션 시간의 52%)과 대역폭을 가장 많이 쓰는 대상(NPC 이동, 송신 비트의 76%)이 다르다. 노드는 거의 보내지 않는데 확인 비용이 크고, NPC는 확인 비용이 10%인데 보내는 양의 대부분을 차지한다.
 
 ## 선택
 
@@ -67,19 +67,19 @@ CPU를 가장 많이 쓰는 대상(노드 확인, 리플리케이션 시간의 5
 
 | 순서 | 기법 | 바꿀 코드 | 이 기준선에서 겨냥하는 것(`r1`) |
 | --- | --- | --- | --- |
-| 1 | [Relevancy](../02-relevancy/README.md)(엔진 기본 Net Cull Distance 복원) | `LabResourceNode.cpp`, `LabNpc.cpp` 생성자에서 `bAlwaysRelevant = true;` 두 줄을 지움 | 노드 확인 프레임당 98.5ms, NPC 프레임당 19.5ms, NPC 송신 비트 76.0% |
-| 2 | [자원 노드 Dormancy](../03-dormancy/README.md) | `LabResourceNode.cpp` 생성자에 `NetDormancy = DORM_DormantAll;`, 채집과 재생에서 상태를 바꾸기 전에 `FlushNetDormancy()` | 고려 목록에 남은 노드 5,001개 |
+| 1 | [Relevancy](../02-relevancy/README.md)(엔진 기본 Net Cull Distance 복원) | `LabResourceNode.cpp`, `LabNpc.cpp` 생성자에서 `bAlwaysRelevant = true;` 두 줄을 지움 | 자원 노드 확인 프레임당 98.5ms, NPC 프레임당 19.5ms, NPC 송신 비트 76.0% |
+| 2 | [자원 노드 Dormancy](../03-dormancy/README.md) | `LabResourceNode.cpp` 생성자에 `NetDormancy = DORM_DormantAll;`, 채집과 재생에서 상태를 바꾸기 전에 `FlushNetDormancy()` | 고려 목록에 남은 자원 노드 5,001개 |
 | 3 | [NPC Net Update Frequency](../04-update-frequency/README.md) | `LabNpc.cpp` 생성자에 `SetNetUpdateFrequency(10.f);` | NPC 이동 송신 |
 
-**Relevancy 최적화를 먼저 적용한다.** 이 기준선은 엔진 기본 동작인 거리 기반 Relevancy를 일부러 끈 상태다([ADR-0003](../../Docs/Decisions/0003-lawless-baseline.md)). 기본 동작을 먼저 되돌려야 뒤의 두 기법을 "엔진 기본 동작 위의 개선"으로 읽을 수 있다. 코드 변경은 두 줄을 지우는 것으로 셋 중 가장 작고, 가장 큰 비용(노드 확인)과 대역폭을 가장 많이 쓰는 대상(NPC 이동)을 함께 겨냥한다. 엔진 기본 Net Cull Distance는 150m(`SetNetCullDistanceSquared(225000000.0f)`, `Engine/Source/Runtime/Engine/Private/Actor.cpp:312`)이고, 노드와 NPC가 배치 영역(1.9km × 1.9km, `Source/DSOptLab/LabScenarioConfig.h`의 `WorldHalfExtent` 95,000cm)에 고르게 퍼져 있다면 반경 150m 안의 기대 수는 노드 약 98개(5,000 × π × 150² ÷ 1,900²), NPC 약 6명(300 × π × 150² ÷ 1,900²)이다.
+**Relevancy 최적화를 먼저 적용한다.** 이 기준선은 엔진 기본 동작인 거리 기반 Relevancy를 일부러 끈 상태다([ADR-0003](../../Docs/Decisions/0003-lawless-baseline.md)). 기본 동작을 먼저 되돌려야 뒤의 두 기법을 "엔진 기본 동작 위의 개선"으로 읽을 수 있다. 코드 변경은 두 줄을 지우는 것으로 셋 중 가장 작고, 가장 큰 비용(자원 노드 확인)과 대역폭을 가장 많이 쓰는 대상(NPC 이동)을 함께 겨냥한다. 엔진 기본 Net Cull Distance는 150m(`SetNetCullDistanceSquared(225000000.0f)`, `Engine/Source/Runtime/Engine/Private/Actor.cpp:312`)이고, 노드와 NPC가 배치 영역(1.9km × 1.9km, `Source/DSOptLab/LabScenarioConfig.h`의 `WorldHalfExtent` 95,000cm)에 고르게 퍼져 있다면 반경 150m 안의 기대 수는 노드 약 98개(5,000 × π × 150² ÷ 1,900²), NPC 약 6명(300 × π × 150² ÷ 1,900²)이다.
 
-**두 번째로 자원 노드에 Dormancy를 적용한다.** Relevancy를 복원해도 서버는 채널이 없는 액터마다 연결별로 거리 검사를 한다(`NetDriver.cpp:5580-5593`). 노드 5,001개 × 연결 8개의 검사는 남는다. 모든 연결에서 Dormant 상태가 된 노드는 활성 목록에서 빠지고(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`), 고려 목록은 활성 목록만 돈다(`NetDriver.cpp:5315`). 그래서 Dormancy는 Relevancy가 남긴 몫을 줄인다. 이 몫이 실행 사이의 변동 폭(중앙값의 12.8%)보다 클지는 아직 모른다.
+**두 번째로 자원 노드에 Dormancy를 적용한다.** Relevancy를 복원해도 서버는 채널이 없는 액터마다 연결별로 거리 검사를 한다(`NetDriver.cpp:5580-5593`). 자원 노드 5,001개 × 연결 8개의 검사는 남는다. 모든 연결에서 Dormant 상태가 된 자원 노드는 활성 목록에서 빠지고(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`), 고려 목록은 활성 목록만 돈다(`NetDriver.cpp:5315`). 그래서 Dormancy는 Relevancy가 남긴 몫을 줄인다. 이 몫이 실행 사이의 변동 폭(중앙값의 12.8%)보다 클지는 아직 모른다.
 
 **NPC의 Net Update Frequency 조정은 마지막에 한다.** `NetUpdateFrequency`를 10으로 낮추면 NPC의 다음 고려 시각은 지금 + 0\~1/30초 + 0.1초가 된다(`NetDriver.cpp:5420-5425`, `6341-6348`). 기준선의 프레임 간격(약 0.18\~0.2초)에서는 다음 프레임이 올 때 이 시각이 이미 지나 있어서, 계산상 효과가 없다. 앞의 두 기법으로 프레임 간격이 0.133초보다 짧아져야 건너뛰는 프레임이 생기기 시작한다.
 
 **구현하지 않는 후보.**
 
-- Adaptive Net Update Frequency(`net.UseAdaptiveNetUpdateFrequency`): 보낼 것이 없는 액터의 고려 간격을 늘린다. 노드 비용을 겨냥하지만 노드를 고려 목록에서 빼지는 않고, 같은 비용은 Dormancy가 겨냥한다.
+- Adaptive Net Update Frequency(`net.UseAdaptiveNetUpdateFrequency`): 보낼 것이 없는 액터의 고려 간격을 늘린다. 자원 노드의 비용을 겨냥하지만 자원 노드를 고려 목록에서 빼지는 않고, 같은 비용은 Dormancy가 겨냥한다.
 - 푸시 모델: 프로퍼티 비교 비용을 줄인다. 이 트레이스에서는 비교 비용이 클래스 타이머 안에 섞여 따로 보이지 않아, 얼마나 줄지 가늠할 근거가 없다.
 - 송신 한도와 우선순위: 기준선은 연결당 한도 350,000바이트/초에서 포화되지 않았다(`saturated_ratio` 0.000). 줄일 대상이 없다.
 
