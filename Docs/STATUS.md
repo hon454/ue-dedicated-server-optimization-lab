@@ -4,14 +4,14 @@
 
 ## 단계
 
-**단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. 남은 것은 사용자의 14.5(전체 읽기)와 14.7(푸시)이다. 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
+**단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. `d165aea`까지 푸시했고 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 남은 것은 사용자의 14.5(전체 읽기)다. 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
 - 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
 
 ## 다음 할 일
 
 1. **[사람] 태스크 14.5.** 포스팅 0\~4와 README를 처음부터 끝까지 읽는다. 고칠 곳이 나오면 에이전트가 고친다. 이미 붙인 태그는 옮기지 않는다.
-2. **[사람] 태스크 14.7.** `git push origin main --tags`. 푸시는 사용자가 정한 시점에 한다.
+2. 14.5에서 고친 것이 생기면 커밋한 뒤, 푸시는 사용자가 정한 시점에 한다.
 3. 다음 세션을 시작할 때 이 파일에 남은 태스크 9.4\~9.5, 14의 기록(아래 "태스크 14에서 한 일")을 `Worklog/00-testbed.md`로 옮기는 정리안을 낸다. 그 뒤의 주제는 [backlog.md](Planning/backlog.md)의 우선순위 순이다.
 
 ### 태스크 14에서 한 일 (2026-10-02)
@@ -147,4 +147,4 @@ NPC 업데이트 빈도 `update-frequency3`(2026-10-02, 중앙값 실행 `r1`)�
 - **포스팅 4 확인.** [포스팅 4](../Posts/04-update-frequency/README.md)의 "관찰"과 "선택"은 인터뷰 답(대역폭 중심, 포스팅 1의 이유와 전제가 채워졌는지 확인)을 에이전트가 문장으로 옮긴 것이다. 초안과 끊김 영상은 승인됐다(2026-10-02). 남은 것은 Insights 캡처 네 장과 `before-clip.gif`, `after-clip.gif`를 보고 다른 장면이 좋으면 바꾸는 것이다.
 - **포스팅 3 확인.** [포스팅 3](../Posts/03-dormancy/README.md)의 "정확성 확인"에 넣은 전후 영상(`before-clip.gif`, `after-clip.gif`)과 세 항목의 표, 다시 찍은 `after-timing.png`, `after-network.png`를 보고 다른 장면이 좋으면 바꾼다. 요약의 내려다보기 화면은 순번 04(t=75s)다.
 - **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인). "관찰"의 서버 프레임 시간 문장은 ADR-0010에 맞춰 에이전트가 고쳤다(아직 확인하지 않음).
-- **태스크 14.5, 14.7.** 위 "다음 할 일". 포스팅 0의 `timing.png`, `network.png`도 다른 장면이 좋으면 바꾼다.
+- **태스크 14.5.** 위 "다음 할 일". 포스팅 0의 `timing.png`, `network.png`도 다른 장면이 좋으면 바꾼다.

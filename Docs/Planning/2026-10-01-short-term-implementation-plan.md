@@ -549,7 +549,7 @@ git commit -m "docs: add README hub and post 0 (testbed and measurement method)"
 git tag post-00-testbed
 ```
 
-- [ ] **9.6 [사람] GitHub에 올린다.** 원격 저장소(`origin`)는 이미 있다. `git push origin main --tags`를 실행한다.
+- [x] **9.6 [사람] GitHub에 올린다.** 원격 저장소(`origin`)는 이미 있다. `git push origin main --tags`를 실행한다.
 
 ---
 
@@ -790,7 +790,7 @@ git add -A
 git commit -m "docs: polish posts and README hub"
 ```
 
-- [ ] **14.7 [사람] 푸시한다.** `git push origin main --tags`
+- [x] **14.7 [사람] 푸시한다.** `git push origin main --tags`
 
 ---
 
