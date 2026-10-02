@@ -84,16 +84,18 @@ xychart-beta
 
 위 숫자는 형식을 보여주는 예시다. 실제 측정값을 넣는다.
 
-**사람이 모으는 것**
+**에이전트가 찍어 후보로 주고 사람이 고르는 것**
 
 | 자료 | 언제 | 파일 이름 |
 | --- | --- | --- |
 | Timing Insights 프레임 그래프와 타이머 트리 | 포스팅마다 적용 후. 적용 전은 직전 포스팅의 것을 쓴다 | `before-timing.png`, `after-timing.png` |
 | Network Insights 패킷 내용 화면 | 포스팅마다 적용 후. 적용 전은 직전 포스팅의 것을 쓴다 | `before-network.png`, `after-network.png` |
-| 클라이언트 화면 영상 10초 안팎(GIF 또는 MP4) | 정확성 확인 항목이 움직임일 때 | `before-clip.gif`, `after-clip.gif` |
+| 클라이언트 화면 영상 10초 안팎(GIF, 폭 960px, 15fps) | 정확성 확인 항목이 움직임일 때 | `before-clip.gif`, `after-clip.gif` |
 | 8개 창이 떠 있는 전체 화면 | 테스트베드 포스팅에 한 번 | `all-clients.png` |
 
-Insights 스크린샷은 에이전트가 찍어 후보로 주고(2026-10-01 사용자 결정, `Docs/Guides/insights-reading.md`), 사람이 고르거나 직접 찍는다. 영상은 Windows 게임 바(Win+Alt+R)나 ShareX로 녹화한다. Insights 스크린샷은 전후를 같은 확대 수준으로, 두 북마크 사이의 구간에서 찍는다.
+Insights 스크린샷은 에이전트가 찍어 후보로 주고(2026-10-01 사용자 결정, `Docs/Guides/insights-reading.md`), 사람이 고르거나 직접 찍는다. Insights 스크린샷은 전후를 같은 확대 수준으로, 두 북마크 사이의 구간에서 찍는다.
+
+영상과 전체 화면은 에이전트가 `Scripts/capture-video.ps1`로 찍는다(2026-10-02 사용자 결정). 화면을 그대로 받아서 사용자의 다른 창이 찍힐 수 있으므로, 찍기 전에 무엇을, 어느 실행에서, 몇 초, 어느 파일 이름으로 찍는지 채팅에 적고 승인을 받는다. 녹화는 측정 PC의 CPU를 쓰므로 수치를 쓰는 측정 실행에서는 찍지 않는다. 8개 창이 필요하면 시각 자료 전용 라벨(`visual1`, `visual2`, …)로 `run-scenario.ps1`을 돌리고 `-AllowMeasuring`을 준다. 이 라벨의 수치는 비교에 쓰지 않는다. 전후 영상은 자동 이동 클라이언트의 정해진 정사각형 경로를 같은 창 배치로 찍는다. 찍은 뒤 `Saved/Screenshots/Lab/<이름>-preview.png`를 열어 원하는 장면이 담겼는지 확인한다. 영상은 GitHub 마크다운 본문에서 이미지처럼 바로 보이는 GIF로 넣는다.
 
 ## 파일 구조
 
@@ -535,7 +537,7 @@ git commit -m "chore: fix scenario scale and baseline conditions after calibrati
 
 - [x] **9.3 자동 스크린샷을 넣는다.** `Posts/00-testbed/images/`에는 README용으로 `overlay2-r1`의 `tpp.png`(순번 01), `topdown.png`(순번 00)가 이미 있다. 아래의 확정 규모 이미지로 덮어쓴다. 태스크 8의 확정 규모 실행에서 나온 3인칭 화면 한 장과 내려다보기 화면 한 장을 골라 `Posts/00-testbed/images/`에 `tpp.png`, `topdown.png`로 복사하고 본문에 넣는다. 내려다보기 화면에는 점 색의 의미를 설명하는 캡션을 단다.
 
-- [ ] **9.4 [사람] 나머지 시각 자료를 넣는다.** 8개 창이 떠 있는 전체 화면(`all-clients.png`), Timing Insights 한 장, Network Insights 한 장, 클라이언트가 걷는 10초 영상 하나를 `Posts/00-testbed/images/`에 넣는다. 에이전트가 본문의 자리 표시를 이미지 링크로 바꾼다.
+- [ ] **9.4 나머지 시각 자료를 넣는다.** 에이전트가 녹화 계획(창, 실행 라벨 `visual1`, 길이, 파일 이름)을 채팅에 적어 허가를 받은 뒤, 확정 명령의 `run-scenario.ps1`을 `-Label visual1`로 돌리면서 `Scripts/capture-video.ps1 -AllowMeasuring`으로 8개 창이 떠 있는 전체 화면(`all-clients.png`)과 클라이언트가 걷는 10초 영상(`clip.gif`)을 찍어 `Posts/00-testbed/images/`에 넣고, 본문의 자리 표시를 이미지 링크로 바꾼다. Timing Insights와 Network Insights는 이미 넣은 `timing.png`, `network.png`를 쓴다. [사람] 넣은 자료를 보고 고르거나 바꾼다.
 
 - [ ] **9.5 `Docs/STATUS.md`를 갱신하고 커밋, 태그한다.** 포스팅 진행표에서 0번을 "완료"로 바꾸고 태그 이름을 적는다.
 
@@ -623,7 +625,7 @@ git tag post-01-baseline
 
 - **11.5 자동 시각 자료를 모은다.** "시각 자료 규칙"에 따라 이번 실행의 자동 스크린샷을 `after-tpp.png`, `after-topdown.png`로, 직전 구성 실행의 같은 순번 스크린샷을 `before-tpp.png`, `before-topdown.png`로 `Posts/NN-이름/images/`에 복사한다. 이미지를 직접 열어, 화면 위 글자의 노드 수와 NPC 수가 "기법별 코드"의 해당 항목에 적힌 예상과 맞는지 확인한다. 기법마다 예상이 다르다. 화면의 액터 수와 CSV의 열린 채널 수는 서로 다른 수치라서 같은 방향으로 움직이지 않을 수 있다.
 
-- **11.6 [사람] 정확성을 확인하고 나머지 시각 자료를 모은다.** "기법별 코드"의 해당 항목에 적힌 확인 항목을 `Scripts/run-manual.ps1`로 띄운 화면에서 보고 캡처한다. 움직임이 관련된 항목은 영상을 찍는다. 적용 후의 Timing Insights와 Network Insights 스크린샷을 찍는다. 적용 전 스크린샷은 직전 포스팅의 것을 쓴다.
+- **11.6 정확성을 확인하고 나머지 시각 자료를 모은다.** 에이전트가 적용 후의 Timing Insights와 Network Insights 스크린샷을 찍는다. 적용 전 스크린샷은 직전 포스팅의 것을 쓴다. 움직임이 관련된 확인 항목은 에이전트가 녹화 계획을 채팅에 적어 허가를 받은 뒤 `Scripts/capture-video.ps1`로 전후 영상을 찍는다. 적용 전 영상은 직전 구성으로 같은 경로와 창 배치에서 찍는다. 찍은 뒤 미리보기를 열어 확인 항목이 화면에 담겼는지 본다. [사람] "기법별 코드"의 해당 항목에 적힌 확인 항목을 영상이나 `Scripts/run-manual.ps1`로 띄운 화면에서 확인하고, 포스팅에 넣을 자료를 고른다. 자동 이동 경로로 담기지 않는 장면은 사람이 관찰자를 조작하고 에이전트가 녹화한다.
 
 - **11.7 다음 후보 자료를 갱신한다.** 남은 기법이 있으면 `Posts/NN-이름/candidates.md`에 태스크 10.3의 표에서 이미 적용한 기법을 뺀 것을 쓴다. 순위나 추천을 적지 않는다.
 

@@ -1,12 +1,17 @@
-﻿# 화면을 녹화해 MP4, GIF, WebP로 저장한다. 포스팅에 넣을 클라이언트 영상에 쓴다.
+﻿# 화면을 녹화해 MP4, GIF, WebP로, 또는 한 장을 PNG로 저장한다. 포스팅에 넣을 클라이언트 영상과 화면에 쓴다.
 #   powershell -ExecutionPolicy Bypass -File Scripts/capture-video.ps1 -Seconds 10 -Out Posts/00-testbed/images/clip.mp4 -Window "DSOptLab*"
 #   -Window <제목 패턴> : 제목이 패턴에 맞는 창을 모두 감싸는 영역을 찍는다(클라이언트 여러 개를 한 화면에).
 #   -Region "x,y,w,h"  : 화면 좌표의 영역을 찍는다. -Window와 -Region을 모두 빼면 주 모니터 전체를 찍는다.
 #   -Out의 확장자로 형식을 정한다. .gif와 .webp는 MP4로 먼저 찍은 뒤 -GifFps, -Width로 줄여 변환한다.
+#   .png는 한 프레임만 찍는다(8개 창이 떠 있는 전체 화면 같은 정지 화면).
 #   -Delay N 을 주면 N초 기다렸다가 찍는다. -NoMouse는 커서를 빼고 찍는다.
+#
+# 화면 전체나 영역에는 사용자의 다른 창이 찍힐 수 있다. 에이전트는 찍기 전에 사용자에게 허가를 받는다(AGENTS.md).
 #
 # 화면 복제 API(ddagrab)로 받아 GPU 인코더(h264_nvenc)로 바로 넣는다. CPU를 거의 쓰지 않지만 0은 아니고,
 # GIF/WebP 변환은 녹화가 끝난 뒤 CPU로 한다. 그래서 측정 중인 서버(-LabMeasure)가 떠 있으면 찍지 않는다.
+# 8개 클라이언트는 run-scenario.ps1로만 뜨므로, 수치를 쓰지 않는 시각 자료 전용 라벨(visualN)의 실행에서는
+# -AllowMeasuring으로 이 검사를 건너뛴다. 그 라벨의 수치는 포스팅과 STATUS.md의 비교에 쓰지 않는다.
 # 화면을 받으므로 창 위에 겹친 다른 창도 함께 찍힌다. -Window로 고른 창은 녹화하는 동안 맨 위로 올린다.
 # -Region이나 전체 화면은 그대로 찍으니 찍을 창을 앞에 두고 실행한다.
 #
@@ -22,7 +27,8 @@ param(
     [int]$GifFps = 15,
     [int]$Width = 960,
     [double]$Delay = 0,
-    [switch]$NoMouse
+    [switch]$NoMouse,
+    [switch]$AllowMeasuring
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -40,8 +46,8 @@ if (-not $Ffmpeg) {
 # 측정 중인 실행의 수치를 오염시키지 않는다.
 $Measuring = @(Get-CimInstance Win32_Process -Filter "Name = 'UnrealEditor.exe'" -ErrorAction SilentlyContinue |
     Where-Object { $_.CommandLine -match '-LabMeasure' })
-if ($Measuring.Count -gt 0) {
-    throw "A measuring server is running (pid $($Measuring.ProcessId -join ', ')). Record with Scripts/run-manual.ps1 instead."
+if ($Measuring.Count -gt 0 -and -not $AllowMeasuring) {
+    throw "A measuring server is running (pid $($Measuring.ProcessId -join ', ')). Record with Scripts/run-manual.ps1, or pass -AllowMeasuring only for a visual-only label (visualN)."
 }
 
 Add-Type @"
@@ -96,11 +102,11 @@ if ($W -le 0 -or $H -le 0) {
 
 $OutPath = if ([System.IO.Path]::IsPathRooted($Out)) { $Out } else { Join-Path $ProjectDir $Out }
 $Ext = [System.IO.Path]::GetExtension($OutPath).ToLowerInvariant()
-if ($Ext -notin @('.mp4', '.gif', '.webp')) {
-    throw "-Out must end with .mp4, .gif or .webp."
+if ($Ext -notin @('.mp4', '.gif', '.webp', '.png')) {
+    throw "-Out must end with .mp4, .gif, .webp or .png."
 }
 New-Item -ItemType Directory -Force (Split-Path $OutPath) | Out-Null
-$Mp4Path = if ($Ext -eq '.mp4') { $OutPath } else { Join-Path $env:TEMP ("lab-capture-{0}.mp4" -f [guid]::NewGuid()) }
+$Mp4Path = if ($Ext -in @('.mp4', '.png')) { $OutPath } else { Join-Path $env:TEMP ("lab-capture-{0}.mp4" -f [guid]::NewGuid()) }
 
 if ($Delay -gt 0) { Start-Sleep -Seconds $Delay }
 
@@ -115,10 +121,17 @@ try {
     foreach ($P in $Targets) {
         [LabVideo]::SetWindowPos($P.MainWindowHandle, $HWND_TOPMOST, 0, 0, 0, 0, $SWP_NOSIZE_NOMOVE_NOACTIVATE) | Out-Null
     }
-    # NVENC가 화면의 BGRA를 YUV 4:2:0(브라우저가 재생하는 형식)으로 바꿔 넣는다.
-    & $Ffmpeg -hide_banner -loglevel error -y -f lavfi -i $Grab -t $Seconds `
-        -c:v h264_nvenc -preset p5 -tune hq -rc vbr -cq 23 -b:v 0 `
-        -movflags +faststart $Mp4Path
+    if ($Ext -eq '.png') {
+        # 첫 프레임은 창을 올리기 전의 화면일 수 있어 1초 뒤의 프레임을 받는다.
+        & $Ffmpeg -hide_banner -loglevel error -y -f lavfi -i $Grab -vf "hwdownload,format=bgra,trim=start=1" `
+            -frames:v 1 -update 1 $OutPath
+    }
+    else {
+        # NVENC가 화면의 BGRA를 YUV 4:2:0(브라우저가 재생하는 형식)으로 바꿔 넣는다.
+        & $Ffmpeg -hide_banner -loglevel error -y -f lavfi -i $Grab -t $Seconds `
+            -c:v h264_nvenc -preset p5 -tune hq -rc vbr -cq 23 -b:v 0 `
+            -movflags +faststart $Mp4Path
+    }
 }
 finally {
     foreach ($P in $Targets) {
@@ -127,6 +140,10 @@ finally {
 }
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path $Mp4Path)) {
     throw "ffmpeg recording failed (exit $LASTEXITCODE)."
+}
+if ($Ext -eq '.png') {
+    Write-Host ("SAVED: {0}" -f $OutPath)
+    exit 0
 }
 
 $Scale = "scale='min($Width,iw)':-2:flags=lanczos"
