@@ -19,6 +19,8 @@
 | 문서 | `Docs/STATUS.md`, `Docs/Planning/` |
 | 포스팅 | `Posts/NN-이름/` |
 
+`Scripts/common.ps1`이 엔진을 찾지 못하면 그 스크립트를 실행하는 프로세스에서 `reg query "HKCU\Software\Epic Games\Unreal Engine\Builds"`로 `UE_DSOptLab`이 보이는지 먼저 확인한다. Claude 앱 안의 에이전트 프로세스에서는 레지스트리 편집기와 다른 값이 보인 적이 있다(2026-10-02, 원인은 확인하지 않았다. 경위는 [Worklog/01-baseline.md](../Worklog/01-baseline.md)).
+
 `.gitignore`는 레포를 만들 때 들어간 GitHub의 Unreal 템플릿(루트 기준)을 그대로 쓰고 `.idea/`, `*.slnx`, `*.utrace`만 더했다.
 
 ## 가. 기본값과 이름

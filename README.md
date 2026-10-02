@@ -202,6 +202,7 @@ Docs/                      작업 문서
 | [구현 계획](Docs/Planning/2026-10-01-short-term-implementation-plan.md) | 태스크별 체크리스트, 수치의 이름과 출처 |
 | [엔진 소스 확인 기록](Docs/Planning/engine-notes.md) | 5.8.3 소스에서 확인한 기본값과 동작 순서(파일과 줄 번호) |
 | [현재 상태](Docs/STATUS.md) | 진행 상황, 확정값, 측정 결과 |
+| 작업 기록: [테스트베드](Docs/Worklog/00-testbed.md), [포스팅 1](Docs/Worklog/01-baseline.md) | 끝낸 작업의 경위, 실패한 실행, 보정 실행 수치 |
 | [Insights 읽는 순서](Docs/Guides/insights-reading.md), [단계별 기록](Docs/Guides/insights-walkthrough-calib-f.md) | 트레이스에서 수치를 읽는 절차와, 화면을 하나씩 캡처하며 읽은 예 |
 | [PC 사양](Docs/Planning/pc-specs.md) | 측정 환경 |
 
