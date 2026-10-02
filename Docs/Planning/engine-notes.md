@@ -220,6 +220,29 @@
 
 프레임당 송신량은 상태와 무관하다. 30Hz 환산 송신량이 `calib-b-r1` 172,638, `calib-e-r1` 172,756, `diag-d-r1` 172,271(32,540 × 30 ÷ (340 ÷ 60))이라 고정한 송신 한도 350,000은 그대로 맞다.
 
+
+## 아. 서버 틱이 30Hz가 아니라 약 21Hz로 도는 원인 (2026-10-03)
+
+틱 예산 안의 구성에서 `frames`가 60초에 약 1,790이 아니라 약 1,280으로 나오는 실행이 있었다(`relevancy2-r1` 1,304, `dormancy2-r1` 1,288, `refactor-after2-r1` 1,271, `refactor-after2-r3` 1,287). 서버 로그의 프레임 번호로 보면 시작 신호 전의 대기 구간에서 이미 5초에 약 107프레임이다.
+
+원인은 Windows 11이 서버 프로세스의 타이머 해상도 요청을 무시하는 것이다.
+
+- 엔진은 시작할 때 타이머 해상도 1ms를 요청한다(`WindowsPlatformMisc.cpp:1076`의 `timeBeginPeriod(1)`). 틱 속도 제한은 남은 시간에서 2ms를 뺀 만큼 `::Sleep`으로 자고 나머지를 돌면서 기다린다(`UnrealEngine.cpp:3116`의 `SleepNoStats(WaitTime - 0.002f)`, `WindowsPlatformProcess.cpp:1883`).
+- Windows 11은 창을 가진 프로세스의 창이 최소화되거나 완전히 가려지면 그 프로세스에 기본 해상도(15.625ms)보다 높은 해상도를 보장하지 않는다(Microsoft 문서의 `timeBeginPeriod` 설명). 서버는 `-log`의 콘솔 창을 가진 프로세스다(창의 소유 프로세스가 `UnrealEditor`임을 `GetWindowThreadProcessId`로 확인).
+- 해상도가 15.625ms면 `::Sleep`이 그 배수에서만 깨어나 프레임 주기가 33.3ms가 아니라 15.625 × 3 = 46.875ms(21.3Hz)에 맞춰진다.
+
+실행으로 확인한 것:
+
+| 실행 | 조건 | 결과 |
+| --- | --- | --- |
+| `timerdiag1`(서버만) | 콘솔 창을 그대로 → 최소화 → 복원을 20초씩 두 번 | 시스템 타이머 해상도(`NtQueryTimerResolution`)가 1ms → 15.625ms → 1ms로 창 상태를 따라 바뀜. 틱은 30.2Hz → 28.5\~29.7Hz → 30.3Hz |
+| `timerdiag-min-r1`, `timerdiag-min2-r1`(작은 규모 시나리오) | 서버 콘솔 창을 최소화 | `frames` 644, 645(30초, 21.5Hz) |
+| `timerdiag-optout-r1`, `timerdiag-optout2-r1`(같은 규모) | 최소화하고, 서버 프로세스에 `SetProcessInformation(ProcessPowerThrottling)`으로 `PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION`을 끔 | `frames` 901, 902(30Hz) |
+
+- 측정 실행에서는 아무도 창을 최소화하지 않았다. 클라이언트 창이나 다른 창이 서버 콘솔 창을 완전히 가린 것으로 추정하지만, 가려진 상태만으로 재현하는 실행은 하지 않았다(`timerdiag3`은 다른 프로세스가 해상도 1ms를 잡고 있어 판정하지 못했다).
+- 영향: `frames`와 초당 값(`out_bytes_per_sec_per_conn`)이 약 0.71배가 된다. 틱마다 하는 일이 달라져 `work_avg_ms`도 흔들릴 수 있다(`dormancy2-r1` 16.205, `refactor-after2-r3` 14.794. `refactor-after2-r1`은 12.850으로 차이가 없었다). 틱 예산을 넘는 구성(`baseline3`)은 기다리지 않으므로 영향이 없다.
+- 대처안은 [ADR-0012](../Decisions/0012-server-timer-resolution.md)(제안됨)에 있다.
+
 ## 라. 계획 초안의 코드에서 바꾼 것 요약
 
 | 태스크 | 바꾼 것 | 이유 |
