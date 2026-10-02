@@ -109,7 +109,7 @@ NPC 하나의 움직임을 전후로 비교할 때는 `run-scenario.ps1`에 `-Sh
 | `Source/DSOptLab/LabGameMode.h/.cpp` | 월드 생성(노드, NPC), 공통 시작 신호, 플레이어 배치 |
 | `Source/DSOptLab/LabPlayerController.h/.cpp` | 준비 보고, 자동 이동, 자동 채집, 채집 RPC, 화면 표시와 자동 스크린샷 |
 | `Source/DSOptLab/LabMetricsSubsystem.h/.cpp` | 서버 측정. 준비와 측정 구간을 관리하고 CSV를 남긴 뒤 서버를 종료한다. 연결이 바뀌면 실패로 끝낸다 |
-| `Source/DSOptLab/LabCharacter.h/.cpp` | 템플릿의 캐릭터 클래스. 이름만 바꿨다. `BP_ThirdPersonCharacter`의 부모다 |
+| `Source/DSOptLab/LabCharacter.h/.cpp` | 템플릿의 캐릭터 클래스. 이름만 바꿨다. `BP_LabCharacter`의 부모다 |
 | `Scripts/common.ps1` | 다른 스크립트가 불러 쓴다. `.uproject`의 `EngineAssociation`을 레지스트리에서 찾아 엔진 경로를 정한다 |
 | `Scripts/build.ps1` | 에디터 타깃 빌드 |
 | `Scripts/run-scenario.ps1` | 측정 실행. 서버와 클라이언트를 서로 다른 코어에 배정해 띄우고, 실패를 검출하고, 정리한다 |
@@ -386,7 +386,7 @@ git commit -m "feat: add server metrics subsystem with start signal, failure han
 | 증상 | 확인 |
 | --- | --- |
 | 서버가 "Waiting for 2 ready clients"에서 멈춤 | `Saved/Logs/client0-smoke1-r1.log`에서 접속 오류를 찾는다. 셰이더 컴파일이 오래 걸렸으면 다른 라벨로 다시 실행한다. 서버 로그의 `ready=` 값이 올라오지 않으면 `ServerReportReady`가 호출되는지 본다. |
-| 클라이언트가 떨어지거나 폰이 없음 | 서버 로그에서 `BP_ThirdPersonCharacter` 로드 실패를 찾는다. 태스크 2.6의 경로를 다시 확인한다. |
+| 클라이언트가 떨어지거나 폰이 없음 | 서버 로그에서 `BP_LabCharacter` 로드 실패(`DefaultPawnClass is`)를 찾는다. `LabGameMode.cpp`의 경로를 다시 확인한다. |
 | 서버 종료 코드가 0이 아닌데 CSV 행은 있음 | 서버 로그 끝에서 종료 과정의 오류를 찾는다. 에디터 빌드 실행 파일이 종료 시 다른 코드를 돌려주는 것이 원인이면, 종료 코드 검사를 서버 로그의 `Run failed` 문자열 검사로 바꾼다. |
 | 로그 파일 이름이 다름 | `-LOG=` 인자가 5.8.3에서 다르게 동작하면 `Saved/Logs/`의 실제 파일 이름을 쓴다. |
 | 프로세스 선호도 설정에서 오류 | 프로세스가 이미 종료된 것이다. 해당 프로세스의 로그를 본다. |

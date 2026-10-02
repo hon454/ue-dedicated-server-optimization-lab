@@ -123,14 +123,15 @@
 
 | 남긴 것 | 내용 |
 | --- | --- |
-| `Source/DSOptLab/LabCharacter.h/.cpp` | 템플릿의 `ADSOptLabCharacter`를 `ALabCharacter`로 이름만 바꿨다. `BP_ThirdPersonCharacter`의 부모 클래스다 |
-| `Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter` | 플레이어 폰. `ALabGameMode`가 경로 `/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter`로 읽는다 |
+| `Source/DSOptLab/LabCharacter.h/.cpp` | 템플릿의 `ADSOptLabCharacter`를 `ALabCharacter`로 이름만 바꿨다. `BP_LabCharacter`의 부모 클래스다 |
+| `Content/Blueprints/BP_LabCharacter` | 플레이어 폰. `ALabGameMode`가 경로 `/Game/Blueprints/BP_LabCharacter`로 읽는다. 템플릿의 `Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter`를 옮기고 이름을 바꿨다(2026-10-03) |
 | `Content/Characters/Mannequins/` | 위 블루프린트가 참조하는 메시, 머티리얼, 텍스처, 릭, 기본 이동 애니메이션 46개 |
 | `Content/Input/` | 입력 액션 4개, 매핑 2개, 터치 인터페이스 1개 |
 | `Content/Maps/L_Lab` | 태스크 1.4의 맵 |
 
-- 남길 에셋은 `L_Lab`, `BP_ThirdPersonCharacter`, `IMC_Default`, `IMC_MouseLook`에서 에셋 파일 안의 `/Game/...` 경로 문자열을 따라가 정했다. 754개 중 55개(89.6MB)가 남았다. 제거 뒤 `smoke5-r1`이 종료 코드 0으로 끝났고 서버와 클라이언트 로그에 로드 실패가 없었다.
-- **리다이렉트.** `BP_ThirdPersonCharacter`는 부모 클래스를 템플릿 원본 이름 `/Script/TP_ThirdPerson.TP_ThirdPersonCharacter`로 저장하고 있다(에셋의 이름 표에서 확인). `Config/DefaultEngine.ini`의 `ActiveGameNameRedirects`(`TP_ThirdPerson` → `/Script/DSOptLab`)와 `ActiveClassRedirects`(`TP_ThirdPersonCharacter` → `LabCharacter`)가 이것을 `ALabCharacter`로 잇는다. 이 두 줄을 지우면 폰이 로드되지 않는다. 블루프린트를 에디터에서 다시 저장하면 새 이름이 에셋에 들어가지만, 하지 않아도 동작한다.
+- 남길 에셋은 `L_Lab`, `BP_ThirdPersonCharacter`(지금의 `BP_LabCharacter`), `IMC_Default`, `IMC_MouseLook`에서 에셋 파일 안의 `/Game/...` 경로 문자열을 따라가 정했다. 754개 중 55개(89.6MB)가 남았다. 제거 뒤 `smoke5-r1`이 종료 코드 0으로 끝났고 서버와 클라이언트 로그에 로드 실패가 없었다.
+- **리다이렉트(2026-10-03에 없앰).** 태그 `post-04-update-frequency`까지의 `BP_ThirdPersonCharacter`는 부모 클래스를 템플릿 원본 이름 `/Script/TP_ThirdPerson.TP_ThirdPersonCharacter`로 저장하고 있었고, `Config/DefaultEngine.ini`의 `ActiveGameNameRedirects`와 `ActiveClassRedirects`가 이것을 `ALabCharacter`로 이었다. 이름을 `BP_LabCharacter`로 바꾸며 다시 저장한 뒤로는 에셋이 `/Script/DSOptLab.LabCharacter`를 직접 저장한다(에셋의 이름 표에서 확인). 그래서 리다이렉트 세 줄을 지웠다. 지운 뒤 `refactor-b-r1`이 종료 코드 0으로 끝났다.
+- **에셋 이름을 에디터 없이 바꾸는 법.** `UnrealEditor-Cmd.exe <.uproject> -run=pythonscript -script=<파일>`로 `unreal.EditorAssetLibrary.rename_asset(옛 경로, 새 경로)`와 `save_asset`을 부른다. 옛 파일은 디스크에 그대로 남으므로(리디렉터 파일은 생기지 않았다) 참조하는 에셋이 없는지 확인한 뒤 직접 지운다. 그래프 함수 이름(`ExecuteUbergraph_<이름>`)은 `unreal.BlueprintEditorLibrary.compile_blueprint` 뒤에 다시 저장해야 바뀐다. 이 커맨드릿은 에디터처럼 `DefaultEngine.ini`에 `AndroidFileServerRuntimeSettings` 섹션을 다시 써넣는다.
 - 템플릿의 `ADSOptLabPlayerController`와 `ADSOptLabGameMode`, 그 블루프린트는 지웠다. 템플릿 컨트롤러가 블루프린트에서 지정하던 입력 매핑(`IMC_Default`, `IMC_MouseLook`)은 `ALabPlayerController`가 생성자에서 읽어 `SetupInputComponent`에서 등록한다. 터치 조작 위젯은 옮기지 않았다.
 - 모듈 의존성에서 `AIModule`, `StateTreeModule`, `GameplayStateTreeModule`, `UMG`, `Slate`를, `.uproject`에서 `StateTree`, `GameplayStateTree` 플러그인을 뺐다.
 

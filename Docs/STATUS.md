@@ -6,7 +6,7 @@
 
 **단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. `d165aea`까지 푸시했고 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 남은 것은 사용자의 14.5(전체 읽기)다. 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있고, 태스크 9.4\~9.5와 14는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 9.4\~9.5, 14"에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
-- 코드 정리 A1\~A7(2026-10-03): 스크립트의 실행 인자 공통화와 검사 추가, 템플릿 흔적 제거, 폰 블루프린트 로드 실패 검사. 서버의 틱 경로는 바꾸지 않았다. 빌드 성공, 작은 규모 실행 `refactor-a-r1`이 종료 코드 0(`frames` 903, `work_avg_ms` 1.509, 확정 규모가 아니라 비교에 쓰지 않는다). 확정 규모의 재측정은 하지 않았다. 하지 않고 남긴 후보는 컨트롤러의 화면 표시 분리, 그리고 서버 측정 경로를 건드려 확인 측정이 필요한 네 가지(시작 조건을 게임 모드로 옮기기, 틱 예산을 넷 드라이버에서 읽기, 영상용 NPC를 하위 클래스로 빼기, 설정 구조체 나누기)다.
+- 코드 정리 A1\~A7(2026-10-03): 스크립트의 실행 인자 공통화와 검사 추가, 템플릿 흔적 제거, 폰 블루프린트 로드 실패 검사. 서버의 틱 경로는 바꾸지 않았다. 빌드 성공, 작은 규모 실행 `refactor-a-r1`이 종료 코드 0(`frames` 903, `work_avg_ms` 1.509, 확정 규모가 아니라 비교에 쓰지 않는다). 이어서 플레이어 폰 블루프린트를 `Content/Blueprints/BP_LabCharacter`로 옮기고 `TP_ThirdPerson` 리다이렉트를 지웠다(`refactor-b-r1`, 종료 코드 0, `frames` 904, `work_avg_ms` 1.435. 방법은 engine-notes.md 다절). Insights의 폰 타이머 이름은 이제 `BP_LabCharacter_C`다. 확정 규모의 재측정은 하지 않았다. 하지 않고 남긴 후보는 컨트롤러의 화면 표시 분리, 그리고 서버 측정 경로를 건드려 확인 측정이 필요한 네 가지(시작 조건을 게임 모드로 옮기기, 틱 예산을 넷 드라이버에서 읽기, 영상용 NPC를 하위 클래스로 빼기, 설정 구조체 나누기)다.
 - 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
 
 ## 다음 할 일

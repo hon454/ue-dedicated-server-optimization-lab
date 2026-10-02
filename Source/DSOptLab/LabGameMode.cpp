@@ -19,7 +19,7 @@ ALabGameMode::ALabGameMode()
 	PlayerControllerClass = ALabPlayerController::StaticClass();
 	HUDClass = ALabHUD::StaticClass();
 
-	static ConstructorHelpers::FClassFinder<APawn> PawnFinder(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> PawnFinder(TEXT("/Game/Blueprints/BP_LabCharacter"));
 	if (PawnFinder.Succeeded())
 	{
 		DefaultPawnClass = PawnFinder.Class;
