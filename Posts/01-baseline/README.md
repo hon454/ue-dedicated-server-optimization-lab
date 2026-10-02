@@ -128,14 +128,6 @@ ALabNpc::ALabNpc()
 
 포스팅 2의 수치는 "최적화가 없는 서버를 얼마나 고쳤나"가 아니라 "엔진이 원래 하던 일을 끄면 얼마나 비싸지는가"로 읽어야 합니다. 이 시점의 코드는 태그 [`post-01-baseline`](https://github.com/hon454/ue-dedicated-server-optimization-lab/tree/post-01-baseline)에 있습니다.
 
-## Iris에서는
-
-> 실행해 보지 않은 내용입니다. 언리얼 엔진 5.8.3 소스에서 읽은 범위만 적었고, Iris로 전환한 뒤 실측으로 바꿉니다.
-
-Iris에서는 어떤 객체를 어떤 연결에 보낼지를 필터가 정합니다. 엔진 기본 설정에서 액터의 기본 필터는 격자 기반 공간 필터 `UNetObjectGridWorldLocFilter`입니다(`Engine/Config/BaseEngine.ini:1498`의 `Spatial` 정의와 `1512`의 `DefaultSpatialFilterName=Spatial`). 이 필터의 컬 거리는 레거시와 같은 액터의 `NetCullDistanceSquared`에서 가져옵니다(`Engine/Source/Runtime/Engine/Private/Net/Iris/ReplicationSystem/NetActorFactory.cpp:659`). 그리고 `bAlwaysRelevant`인 클래스에는 공간 필터를 쓰지 않습니다(같은 폴더 `EngineReplicationBridge.cpp:242-253`).
-
-소스대로라면 Iris에서도 같은 두 줄이 같은 무법지대를 만들고, 두 줄을 지우면 기본 공간 필터로 돌아갑니다. 그때 비용이 어디에 얼마나 드는지는 아직 모릅니다.
-
 ## 결과
 
 `baseline3`를 같은 명령으로 세 번 실행했습니다(클라이언트 8, 자원 노드 5,001, NPC 300, 준비 30초, 측정 60초, 서버 논리 프로세서 2\~7, 연결당 송신 한도 350,000바이트/초). 세 실행 모두 종료 코드 0으로 끝났습니다.

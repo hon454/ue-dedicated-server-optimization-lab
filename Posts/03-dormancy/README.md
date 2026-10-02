@@ -96,12 +96,6 @@
 
 이 시점의 코드는 태그 [`post-03-dormancy`](https://github.com/hon454/ue-dedicated-server-optimization-lab/tree/post-03-dormancy)에 있습니다.
 
-## Iris에서는
-
-> 실행해 보지 않은 내용입니다. 언리얼 엔진 5.8.3 소스에서 읽은 범위만 적었습니다.
-
-Iris에서는 액터의 `NetDormancy`가 객체 하나의 "휴면을 원함" 비트로 전달되고(`FReplicationSystemUtil::NotifyActorDormancyChange` → `SetObjectWantsToBeDormant`, `Engine/Source/Runtime/Engine/Private/Net/Iris/ReplicationSystem/ReplicationSystemUtil.cpp:672-687`), 이 비트가 켜진 객체는 프레임마다의 폴링 대상에서 빠집니다(`net.Iris.UseDormancyToFilterPolling` 기본값 true, `Engine/Source/Runtime/Net/Iris/Private/Iris/ReplicationSystem/ObjectReplicationBridge.cpp:77-80, 2075-2080`). `FlushNetDormancy()`는 그 객체를 한 번 폴링하게 합니다(같은 파일 `2083-2098`). 소스대로라면 레거시처럼 연결마다 채널을 거쳐 휴면에 들어가는 구조가 아니라서 이 포스팅에서 남은 비용의 모양이 다를 텐데, 얼마나 다른지는 모릅니다.
-
 ## 결과
 
 `dormancy2`를 직전 구성과 같은 명령으로 세 번 실행했습니다(클라이언트 8, 자원 노드 5,001, NPC 300, 준비 30초, 측정 60초, 서버 논리 프로세서 2\~7, 연결당 송신 한도 350,000바이트/초). 세 실행 모두 종료 코드 0으로 끝났고 `saturated_ratio`는 0.000입니다. 앞선 `dormancy-r1`은 측정 중에 클라이언트의 프로세서 선호도가 다시 설정되어 실패로 처리했고 수치를 쓰지 않았습니다.

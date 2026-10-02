@@ -82,12 +82,6 @@ CPU에서는 4.0%, 송신에서는 71.9%입니다. 그래서 고려 횟수를 �
 
 이 시점의 코드는 태그 [`post-04-update-frequency`](https://github.com/hon454/ue-dedicated-server-optimization-lab/tree/post-04-update-frequency)에 있습니다.
 
-## Iris에서는
-
-> 실행해 보지 않은 내용입니다. 언리얼 엔진 5.8.3 소스에서 읽은 범위만 적었습니다.
-
-Iris에서는 액터의 `NetUpdateFrequency`가 객체의 폴링 빈도로 전달됩니다(`OutParams.PollFrequency = Actor->GetNetUpdateFrequency()`, `Engine/Source/Runtime/Engine/Private/Net/Iris/ReplicationSystem/NetActorFactory.cpp:123`). 폴링 빈도는 "몇 프레임마다 한 번"으로 바뀌어 저장되고(`ConvertFrequencyToFramesBetweenUpdates`, `Engine/Source/Runtime/Net/Iris/Private/Iris/ReplicationSystem/ObjectPollFrequencyLimiter.h:114-128`), 전제하는 갱신 빈도가 30이면 빈도 10은 3프레임에 한 번입니다. 소스대로라면 레거시의 난수 지연이 없어 간격이 4프레임이 아니라 3프레임일 텐데, 실행해서 확인하지 않았습니다.
-
 ## 결과
 
 직전 구성과 이번 구성을 같은 명령으로 세 번씩 실행했습니다(클라이언트 8, 자원 노드 5,001, NPC 300, 준비 30초, 측정 60초, 서버 논리 프로세서 2\~7, 연결당 송신 한도 350,000바이트/초). 여섯 실행 모두 종료 코드 0으로 끝났고 `saturated_ratio`는 0.000입니다.

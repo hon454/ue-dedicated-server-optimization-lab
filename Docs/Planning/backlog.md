@@ -4,7 +4,7 @@
 
 ## 우선순위 순
 
-1. **Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 각 포스팅의 "Iris에서는" 섹션을 실측으로 교체.
+1. **Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](../Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
 2. **인벤토리와 FastArray**: 일반 `TArray` 리플리케이션과 FastArray의 전송 바이트 비교. 소유자 전용 전송.
 3. **자원 노드 구역 매니저**: 노드당 액터 하나에서 구역별 매니저 + FastArray로 전환. 노드별 관련성을 잃는 트레이드오프.
 4. **기본 송신 한도에서의 포화와 우선순위**: 단기에서는 측정 조건으로 연결당 송신 한도를 올렸다. 엔진 기본 한도로 되돌렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지 다룬다.
@@ -23,6 +23,14 @@
 - 캐릭터 무브먼트 리플리케이션 비용
 - 접속 시 초기 전송 폭주 완화
 - 다양한 OS와 플랫폼에서의 프로파일링 (공고 우대사항)
+
+## Iris 전환 때 볼 소스 위치
+
+포스팅 1\~4의 "Iris에서는" 섹션에 있던 내용이다(2026-10-02에 옮김, [ADR-0011](../Decisions/0011-no-iris-preview-section.md)). 모두 언리얼 엔진 5.8.3 소스에서 읽은 것이고 실행해 보지 않았다.
+
+- **관련성(포스팅 1, 2).** Iris에서는 어떤 객체를 어떤 연결에 보낼지를 필터가 정한다. 엔진 기본 설정에서 액터의 기본 필터는 격자 기반 공간 필터 `UNetObjectGridWorldLocFilter`다(`Engine/Config/BaseEngine.ini:1498`의 `Spatial` 정의와 `1512`의 `DefaultSpatialFilterName=Spatial`). 이 필터의 컬 거리는 레거시와 같은 액터의 `NetCullDistanceSquared`에서 가져온다(`Engine/Source/Runtime/Engine/Private/Net/Iris/ReplicationSystem/NetActorFactory.cpp:659`). `bAlwaysRelevant`인 클래스에는 공간 필터를 쓰지 않는다(같은 폴더 `EngineReplicationBridge.cpp:242-253`). 소스대로라면 Iris에서도 같은 두 줄이 같은 무법지대를 만들고, 두 줄을 지우면 기본 공간 필터로 돌아간다. 필터 설정 `UNetObjectGridFilterConfig`의 기본값은 격자 칸 200m × 200m(`CellSizeX`, `CellSizeY` 20,000cm)이고, `bUseExactCullDistance`가 true라서 칸 단위가 아니라 객체와 시점 사이의 실제 거리로 판정한다(`Engine/Source/Runtime/Net/Iris/Public/Iris/ReplicationSystem/Filtering/NetObjectGridFilter.h:66-80`, 엔진 `BaseEngine.ini`에는 이 클래스의 설정 섹션이 없다). 비용이 어디에 얼마나 드는지는 모른다.
+- **휴면(포스팅 3).** 액터의 `NetDormancy`가 객체 하나의 "휴면을 원함" 비트로 전달되고(`FReplicationSystemUtil::NotifyActorDormancyChange` → `SetObjectWantsToBeDormant`, `Engine/Source/Runtime/Engine/Private/Net/Iris/ReplicationSystem/ReplicationSystemUtil.cpp:672-687`), 이 비트가 켜진 객체는 프레임마다의 폴링 대상에서 빠진다(`net.Iris.UseDormancyToFilterPolling` 기본값 true, `Engine/Source/Runtime/Net/Iris/Private/Iris/ReplicationSystem/ObjectReplicationBridge.cpp:77-80, 2075-2080`). `FlushNetDormancy()`는 그 객체를 한 번 폴링하게 한다(같은 파일 `2083-2098`). 소스대로라면 레거시처럼 연결마다 채널을 거쳐 휴면에 들어가는 구조가 아니라서 포스팅 3에서 남은 비용의 모양이 다를 텐데, 얼마나 다른지는 모른다.
+- **업데이트 빈도(포스팅 4).** 액터의 `NetUpdateFrequency`가 객체의 폴링 빈도로 전달된다(`OutParams.PollFrequency = Actor->GetNetUpdateFrequency()`, `Engine/Source/Runtime/Engine/Private/Net/Iris/ReplicationSystem/NetActorFactory.cpp:123`). 폴링 빈도는 "몇 프레임마다 한 번"으로 바뀌어 저장되고(`ConvertFrequencyToFramesBetweenUpdates`, `Engine/Source/Runtime/Net/Iris/Private/Iris/ReplicationSystem/ObjectPollFrequencyLimiter.h:114-128`), 전제하는 갱신 빈도가 30이면 빈도 10은 3프레임에 한 번이다. 소스대로라면 레거시의 난수 지연이 없어 간격이 4프레임이 아니라 3프레임일 텐데, 실행해서 확인하지 않았다.
 
 ## 작업 중 떠오른 것
 

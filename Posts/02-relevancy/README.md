@@ -81,12 +81,6 @@
 
 이 시점의 코드는 태그 [`post-02-relevancy`](https://github.com/hon454/ue-dedicated-server-optimization-lab/tree/post-02-relevancy)에 있습니다. 수치를 잰 빌드는 커밋 `b438852`이고, 태그에는 그 뒤에 넣은 화면 표시 변경(채집 중인 노드의 높이를 체력에 비례해 줄이고 내려다보기 화면에서 노란 점으로 그림, `8075998`)이 함께 들어 있습니다. 이 변경은 이미 리플리케이트하던 체력을 화면에 그리는 것이라 보내는 프로퍼티는 같지만, 서버 수치로 대조하지는 않았습니다.
 
-## Iris에서는
-
-> 실행해 보지 않은 내용입니다. 언리얼 엔진 5.8.3 소스에서 읽은 범위만 적었습니다.
-
-포스팅 1에서 본 대로 Iris에서는 기본 공간 필터 `UNetObjectGridWorldLocFilter`가 같은 일을 하고, `bAlwaysRelevant`를 지우면 이 필터가 액터의 `NetCullDistanceSquared`로 판정합니다. 필터 설정 `UNetObjectGridFilterConfig`의 기본값은 격자 칸 200m × 200m(`CellSizeX`, `CellSizeY` 20,000cm)이고, `bUseExactCullDistance`가 true라서 칸 단위가 아니라 객체와 시점 사이의 실제 거리로 판정합니다(`Engine/Source/Runtime/Net/Iris/Public/Iris/ReplicationSystem/Filtering/NetObjectGridFilter.h:66-80`, 엔진 `BaseEngine.ini`에는 이 클래스의 설정 섹션이 없습니다). 소스대로라면 이 포스팅의 코드는 Iris에서도 150m로 판정되지만, 비용이 어디에 얼마나 드는지는 모릅니다.
-
 ## 결과
 
 `relevancy2`를 기준선과 같은 명령으로 세 번 실행했습니다(클라이언트 8, 자원 노드 5,001, NPC 300, 준비 30초, 측정 60초, 서버 논리 프로세서 2\~7, 연결당 송신 한도 350,000바이트/초). 세 실행 모두 종료 코드 0으로 끝났고 `saturated_ratio`는 0.000입니다. 앞선 `relevancy-r1`은 측정이 끝나는 시각에 클라이언트의 프로세서 선호도가 다시 설정되어 실패로 처리했고 수치를 쓰지 않았습니다.
