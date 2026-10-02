@@ -215,4 +215,10 @@ CSV `frames`(302, 292, 334)는 세 실행 모두 `WorldTick` Count와 같다. `c
 
 ![r3 Connection 0 Outgoing 측정 구간의 Net Stats](images/insights-r3-net-stats.png)
 
-구현 계획 "시각 자료 규칙"의 포스팅용 이름(`timing.png`, `network.png`)으로는 아직 복사하지 않았다. 사용자가 고른 뒤에 정한다.
+사용자가 이 가운데 세 장을 골라 포스팅의 "관찰"에 넣었다. `Scripts/annotate-image.ps1`로 본문이 인용하는 값에 번호 붙은 노란 상자를 그려 포스팅용 이름으로 저장했고, 원본은 그대로 두었다.
+
+| 포스팅용 이름 | 원본 | 상자 |
+| --- | --- | --- |
+| `timing.png` | `insights-r1-timers.png` | ① `GameNetDriver` 95.17%, ② `LabResourceNode` 52.14%와 `LabNpc` 10.31%, ③ 두 북마크 |
+| `network.png` | `insights-r1-net-stats.png` | ① `Actor`와 `LabNpc`, ② `LabResourceNode` 576, ③ 선택 범위 1,801패킷(59.800초) |
+| `packet.png` | `insights-r1-packet.png` | ① 패킷 내용의 `LabNpc` 번치, ② `Actor` 55와 `LabNpc` 55 |
