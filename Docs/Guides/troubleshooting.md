@@ -17,3 +17,5 @@
 | 측정 수치가 같은 구성의 다른 실행보다 나쁘다 | 측정 구간에 다른 체크아웃의 빌드나 실행이 겹쳤는지 시각으로 확인한다. 겹쳤으면 수치를 쓰지 않는다 | Worklog/00-testbed.md "수동 조작에 달리기"(`vis-e-r2`) |
 | 실행 로그에 `LogPython: Error`가 나온다 | 실행 인자에 `-DisablePython`이 있는지 확인한다. `run-scenario.ps1`과 `run-manual.ps1`에는 들어 있다 | engine-notes.md 마절 |
 | PowerShell 스크립트의 한글이 깨지거나 구문 오류가 난다 | 스크립트를 UTF-8 BOM으로 저장한다 | engine-notes.md 라절 |
+| 한글 문서를 PowerShell로 일괄 치환했더니 치환한 자리의 링크와 조사가 통째로 사라진다 | 큰따옴표 문자열에서 변수 바로 뒤에 한글이 오면 한글까지 변수 이름으로 읽혀 빈 문자열이 된다(`"$L1에서"`). `"${L1}에서"`로 쓰거나 작은따옴표 문자열을 이어 붙인다. 치환 뒤에는 바뀐 줄을 검색으로 확인하고, 잘못됐으면 `git checkout -- <파일>`로 되돌려 다시 한다 | 2026-10-02 태스크 14.2(`50209df`를 만들 때 한 번 되돌렸다) |
+| 문서를 스크립트로 고친 뒤 diff에 모든 줄이 바뀐 것으로 나오거나 한글이 깨진다 | `Posts/`와 루트 README는 작업 트리에서 CRLF, BOM 없는 UTF-8이다. `[IO.File]::ReadAllText`로 읽어 CRLF 기준으로 줄을 나누고, `UTF8Encoding($false)`로 쓴다. `Set-Content`로 쓰지 않는다. `Scripts/`의 `.ps1`만 BOM을 붙인다 | 2026-10-02 태스크 14.2a(`57cd91d`) |
