@@ -9,13 +9,13 @@
 - **대상**: 레거시 리플리케이션(기본 NetDriver). 게임 코드는 표준 `UPROPERTY` 리플리케이션과 RPC만 쓴다.
 - **다루는 기법**: Relevancy(Net Cull Distance), 액터 Dormancy, Net Update Frequency.
 - **측정 도구**: Unreal Insights(Timing, Network)와 서버가 남기는 수치 CSV.
-- **상태**: 기준선 측정, Relevancy, 자원 노드 Dormancy, AI NPC Net Update Frequency까지 마쳤다. 세 기법을 모두 적용했고, 남은 것은 테스트베드 포스팅의 시각 자료와 전체 다듬기다.
+- **상태**: 테스트베드와 기준선 측정, 세 기법(Relevancy, 자원 노드 Dormancy, AI NPC Net Update Frequency)의 적용까지 다섯 편을 마쳤다.
 
 ## 포스팅
 
 | # | 제목 | 내용 | 상태 |
 | --- | --- | --- | --- |
-| 0 | [테스트베드와 측정 방법](Posts/00-testbed/README.md) | 시나리오 규모와 근거, 트레이스 수집법, 지표의 정의, 측정의 한계 | 초안(전체 화면과 영상을 넣으면 완료) |
+| 0 | [테스트베드와 측정 방법](Posts/00-testbed/README.md) | 시나리오 규모와 근거, 트레이스 수집법, 지표의 정의, 측정의 한계 | 완료 |
 | 1 | [무법지대 측정](Posts/01-baseline/README.md) | 최적화가 없는 기준선의 수치, Insights에서 가장 큰 비용을 찾는 과정 | 완료 |
 | 2 | [Relevancy와 Net Cull Distance](Posts/02-relevancy/README.md) | 멀리 있는 액터를 보내지 않기. 기준선이 끈 엔진 기본 Net Cull Distance 150m의 복원 | 완료 |
 | 3 | [자원 노드 Dormancy](Posts/03-dormancy/README.md) | 거의 변하지 않는 액터를 프레임마다 확인하지 않기. Dormancy가 줄인 비용과 줄이지 못한 비용 | 완료 |
@@ -49,7 +49,7 @@ flowchart LR
 | 자원 노드 | 실린더 액터. 체력과 고갈 여부만 리플리케이트하고 채집 RPC가 하나 있다 | 수가 많고 거의 변하지 않는다 | Relevancy, Dormancy |
 | AI NPC | 원뿔 액터. 서버에서 단순 배회한다 | 수가 많고 계속 움직인다 | Net Update Frequency |
 
-시나리오 규모는 클라이언트 8개, 자원 노드 5,000개(와 검증용 1개), AI NPC 300명이다. 기준선이 네 조건(초기 전송 완료, 지속적인 틱 예산 초과, 송신 한도에 포화되지 않음, 가장 큰 비용이 네트워크)을 만족하는 것을 확인하고 고정했다. 이 규모에서 최적화가 없는 서버는 한 프레임에 약 168ms를 쓰고(틱 예산 33.3ms의 5.0배), 그 96%가 네트워크 드라이버의 송신 쪽 처리다(보정 실행 `calib-f-r1` 한 번의 값). 보정 과정과 근거는 [테스트베드와 측정 방법](Posts/00-testbed/README.md)에 있다.
+시나리오 규모는 클라이언트 8개, 자원 노드 5,000개(와 검증용 1개), AI NPC 300명이다. 기준선이 네 조건(초기 전송 완료, 지속적인 틱 예산 초과, 송신 한도에 포화되지 않음, 가장 큰 비용이 네트워크)을 만족하는 것을 확인하고 고정했다. 이 규모에서 최적화가 없는 서버는 한 프레임에 약 168ms를 쓰고(틱 예산 33.3ms의 5.0배), 그 96%가 네트워크 드라이버의 송신 쪽 처리다(보정 실행 `calib-f-r1` 한 번의 값). 같은 규모를 3회 측정한 기준선의 서버 프레임 시간 평균은 198.43ms다(아래 "누적 수치"). 보정 과정과 근거는 [테스트베드와 측정 방법](Posts/00-testbed/README.md)에 있다.
 
 | 3인칭 화면 | 내려다보기 화면 |
 | --- | --- |
@@ -96,6 +96,8 @@ flowchart LR
 - Relevancy와 Dormancy 사이에서 서버 프레임 시간 P99와 연결당 송신 대역폭의 차이는 실행 사이의 변동 폭보다 작아, 구별되는 차이가 아니다([자원 노드 Dormancy의 "결과"](Posts/03-dormancy/README.md#결과)).
 - 연결당 송신 대역폭은 기준선이 중앙값 실행 `r1`, Relevancy가 `r3`, Dormancy가 `r2`, 다시 잰 Dormancy와 Net Update Frequency가 `r1`의 값이다. 나머지 실행은 Network Insights에서 읽지 않았다. Relevancy부터는 연결마다 받는 액터가 위치에 따라 달라, `Connection 0`(제자리에서 채집하는 클라이언트)이 서버 CSV의 8개 연결 평균보다 35% 작다([Relevancy와 Net Cull Distance의 "한계와 다음"](Posts/02-relevancy/README.md#한계와-다음)).
 - 서버 프레임 시간은 프레임 시간에서 틱 속도 제한 대기를 뺀 시간이다([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md)). P99는 측정 구간의 프레임마다 이 값을 Insights에서 내보내 읽은 99백분위 경계값이다. 세 실행 중 중앙값인 실행의 값이고, 기준선은 `r3`, Relevancy는 `r1`, Dormancy는 `r2`, 다시 잰 Dormancy와 Net Update Frequency는 `r1`이다.
+
+**기준선 대비 최종 변화.** 세 기법을 모두 적용한 구성(`update-frequency3`)은 기준선(`baseline3`)보다 서버 프레임 시간 평균이 93.4%(198.43ms → 13.16ms), P99가 92.6%(262.96ms → 19.50ms), 리플리케이션 시간이 95.4%(188.97ms → 8.73ms), 연결당 송신 대역폭이 95.4%(28,048 → 1,303바이트/초, `Connection 0`) 줄었다. 이 변화는 둘로 나눠 읽어야 한다. 기본 Relevancy 복원으로 얻은 변화가 대부분이다. 서버 프레임 시간 평균이 줄어든 185.27ms 가운데 180.79ms가 여기서 나왔고(198.43ms → 17.64ms, -91.1%), 이것은 기준선이 일부러 끈 엔진 기본 동작을 되돌린 것이다. 그 뒤의 두 기법으로 얻은 변화는 각 글에서 연달아 잰 묶음끼리 비교한 값이다. 자원 노드 Dormancy는 서버 프레임 시간 평균을 16.7%(17.64ms → 14.69ms), 리플리케이션 시간을 22.6%(13.14ms → 10.17ms) 줄였다. AI NPC Net Update Frequency는 연결당 송신 대역폭을 53.3%(2,793 → 1,303바이트/초), 리플리케이션 시간을 6.6%(9.35ms → 8.73ms) 줄였고, 서버 프레임 시간 평균은 구별되는 차이가 없었다. 기준선과 `update-frequency3`은 측정한 화면 조건이 다르지만, 같은 코드가 화면 조건에 따라 달라진 폭(1.09ms)은 기준선과의 차이(185.27ms)에 비해 작다.
 
 차트의 "Dormancy"는 `dormancy2`, "Dormancy(재측정)"은 `dormancy6`이다.
 
@@ -176,6 +178,8 @@ xychart-beta
    같은 라벨은 다시 쓸 수 없다. 다시 실행할 때는 라벨을 바꾼다. 실행 중에는 클라이언트 창에 키 입력을 하지 않는다.
 
 5. 클라이언트 두 개를 같은 자리에 띄워 직접 조작해 보려면 `Scripts/run-manual.ps1`을 쓴다. 왼쪽 Shift를 누르고 있는 동안 걷기의 두 배 속도로 달린다. 측정 시나리오에서는 달리지 않는다.
+
+태그를 체크아웃해 실행할 때 달라지는 것이 있다. 서버 프레임 시간에서 틱 속도 제한 대기를 빼는 정의([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md))는 `post-02-relevancy`부터 문서에 들어 있고, `run-scenario.ps1`의 `-ShowcaseNpc`는 `post-04-update-frequency`부터 있다. 재현을 확인한 태그는 `post-01-baseline` 하나다. 이 태그를 다시 빌드해 확정 규모로 1회 실행하니(`verify-baseline-r1`) CSV `work_avg_ms`가 161.649로 `baseline3`의 세 실행(179.673\~205.150)보다 낮았고, `open_actor_channels_per_conn` 5,314와 `saturated_ratio` 0.000, 모든 프레임의 틱 예산 초과(`over_budget_frames` 371 = `frames` 371)는 같았다.
 
 ## 레포 구조
 

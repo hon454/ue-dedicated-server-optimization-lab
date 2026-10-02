@@ -4,26 +4,31 @@
 
 ## 단계
 
-태스크 1\~13을 끝냈고 포스팅 1\~4가 완료다(포스팅 4는 2026-10-02, 태그 `post-04-update-frequency`). 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
+**단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. 남은 것은 사용자의 14.5(전체 읽기)와 14.7(푸시)이다. 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
 - 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
 
 ## 다음 할 일
 
-1. **태스크 14(전체 다듬기).** 14.4는 끝났다(아래 "측정 결과"의 `verify-baseline-r1`). 14.2의 점검에서 나온 수정 가운데 포스팅 0, 2, 3의 네 곳은 고쳤고, README의 두 곳(168ms 옆에 198.43ms 문장, 실행 방법의 태그별 차이)은 14.3에서 고친다. 남은 순서: 아래 "사용자에게 요청한 일"의 표현 결정 → 그 결정을 반영하는 내용 커밋 → 14.2a(한다체 변환, 한 커밋. 포스팅 하나를 먼저 보여 주고 나머지를 바꾼다) → 14.3 → 14.6.
-2. **태스크 9.4.** `all-clients.png`와 `clip.gif`를 넣었다(`visual11-r1`, 태그 `post-01-baseline`의 빌드). [사람] 넣은 자료를 고르고 테스트베드 포스팅 초안을 읽고 다듬는다.
-3. 태스크 9.5(사용자가 초안을 승인하면 포스팅 진행표를 "완료"로, 커밋과 `post-00-testbed` 태그).
-4. 푸시는 사용자가 정한 시점에 한다.
+1. **[사람] 태스크 14.5.** 포스팅 0\~4와 README를 처음부터 끝까지 읽는다. 고칠 곳이 나오면 에이전트가 고친다. 이미 붙인 태그는 옮기지 않는다.
+2. **[사람] 태스크 14.7.** `git push origin main --tags`. 푸시는 사용자가 정한 시점에 한다.
+3. 다음 세션을 시작할 때 이 파일에 남은 태스크 9.4\~9.5, 14의 기록(아래 "태스크 14에서 한 일")을 `Worklog/00-testbed.md`로 옮기는 정리안을 낸다. 그 뒤의 주제는 [backlog.md](Planning/backlog.md)의 우선순위 순이다.
+
+### 태스크 14에서 한 일 (2026-10-02)
+
+- 9.4: `all-clients.png`(t=41s), `clip.gif`(t=50\~59s)를 `visual11-r1`(태그 `post-01-baseline`의 빌드, 종료 코드 0, 수치는 쓰지 않음)에서 찍어 넣었다. 9.5: 사용자 승인 뒤 `post-00-testbed` 태그.
+- 14.2: 점검에서 나온 여섯 곳을 고쳤다(`3736ac4`, `c78931a`, README는 14.3). 사용자 결정으로 "Iris에서는" 섹션을 빼고([ADR-0011](Decisions/0011-no-iris-preview-section.md), `e104456`), 기법 이름을 원문으로, "포스팅 N"을 제목 링크로 바꿨다(`50209df`). 규칙은 AGENTS.md에 있다.
+- 14.2a: 여섯 파일을 한다체로 바꿨다(`57cd91d`). 14.3: README의 상태, 기준선 대비 최종 변화 문단, 태그별 차이를 넣었다. 14.4: 아래 "측정 결과"의 `verify-baseline-r1`.
 
 ## 포스팅 진행
 
 | 포스팅 | 상태 | 태그 |
 | --- | --- | --- |
-| 0. 테스트베드와 측정 방법 | 초안(태스크 9.4, 9.5 남음) | |
+| 0. 테스트베드와 측정 방법 | 완료 | `post-00-testbed` |
 | 1. 무법지대 측정 | 완료 | `post-01-baseline` |
-| 2. 관련성과 컬 거리 | 완료 | `post-02-relevancy` |
-| 3. 자원 노드 휴면 | 완료 | `post-03-dormancy` |
-| 4. AI NPC 업데이트 빈도 | 완료 | `post-04-update-frequency` |
+| 2. Relevancy와 Net Cull Distance(관련성) | 완료 | `post-02-relevancy` |
+| 3. 자원 노드 Dormancy(휴면) | 완료 | `post-03-dormancy` |
+| 4. AI NPC Net Update Frequency(업데이트 빈도) | 완료 | `post-04-update-frequency` |
 
 ## 명령
 
@@ -130,8 +135,6 @@ NPC 업데이트 빈도 `update-frequency3`(2026-10-02, 중앙값 실행 `r1`)�
 
 ## 포스팅 주기 진행
 
-구현 계획 태스크 11은 포스팅 2, 3, 4에 반복해서 쓴다. 현재 포스팅과 끝낸 단계를 여기에 적는다.
-
 - 포스팅 2\~4가 끝났다(포스팅 4는 2026-10-02, 태그 `post-04-update-frequency`). 단기에 구현하는 기법은 더 없다. 다음 시각 자료 라벨은 `visual12`다.
 
 ## 막힌 것
@@ -143,7 +146,4 @@ NPC 업데이트 빈도 `update-frequency3`(2026-10-02, 중앙값 실행 `r1`)�
 - **포스팅 4 확인.** [포스팅 4](../Posts/04-update-frequency/README.md)의 "관찰"과 "선택"은 인터뷰 답(대역폭 중심, 포스팅 1의 이유와 전제가 채워졌는지 확인)을 에이전트가 문장으로 옮긴 것이다. 초안과 끊김 영상은 승인됐다(2026-10-02). 남은 것은 Insights 캡처 네 장과 `before-clip.gif`, `after-clip.gif`를 보고 다른 장면이 좋으면 바꾸는 것이다.
 - **포스팅 3 확인.** [포스팅 3](../Posts/03-dormancy/README.md)의 "정확성 확인"에 넣은 전후 영상(`before-clip.gif`, `after-clip.gif`)과 세 항목의 표, 다시 찍은 `after-timing.png`, `after-network.png`를 보고 다른 장면이 좋으면 바꾼다. 요약의 내려다보기 화면은 순번 04(t=75s)다.
 - **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인). "관찰"의 서버 프레임 시간 문장은 ADR-0010에 맞춰 에이전트가 고쳤다(아직 확인하지 않음).
-- **태스크 9.4, 9.5.** [포스팅 0](../Posts/00-testbed/README.md)에 넣은 `all-clients.png`(t=41s), `clip.gif`(t=50\~59s)와 `timing.png`, `network.png`를 보고 다른 장면이 좋으면 바꾼다. 초안을 읽고 승인하면 에이전트가 9.5(커밋과 태그)를 한다.
-- **[ADR-0011](Decisions/0011-no-iris-preview-section.md) 승인.** 포스팅에서 "Iris에서는" 섹션을 뺐다(사용자 결정, 2026-10-02). ADR은 "제안됨"이다. 같은 날 정한 표현 규칙(기법 이름은 원문, 다른 글은 제목 링크, 표의 칸은 개조식 허용, 파일 이름은 `README.md` 유지)은 AGENTS.md "규칙"에 있고 포스팅 0\~4와 README에 반영했다(`50209df`).
-- **14.2a 표본 확인.** [무법지대 측정](../Posts/01-baseline/README.md)만 한다체로 바꿔 두었다(커밋 전). 괜찮다고 하면 나머지 다섯 파일을 바꿔 한 커밋으로 한다.
-- 푸시는 사용자가 정한 시점에 한다.
+- **태스크 14.5, 14.7.** 위 "다음 할 일". 포스팅 0의 `timing.png`, `network.png`도 다른 장면이 좋으면 바꾼다.
