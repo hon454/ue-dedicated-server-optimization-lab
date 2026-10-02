@@ -1,12 +1,12 @@
 # UE Dedicated Server 포트폴리오
 
-언리얼 엔진 5.8.3 Dedicated Server 최적화 과정을 기법 하나당 포스팅 하나로 보여주는 포트폴리오다. 테스트베드 포스팅과 포스팅 1\~4를 완성하는 것이 단기 목표다.
+언리얼 엔진 5.8.3 Dedicated Server 최적화 과정을 기법 하나당 포스팅 하나로 보여주는 포트폴리오다. 테스트베드 포스팅과 포스팅 1\~4를 완성하는 단기 목표는 끝났고(2026-10-02), 다음 주제는 [backlog.md](Docs/backlog.md)의 우선순위 순이다.
 
 ## 세션을 시작하면
 
 1. [Docs/STATUS.md](Docs/STATUS.md)를 읽는다. 현재 진행 중인 작업과 다음 할 일이 있다.
 2. STATUS.md의 "단계", "막힌 것", "사용자에게 요청한 일"에 이미 끝나고 커밋된 태스크의 기록이 남아 있으면, 다음 태스크를 시작하기 전에 정리안을 채팅에 보여 주고 승인을 받는다. 정리안은 옮길 항목, 옮길 파일, STATUS.md에 남길 한 줄, 지침으로 올릴 문장과 그 위치의 목록이다. 승인되면 정리하고 따로 커밋한 뒤 태스크를 시작한다. 기준은 아래 규칙 "STATUS.md에는 지금 유효한 것만 둔다"에 있다.
-3. [구현 계획](Docs/Planning/2026-10-01-short-term-implementation-plan.md)의 체크리스트에서 체크되지 않은 첫 단계를 찾는다. 끝낸 단계는 그 파일에서 체크한다.
+3. STATUS.md의 "다음 할 일"에서 첫 항목을 고른다. 비어 있으면 [backlog.md](Docs/backlog.md)의 "우선순위 순"에서 다음 주제를 사용자에게 묻는다.
 4. 그 단계에 필요한 문서만 아래 "문서 지도"에서 찾아 연다. 결정을 바꾸고 싶어지면 먼저 [ADR 목록](Docs/Decisions/README.md)을 본다.
 
 ## 문서 지도
@@ -15,22 +15,21 @@
 | --- | --- |
 | 진행 상황, 다음 할 일, 빌드와 실행 명령, 확정값, 측정 결과 | [Docs/STATUS.md](Docs/STATUS.md) |
 | 끝낸 작업의 경위, 실패한 실행, 보정 실행 수치 | `Docs/Worklog/NN-이름.md`(포스팅별, `Posts/`의 폴더 이름과 같다). 세션을 시작할 때 읽지 않고 라벨이나 날짜로 검색한다 |
-| 다음 작업과 그 절차 | [구현 계획](Docs/Planning/2026-10-01-short-term-implementation-plan.md)의 체크리스트 |
-| 확정된 결정과 그 이유, 버린 대안 | [Docs/Decisions/](Docs/Decisions/README.md)(ADR), [설계 문서](Docs/Planning/2026-10-01-short-term-portfolio-design.md) 3절 |
-| 측정 규약: 시나리오, 절차, 지표, 한계 | 설계 문서 8절 |
-| 수치를 부르는 이름 | 구현 계획 "수치의 이름과 출처" |
-| 시각 자료의 종류와 파일 이름 | 구현 계획 "시각 자료 규칙" |
-| 포스팅 틀 | 설계 문서 7절. 테스트베드 포스팅은 구현 계획 태스크 9.2 |
-| 기법별 코드 초안 | 구현 계획 태스크 11 "기법별 코드" |
-| 엔진 기본값, 동작 순서, 소스 위치, 실행에서 확인한 사실 | [engine-notes.md](Docs/Planning/engine-notes.md) |
+| 다음 작업 | STATUS.md "다음 할 일", 그다음 [backlog.md](Docs/backlog.md) "우선순위 순" |
+| 확정된 결정과 그 이유, 버린 대안 | [Docs/Decisions/](Docs/Decisions/README.md)(ADR), ADR이 없는 초기 결정은 그 README의 "ADR 이전의 결정" |
+| 측정 규약: 시나리오, 절차, 지표, 한계 | [measurement.md](Docs/Guides/measurement.md) |
+| 수치를 부르는 이름 | measurement.md "수치의 이름과 출처" |
+| 시각 자료의 종류와 파일 이름 | [posting.md](Docs/Guides/posting.md) "시각 자료" |
+| 포스팅 틀 | posting.md "틀" |
+| 엔진 기본값, 동작 순서, 소스 위치, 실행에서 확인한 사실 | [engine-notes.md](Docs/Reference/engine-notes.md) |
 | 빌드나 실행이 실패했을 때의 증상별 대처 | [troubleshooting.md](Docs/Guides/troubleshooting.md). 문제가 생겼을 때만 연다 |
 | Insights로 트레이스를 여는 법과 읽는 순서, 역할 분담 | [insights-reading.md](Docs/Guides/insights-reading.md). 여는 명령은 `Scripts/open-insights.ps1 -Label <라벨>-rN`, 문서용 캡처는 `Scripts/capture-insights.ps1`, 캡처에 번호 붙은 상자를 그리는 것은 `Scripts/annotate-image.ps1` |
 | 클라이언트 화면 영상과 전체 화면 캡처 | `Scripts/capture-video.ps1`(사용법은 파일 머리 주석). 찍기 전 허가와 측정 분리는 아래 규칙 "화면을 찍기 전에 허가를 받는다" |
 | Insights 화면을 단계별로 읽은 예(캡처와 행동마다의 이유) | [insights-walkthrough-calib-f.md](Docs/Guides/insights-walkthrough-calib-f.md) |
-| 일정이 넘칠 때 줄이는 순서 | 구현 계획 "일정이 넘칠 때" |
-| 단기 범위 밖의 주제, 작업 중 떠오른 기법 | [backlog.md](Docs/Planning/backlog.md) |
-| 측정 PC 사양 | [pc-specs.md](Docs/Planning/pc-specs.md) |
-| 대상 채용공고 | [job-posting-ue5-dedicated-server.md](Docs/Planning/job-posting-ue5-dedicated-server.md) |
+| 다음 주제의 우선순위, 작업 중 떠오른 기법 | [backlog.md](Docs/backlog.md) |
+| 측정 PC 사양 | [pc-specs.md](Docs/Reference/pc-specs.md) |
+| 대상 채용공고 | [job-posting-ue5-dedicated-server.md](Docs/Reference/job-posting-ue5-dedicated-server.md) |
+| 끝난 단기 설계 문서와 구현 계획(태스크 번호가 가리키는 곳) | 태그 `post-04-update-frequency`의 [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md), [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md). 2026-10-03에 레포에서 지웠다 |
 | 공개 소개, 코드 파일별 역할 | [README.md](README.md) |
 | 포스팅 본문과 이미지, 후보 기법 자료(Insights에서 읽은 값, 엔진 소스 위치, 에이전트 의견) | `Posts/NN-이름/README.md`, `Posts/NN-이름/images/`, `Posts/NN-이름/candidates.md` |
 | 실행 산출물 | 수치 CSV `Saved/LabMetrics/summary.csv`, 트레이스 `Saved/Traces/<라벨>-rN.utrace`, 스크린샷 `Saved/Screenshots/Lab/`, 로그 `Saved/Logs/` |
@@ -46,14 +45,14 @@
   - 병합 때 STATUS.md가 충돌하면 양쪽 내용을 모두 남긴다. 병합한 뒤에는 워크트리를 등록 해제하고 브랜치를 지운다.
 - **STATUS.md에는 지금 유효한 것만 두고 150줄을 넘기지 않는다.** 세션마다 통째로 읽는 파일이라 길어지면 다음 할 일이 묻힌다. 끝낸 태스크의 경위(무엇을 시도했고 어떤 실행이 실패했는지, 그 수치)는 다음 태스크를 시작할 때 `Docs/Worklog/<포스팅 폴더 이름>.md`의 끝에 `## 날짜 태스크 번호: 한 일 (실행 라벨)` 제목으로 원문 그대로 옮긴다. 포스팅에 속하지 않는 작업은 그때 진행 중이던 포스팅의 파일에 적는다. STATUS.md에는 다음 작업에 영향을 주는 결과만 한두 줄로 남기고 옮긴 제목으로 링크한다. 실패한 시도는 다음 작업을 제약하는 동안만 한 줄로 남긴다. 정리할 때 남길 줄마다 성격을 가린다. 포스팅과 상관없이 계속 지켜야 하는 것은 지침으로 올린다: 빌드와 측정의 절차는 STATUS.md의 "명령"에, 그 밖의 규칙은 이 파일의 "규칙"에 넣는다. 다시 나올 수 있는 문제는 증상과 대처를 [troubleshooting.md](Docs/Guides/troubleshooting.md)에 적는다. 엔진 소스나 실행에서 확인한 사실은 engine-notes.md에 적고 troubleshooting.md에서 그 절을 가리킨다. 다음 작업에만 영향을 주는 것만 "단계"에 남긴다. `Docs/Worklog/`의 지난 항목은 고치지 않고, 세션을 시작할 때 읽지 않는다.
 - **커밋 메시지는 [Conventional Commits](https://www.conventionalcommits.org/) 형식으로 쓴다.** 제목은 `type(scope): summary` 한 줄이고, summary는 소문자로 시작하는 영어 명령형이다. type은 `feat`, `fix`, `docs`, `build`, `refactor`, `chore` 중에서 고르고 scope는 필요할 때만 붙인다. 제목만으로 무엇을 왜 바꿨는지 분명하면 제목 한 줄로 끝낸다. 그렇지 않으면 빈 줄 하나 뒤에 영어 본문을 붙여 제목에 담지 못한 것을 적는다: 바꾼 이유, 달라진 동작, 근거가 된 실행 라벨이나 엔진 소스 위치. 측정 조건이나 설정값을 바꾼 커밋, 실패 원인을 기록하는 커밋은 본문을 쓴다.
-- **확정된 결정을 다시 열지 않는다.** 설계 문서 3절과 승인된 ADR의 결정을 바꾸자고 제안하지 않는다. 사용자는 계획 단계로 되돌아가는 일을 반복해 왔다. 예외는 결정의 근거가 사실과 맞지 않음을 확인한 경우 하나다. 근거는 엔진 소스(파일과 줄)나 실행 결과(라벨)여야 한다. 이때는 대체 ADR을 "제안됨"으로 쓰고, 그 결정에 기대는 측정을 멈추고, 사용자에게 알린다. 더 나은 방법이 있다는 판단은 예외가 아니다. 그런 생각은 [backlog.md](Docs/Planning/backlog.md)에 적는다.
+- **확정된 결정을 다시 열지 않는다.** [ADR 목록](Docs/Decisions/README.md)의 "ADR 이전의 결정"과 승인된 ADR의 결정을 바꾸자고 제안하지 않는다. 사용자는 계획 단계로 되돌아가는 일을 반복해 왔다. 예외는 결정의 근거가 사실과 맞지 않음을 확인한 경우 하나다. 근거는 엔진 소스(파일과 줄)나 실행 결과(라벨)여야 한다. 이때는 대체 ADR을 "제안됨"으로 쓰고, 그 결정에 기대는 측정을 멈추고, 사용자에게 알린다. 더 나은 방법이 있다는 판단은 예외가 아니다. 그런 생각은 [backlog.md](Docs/backlog.md)에 적는다.
 - **질문에는 답과 수정안만 낸다.** 사용자가 "\~하는 게 낫지 않아?", "\~필요하지 않을까?"처럼 질문형으로 물으면, 의견과 수정안(바꿀 파일과 문장)을 채팅에 보여 주고 편집과 커밋은 하지 않는다. "고쳐", "반영해" 같은 지시를 받거나 수정안이 승인된 뒤에 구현한다. 근거를 찾으려고 파일을 읽거나 검색하는 것은 해도 된다. 사용자는 질문으로 방향을 먼저 맞춰 본 뒤에 결정한다.
 - **선택지를 낼 때는 추천안을 함께 낸다.** 어느 선택지를 추천하는지 먼저 밝히고, 이유를 이해하기 쉬운 한두 문장으로 쓴다. 이유는 이 프로젝트의 사실(측정값, 엔진 소스, 확정된 결정, 작업량)에 기댄다. 다른 선택지를 고르면 무엇을 얻고 무엇을 잃는지도 적는다. 선택은 사용자가 한다.
-- **포스팅 하나에 기법 하나.** 여러 기법을 함께 넣으면 어느 것이 효과를 냈는지 알 수 없다. 단기에 구현하는 기법은 관련성, 자원 노드 휴면, NPC 업데이트 빈도 세 가지뿐이다. 사용자는 이 셋의 순서를 고른다. 사용자가 다른 기법을 원해도 단기에는 구현하지 않고 [backlog.md](Docs/Planning/backlog.md)의 "작업 중 떠오른 것"에 적는다.
+- **포스팅 하나에 기법 하나.** 여러 기법을 함께 넣으면 어느 것이 효과를 냈는지 알 수 없다. 단기에는 관련성, 자원 노드 휴면, NPC 업데이트 빈도 세 기법을 구현했다. 다음 기법은 [backlog.md](Docs/backlog.md)에서 사용자가 고르고, 작업 중 떠오른 다른 기법은 진행 중인 포스팅에 넣지 않고 backlog.md의 "작업 중 떠오른 것"에 적는다.
 - **패키징하지 않고 null RHI를 쓰지 않는다.** 에디터 빌드 실행 파일을 쿠킹 없이 실행한다([ADR-0002](Docs/Decisions/0002-editor-build-without-packaging.md)).
 - **레거시 리플리케이션만 쓴다.** 게임 코드는 표준 `UPROPERTY` 리플리케이션과 RPC만 사용한다([ADR-0001](Docs/Decisions/0001-legacy-replication.md)).
 - **에디터 작업을 만들지 않는다.** 에이전트는 에디터를 다룰 수 없어서, 에디터 작업이 끼면 사람을 기다려야 하고 결과를 스스로 검증하지 못한다. 액터는 C++로 작성하고, 자원 노드와 AI NPC는 실행 시 코드로 생성한다. 블루프린트와 맵 편집이 필요한 설계를 피한다.
-- **수치를 정해진 이름으로만 부른다.** CSV 값과 Insights 값은 정의가 달라서, 이름을 섞으면 다른 수치를 같은 것처럼 비교하게 된다([ADR-0004](Docs/Decisions/0004-insights-and-csv-metrics.md)). 구현 계획의 "수치의 이름과 출처" 표를 따른다. CSV 값을 Insights 지표 이름으로 부르지 않고, 열린 액터 채널 수를 액터 수라고 부르지 않는다.
+- **수치를 정해진 이름으로만 부른다.** CSV 값과 Insights 값은 정의가 달라서, 이름을 섞으면 다른 수치를 같은 것처럼 비교하게 된다([ADR-0004](Docs/Decisions/0004-insights-and-csv-metrics.md)). [measurement.md](Docs/Guides/measurement.md)의 "수치의 이름과 출처" 표를 따른다. CSV 값을 Insights 지표 이름으로 부르지 않고, 열린 액터 채널 수를 액터 수라고 부르지 않는다.
 - **모든 수치와 설정값에 근거를 적는다.** 측정값(조건 명시), 엔진 소스 확인값(파일과 심볼 명시), 계산값(식 명시) 중 하나다. 기억에 의존한 엔진 기본값은 5.8.3 소스에서 확인한 뒤에 쓴다.
 - **시각 자료를 적극적으로 모은다.** 측정할 때마다 자동 스크린샷을 직접 열어 보고 포스팅에 넣는다. 전후 비교는 이미지를 나란히 놓고, 수치는 Mermaid 차트로도 보여준다. 클라이언트 영상은 에이전트가 `Scripts/capture-video.ps1`로 찍고, 찍은 뒤 미리보기(`Saved/Screenshots/Lab/<이름>-preview.png`)를 열어 확인한다. 영상은 GitHub 마크다운 본문에서 이미지처럼 바로 보이는 GIF(폭 960px, 8fps, 48색. `capture-video.ps1`의 기본값)로 넣는다. 15fps, 256색은 10초에 9\~13MB라 줄였다. 시각 자료는 글이 설명하는 구성의 빌드에서 찍는다. 지난 구성의 화면이 필요하면 그 태그를 빌드해서 찍고, 지금 빌드의 화면으로 대신하지 않는다(테스트베드 포스팅의 `visual11`은 `post-01-baseline`을 빌드해 찍었다).
 - **영상은 수치를 쓰는 측정 실행에서 찍지 않는다.** 녹화와 인코딩이 측정 PC의 CPU를 쓰기 때문이다. `Scripts/run-manual.ps1`의 실행이나, 수치를 쓰지 않는 시각 자료 전용 라벨(`visualN`)의 `run-scenario.ps1` 실행에서 찍는다. `capture-video.ps1`은 측정 중인 서버가 있으면 거부하고, `visualN` 실행에서만 `-AllowMeasuring`으로 넘긴다. `visualN`의 수치는 포스팅과 STATUS.md의 비교에 쓰지 않는다. 전후 영상은 자동 이동 클라이언트(정해진 정사각형 경로)를 찍어 같은 경로로 비교한다. 특정 장면을 위해 관찰자를 조작해야 할 때만 그 조작을 사용자에게 요청한다.
@@ -62,8 +61,8 @@
 - **`Scripts/`의 PowerShell 스크립트는 UTF-8 BOM으로 저장한다.** Windows PowerShell 5.1이 BOM 없는 한글을 잘못 읽는다(engine-notes.md 라절).
 - **문서에서 `~`는 `\~`로 쓴다.** GFM은 한 문단에 `~`가 둘 이상이면 그 사이를 취소선으로 렌더링한다(`2\~7, 8\~31`). 코드 스팬 안에서는 이스케이프하지 않는다. `~~` 취소선은 쓰지 않는다.
 - **포스팅과 루트 README의 용어와 부르는 법(2026-10-02 사용자 결정).** 엔진의 기법 이름은 번역하지 않고 원문으로 쓴다: Relevancy, Dormancy, Net Update Frequency, Net Cull Distance. 상태는 "Dormant 상태"로 쓴다. 기법 이름을 행동처럼 쓰지 않는다("Relevancy를 먼저 한다"가 아니라 "Relevancy 최적화를 먼저 적용한다"). 리플리케이션, 대역폭, 액터 채널 같은 일반 용어와 "수치의 이름과 출처"의 지표 이름은 그대로 둔다. 다른 글은 "포스팅 1"이 아니라 제목 링크로 부른다(`[Always Relevant 기준선](../01-baseline/README.md)`). 포스팅 파일 이름은 `README.md`로 둔다(GitHub가 폴더를 열면 바로 그려 준다). `Docs/`의 작업 문서는 지금 용어(관련성, 휴면, 업데이트 빈도, 포스팅 N)를 그대로 쓴다. 자원 노드는 고려 목록, 활성 목록, 액터 채널, 거리 검사처럼 엔진 내부 처리를 말하는 문장에서 "노드"로 줄이지 않는다. 화면의 점이나 화면 글자의 개수처럼 자원 노드만 가리키는 것이 분명한 곳에서는 줄여도 된다. Replication Graph의 노드는 "그래프 노드"로 부른다.
-- **포스팅과 루트 README는 한국어 한다체(-다)로 쓴다.** 문단과 목록의 문장은 한다체("확인했다")다. 표의 칸은 명사나 "-음"으로 끝나는 개조식("확인", "더 늘지 않음")을 써도 되고, 문단에는 개조식을 쓰지 않는다. 틀은 설계 문서 7절을 따른다. 태그 `post-01-baseline`\~`post-04-update-frequency` 시점의 글은 합니다체로 남아 있다(2026-10-02에 한 커밋으로 바꿨다).
-- **문서에 일정 표현을 쓰지 않는다.** README, 포스팅, `Docs/` 어디에도 "N일차"나 "N일 안에" 같은 표현을 쓰지 않는다. 단계는 구현 계획의 큰 제목(테스트베드 구축, 규모 확정과 테스트베드 포스팅, 기준선과 첫 번째 기법, 나머지 두 기법, 마무리)과 태스크 번호로 부른다. 레포가 공개다.
+- **포스팅과 루트 README는 한국어 한다체(-다)로 쓴다.** 문단과 목록의 문장은 한다체("확인했다")다. 표의 칸은 명사나 "-음"으로 끝나는 개조식("확인", "더 늘지 않음")을 써도 되고, 문단에는 개조식을 쓰지 않는다. 틀은 [posting.md](Docs/Guides/posting.md)를 따른다. 태그 `post-01-baseline`\~`post-04-update-frequency` 시점의 글은 합니다체로 남아 있다(2026-10-02에 한 커밋으로 바꿨다).
+- **문서에 일정 표현을 쓰지 않는다.** README, 포스팅, `Docs/` 어디에도 "N일차"나 "N일 안에" 같은 표현을 쓰지 않는다. 단계는 단기 구현 계획의 큰 제목(테스트베드 구축, 규모 확정과 테스트베드 포스팅, 기준선과 첫 번째 기법, 나머지 두 기법, 마무리)과 태스크 번호로 부른다. 태스크 번호는 태그 `post-04-update-frequency`의 구현 계획을 가리킨다. 레포가 공개다.
 
 ## 결정 기록(ADR)
 
@@ -89,7 +88,7 @@
 
 - **Insights 분석의 판단과 포스팅의 "관찰", "선택" 섹션 작성.** 판단은 사용자가 하고 두 섹션도 사용자가 직접 쓴다. 에이전트는 Insights를 직접 열어 [insights-reading.md](Docs/Guides/insights-reading.md)의 순서로 값을 읽고, CSV와 대조한 표와 후보 기법 목록(각 기법의 구현 비용과 관련 엔진 소스 위치)을 준비한다. 판단에 도움이 되는 의견도 낸다(2026-10-01 사용자 결정). 의견은 화면에서 읽은 사실과 구분해 "에이전트 의견"으로 적고, 근거가 된 수치와 확인하지 않은 것을 함께 적는다. 기법과 순서를 정하는 것은 사용자다.
 - 포스팅에 넣을 시각 자료의 최종 선택. 클라이언트 영상과 전체 화면(`Scripts/capture-video.ps1`, 찍기 전에 허가를 받는다), Insights 스크린샷(`Scripts/capture-insights.ps1`)은 에이전트가 찍어 후보로 주고, 포스팅에 넣을 것은 사용자가 고르거나 직접 찍는다. 특정 장면을 위해 관찰자를 조작해야 하면 그 조작만 사용자에게 요청한다.
-- 기준선 확정(구현 계획 태스크 8.6). 결과를 표로 보고하고 사용자가 확정한다. 기준선이 송신 한도에 포화되면 프로젝트 설정에서 한도를 올리는 것은 이미 정해진 방침이라 묻지 않고 진행한다([ADR-0007](Docs/Decisions/0007-raise-send-limit-once.md), 태스크 8.4a). 그 밖의 설정이나 시나리오 규모는 임의로 바꾸지 않는다.
+- 기준선 확정(단기 구현 계획 태스크 8.6). 결과를 표로 보고하고 사용자가 확정한다. 기준선이 송신 한도에 포화되면 프로젝트 설정에서 한도를 올리는 것은 이미 정해진 방침이라 묻지 않고 진행한다([ADR-0007](Docs/Decisions/0007-raise-send-limit-once.md), 태스크 8.4a). 그 밖의 설정이나 시나리오 규모는 임의로 바꾸지 않는다.
 - ADR 승인.
 - 에디터에서만 가능한 작업.
 - GitHub 푸시.

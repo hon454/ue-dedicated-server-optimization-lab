@@ -2,7 +2,7 @@
 
 - 상태: 승인됨. [ADR-0005](0005-saturation-from-isnetready.md)를 대체한다.
 - 날짜: 2026-10-01 (태스크 8 시작 전 점검)
-- 출처: [engine-notes.md](../Planning/engine-notes.md) 바절 "포화를 판정하는 시점", [구현 계획](../Planning/2026-10-01-short-term-implementation-plan.md) "수치의 이름과 출처"
+- 출처: [engine-notes.md](../Reference/engine-notes.md) 바절 "포화를 판정하는 시점", [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md) "수치의 이름과 출처"
 
 ## 맥락
 

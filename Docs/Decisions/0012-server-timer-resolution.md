@@ -2,7 +2,7 @@
 
 - 상태: 승인됨
 - 날짜: 2026-10-03 (사용자 승인)
-- 출처: [engine-notes.md](../Planning/engine-notes.md) 아절, [ADR-0008](0008-reproducible-runs.md)
+- 출처: [engine-notes.md](../Reference/engine-notes.md) 아절, [ADR-0008](0008-reproducible-runs.md)
 
 ## 맥락
 

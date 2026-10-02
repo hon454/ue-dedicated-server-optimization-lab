@@ -16,7 +16,7 @@
 | 게임 모드 경로 | `/Script/DSOptLab.LabGameMode` |
 | 접두사 | `Lab`. 클래스(`ALabResourceNode`), 실행 인자(`-LabNodes=`), 폴더(`Saved/LabMetrics/`, `Saved/Screenshots/Lab/`), 로그 카테고리(`LogLabMetrics`), 북마크(`Lab_MeasureStart`) |
 | 엔진 연결 | `EngineAssociation`이 `UE_DSOptLab`(이 PC의 레지스트리에서 `G:\Epic Games\UE_Source`). 스크립트는 `Scripts/common.ps1`에서 같은 값을 찾아 쓴다. 런처 설치본 `G:\Epic Games\UE_5.8`과 섞어 쓰면 같은 `Binaries/`에 번갈아 빌드하게 되므로 쓰지 않는다 |
-| 문서 | `Docs/STATUS.md`, `Docs/Planning/` |
+| 문서 | `Docs/STATUS.md`, `Docs/Guides/`, `Docs/Reference/`(2026-10-03까지 `Docs/Planning/`) |
 | 포스팅 | `Posts/NN-이름/` |
 
 `.gitignore`는 레포를 만들 때 들어간 GitHub의 Unreal 템플릿(루트 기준)을 그대로 쓰고 `.idea/`, `*.slnx`, `*.utrace`만 더했다.

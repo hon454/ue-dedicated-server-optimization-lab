@@ -2,7 +2,7 @@
 
 - 상태: 승인됨
 - 날짜: 2026-10-01 (사용자 승인)
-- 출처: [engine-notes.md](../Planning/engine-notes.md) 사절, [ADR-0008](0008-reproducible-runs.md)의 "서버는 논리 프로세서 0\~7" 항목
+- 출처: [engine-notes.md](../Reference/engine-notes.md) 사절, [ADR-0008](0008-reproducible-runs.md)의 "서버는 논리 프로세서 0\~7" 항목
 
 ## 맥락
 

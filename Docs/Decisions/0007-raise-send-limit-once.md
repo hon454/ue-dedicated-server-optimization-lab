@@ -2,7 +2,7 @@
 
 - 상태: 승인됨
 - 날짜: 2026-10-01 (사용자 결정)
-- 출처: [설계 문서](../Planning/2026-10-01-short-term-portfolio-design.md) 8.1절 기준선 조건, [구현 계획](../Planning/2026-10-01-short-term-implementation-plan.md) 태스크 8.4, 8.4a, 8.6, [engine-notes.md](../Planning/engine-notes.md) 가절 "한도가 정해지는 과정", 바절 "대역폭 예산과 서버 틱"
+- 출처: [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md) 8.1절 기준선 조건, [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md) 태스크 8.4, 8.4a, 8.6, [engine-notes.md](../Reference/engine-notes.md) 가절 "한도가 정해지는 과정", 바절 "대역폭 예산과 서버 틱"
 
 ## 맥락
 

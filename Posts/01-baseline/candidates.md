@@ -60,7 +60,7 @@ CSV `frames`(302, 292, 334)는 세 실행 모두 `WorldTick` Count와 같다. `c
 
 - 직렬화(액터별 비교, 쓰기, 번치)는 클래스 타이머로 보인다: `LabResourceNode` 52%, `LabNpc` 10%.
 - 고려(고려 목록, 관련성, 우선순위 정렬)와 송신(`Connection->Tick`)은 `GameNetDriver`의 Excl 37%에 섞여 있어 이 트레이스로는 나눌 수 없다.
-- 나누려면 `-statnamedevents`를 더한 별도 실행이 필요하다(`Engine/Source/Runtime/Launch/Private/LaunchEngineLoop.cpp:1759`). 그러면 위 stat들이 Insights 타이머로 남는다. 다만 이 인자를 주면 클래스 타이머가 stat 경로로 바뀌어 이름이 달라질 수 있다(소스에서 읽은 추론이고 실행으로 확인하지 않았다). 측정 조건이 달라지므로 이번에는 실행하지 않았고, [backlog.md](../../Docs/Planning/backlog.md)의 "작업 중 떠오른 것"에 적었다.
+- 나누려면 `-statnamedevents`를 더한 별도 실행이 필요하다(`Engine/Source/Runtime/Launch/Private/LaunchEngineLoop.cpp:1759`). 그러면 위 stat들이 Insights 타이머로 남는다. 다만 이 인자를 주면 클래스 타이머가 stat 경로로 바뀌어 이름이 달라질 수 있다(소스에서 읽은 추론이고 실행으로 확인하지 않았다). 측정 조건이 달라지므로 이번에는 실행하지 않았고, [backlog.md](../../Docs/backlog.md)의 "작업 중 떠오른 것"에 적었다.
 
 ## 3. 연결 하나의 패킷 (Network Insights, `Game Instance 0 [Server]`, `Connection 0`, `Outgoing`)
 
@@ -114,7 +114,7 @@ CSV `frames`(302, 292, 334)는 세 실행 모두 `WorldTick` Count와 같다. `c
 
 ## 5. 후보 기법
 
-단기에 구현하는 기법은 앞의 세 개뿐이다. 사용자는 이 세 개의 순서를 고른다. 나머지 세 개는 "관찰"에서 언급할 수 있는 참고 자료이고, 고르더라도 단기에는 구현하지 않고 [backlog.md](../../Docs/Planning/backlog.md)에 적는다. 마지막 열은 그 기법이 겨냥하는 비용의 `r1` 값이다(1\~3절).
+단기에 구현하는 기법은 앞의 세 개뿐이다. 사용자는 이 세 개의 순서를 고른다. 나머지 세 개는 "관찰"에서 언급할 수 있는 참고 자료이고, 고르더라도 단기에는 구현하지 않고 [backlog.md](../../Docs/backlog.md)에 적는다. 마지막 열은 그 기법이 겨냥하는 비용의 `r1` 값이다(1\~3절).
 
 | 기법 | 단기 구현 | 무엇을 줄이는가 | 구현 비용(바꿀 코드) | 관련 엔진 소스 | 클라이언트에 보이는 영향 | 기준선에서 겨냥하는 값(`r1`) |
 | --- | --- | --- | --- | --- | --- | --- |

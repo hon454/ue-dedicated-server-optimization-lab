@@ -2,7 +2,7 @@
 
 - 상태: 승인됨
 - 날짜: 2026-10-01
-- 출처: [설계 문서](../Planning/2026-10-01-short-term-portfolio-design.md) 6절 "기준선의 정의"
+- 출처: [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md) 6절 "기준선의 정의"
 
 ## 맥락
 

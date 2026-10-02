@@ -2,7 +2,7 @@
 
 - 상태: 대체됨 → [ADR-0006](0006-saturation-from-engine-analytics.md)
 - 날짜: 2026-10-01 (태스크 6). 대체된 뒤 기록으로 남기려고 같은 날 작성했다.
-- 출처: [engine-notes.md](../Planning/engine-notes.md) 가절 `IsNetReady`, 라절
+- 출처: [engine-notes.md](../Reference/engine-notes.md) 가절 `IsNetReady`, 라절
 
 ## 맥락
 

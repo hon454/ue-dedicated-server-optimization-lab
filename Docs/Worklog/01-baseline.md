@@ -14,7 +14,7 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 
 - **Insights 값과 CSV가 세 실행 모두 맞는다.** 서버 프레임 시간 198.44 / 204.82 / 179.47ms와 `work_avg_ms` 198.773 / 205.150 / 179.673(-0.11\~-0.17%), 리플리케이션 시간(`GameNetDriver` 프레임당 Incl) 188.97 / 194.69 / 171.89ms와 `netflush_avg_ms` 189.375 / 195.108 / 172.293(-0.21\~-0.24%). 연결당 송신 대역폭(Network Insights 내용 기준, `Connection 0`)은 `r1` 28,048, `r3` 31,012바이트/초로 CSV `out_bytes_per_sec_per_conn`(28,896, 31,990)보다 3.0%, 3.2% 작다.
 - **내역(`r1`).** `GameNetDriver`가 `WorldTick`의 95.17%다. 그 안에서 `LabResourceNode` 52.14%(호출 12,082,416 = 5,001 × 8 × 302), `LabNpc` 10.31%, `GameNetDriver` 자체(Excl) 37.0%다. 송신 비트의 76.0%가 `LabNpc`이고 `LabResourceNode`는 60초에 576비트다.
-- **고려, 직렬화, 송신으로는 일부만 나뉜다.** 클래스 이름 타이머는 `UActorChannel::ReplicateActor`(`DataChannel.cpp:3622-3625`)라서 직렬화가 보이고, 고려 목록, 연결마다의 우선순위 정렬, `Connection->Tick`의 송신은 모두 Excl에 섞인다(`NetDriver.cpp:1174`). 타임라인에서 `GameNetDriver` 아래가 연결 8개의 덩어리로 보이고 덩어리 앞마다 자식 타이머 없는 3.6\~5.2ms 구간이 있다(프레임 하나를 눈금으로 어림). 나누는 실행(`-statnamedevents`)은 [backlog.md](../Planning/backlog.md)에 적었다.
+- **고려, 직렬화, 송신으로는 일부만 나뉜다.** 클래스 이름 타이머는 `UActorChannel::ReplicateActor`(`DataChannel.cpp:3622-3625`)라서 직렬화가 보이고, 고려 목록, 연결마다의 우선순위 정렬, `Connection->Tick`의 송신은 모두 Excl에 섞인다(`NetDriver.cpp:1174`). 타임라인에서 `GameNetDriver` 아래가 연결 8개의 덩어리로 보이고 덩어리 앞마다 자식 타이머 없는 3.6\~5.2ms 구간이 있다(프레임 하나를 눈금으로 어림). 나누는 실행(`-statnamedevents`)은 [backlog.md](../backlog.md)에 적었다.
 - **세 실행의 구성이 같다.** 호출 횟수(액터 수 × 연결 수 × 프레임 수), 프레임당 송신(약 5,570\~5,580바이트), 구성 비율(Excl 37.0\~37.1%)이 같고, 느린 실행은 모든 하위 타이머가 1.12\~1.18배 느리다(`r2` ÷ `r3`). 흔들림의 원인은 여전히 모른다.
 - **스크린샷 후보 8장**을 `Posts/01-baseline/images/insights-*.png`로 저장했다(목록은 candidates.md 8절).
 - 엔진 소스 위치는 서브에이전트가 찾고 에이전트가 인용한 줄을 다시 읽어 확인했다.

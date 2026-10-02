@@ -17,6 +17,18 @@
 | [0011](0011-no-iris-preview-section.md) | 포스팅에서 "Iris에서는" 섹션을 뺀다(0001의 "결과" 한 줄을 바꾼다) | 승인됨 |
 | [0012](0012-server-timer-resolution.md) | 서버 프로세스가 타이머 해상도 요청을 무시당하지 않게 한다(틱이 약 21Hz로 도는 실행을 없앤다) | 승인됨 |
 
+## ADR 이전의 결정
+
+ADR을 쓰기 전에 [단기 설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md) 3절에서 확정한 결정 가운데 ADR이 없는 것이다(2026-10-03에 옮김). 승인된 ADR과 같이 다시 열지 않는다. Iris, Replication Graph, FastArray의 순서는 [backlog.md](../backlog.md)에 있다.
+
+| 결정 | 내용 | 이유 |
+| --- | --- | --- |
+| 부하 원천 | 실제 클라이언트 + 다수의 리플리케이트 액터 혼합 | 연결당 비용과 액터 수 비용이 둘 다 드러난다 |
+| 월드 구성 | 플레이어 캐릭터, 자원 노드, AI NPC 세 가지 | 세 요소의 비용 패턴이 겹치지 않는다. 플레이어는 수가 적고 연결마다 비용이 생기고, 자원 노드는 수가 많고 거의 안 변하고, AI NPC는 수가 많고 계속 움직인다 |
+| 작업 환경 | Windows PC에서 Claude Code 실행 | 코드 작성, 빌드, 실행, 로그 확인을 한곳에서 한다 |
+| 포스팅 언어 | 한국어 | 국내 공고 대상([job-posting-ue5-dedicated-server.md](../Reference/job-posting-ue5-dedicated-server.md)) |
+| 에셋 | TPP 템플릿과 프리미티브 + 단색 머티리얼 | 에셋 작업 시간을 쓰지 않는다 |
+
 ## 쓰는 법
 
 - 파일 이름은 `NNNN-영문-요약.md`다. 번호는 이어서 붙이고 다시 쓰지 않는다.

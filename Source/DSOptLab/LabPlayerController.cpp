@@ -50,7 +50,7 @@ void ALabPlayerController::SpawnPlayerCameraManager()
 	Super::SpawnPlayerCameraManager();
 
 	// 서버가 클라이언트의 카메라 위치가 아니라 폰 쪽 시점을 기준으로 관련성을 판정하게 한다.
-	// 서버와 클라이언트 양쪽에서 꺼야 한다(Docs/Planning/engine-notes.md의 "관련성 판정의 기준 위치").
+	// 서버와 클라이언트 양쪽에서 꺼야 한다(Docs/Reference/engine-notes.md의 "관련성 판정의 기준 위치").
 	if (PlayerCameraManager)
 	{
 		PlayerCameraManager->bUseClientSideCameraUpdates = false;

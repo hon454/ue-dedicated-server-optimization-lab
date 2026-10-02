@@ -2,7 +2,7 @@
 
 - 상태: 승인됨
 - 날짜: 2026-10-01
-- 출처: [설계 문서](../Planning/2026-10-01-short-term-portfolio-design.md) 8.3절, 11.2절, [구현 계획](../Planning/2026-10-01-short-term-implementation-plan.md) "수치의 이름과 출처"
+- 출처: [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md) 8.3절, 11.2절, [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md) "수치의 이름과 출처"
 
 ## 맥락
 

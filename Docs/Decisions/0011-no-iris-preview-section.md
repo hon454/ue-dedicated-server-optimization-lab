@@ -2,7 +2,7 @@
 
 - 상태: 승인됨
 - 날짜: 2026-10-02 (사용자 승인)
-- 출처: [설계 문서](../Planning/2026-10-01-short-term-portfolio-design.md) 7절, [ADR-0001](0001-legacy-replication.md)의 "결과", 2026-10-02 사용자 제안
+- 출처: [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md) 7절, [ADR-0001](0001-legacy-replication.md)의 "결과", 2026-10-02 사용자 제안
 
 ## 맥락
 
@@ -12,7 +12,7 @@
 
 ## 결정
 
-포스팅 틀에서 "Iris에서는" 섹션을 뺀다. 포스팅 1\~4에 쓴 네 섹션은 지우고, 읽어 둔 소스 위치는 [backlog.md](../Planning/backlog.md)의 "Iris 전환 때 볼 소스 위치"로 옮긴다. Iris는 실제로 전환해 측정하는 포스팅에서 다룬다.
+포스팅 틀에서 "Iris에서는" 섹션을 뺀다. 포스팅 1\~4에 쓴 네 섹션은 지우고, 읽어 둔 소스 위치는 [backlog.md](../backlog.md)의 "Iris 전환 때 볼 소스 위치"로 옮긴다. Iris는 실제로 전환해 측정하는 포스팅에서 다룬다.
 
 레거시 리플리케이션으로 시작하고 Iris를 장기 백로그 1순위에 둔다는 ADR-0001의 결정은 그대로다. 바뀌는 것은 ADR-0001의 "결과" 가운데 "포스팅마다 있는 'Iris에서는' 섹션" 한 줄이다.
 

@@ -1,10 +1,10 @@
 # 장기 백로그
 
-단기 범위([설계 문서](2026-10-01-short-term-portfolio-design.md))가 끝난 뒤에 다룬다. 작업 중 떠오른 아이디어는 여기에만 적고, 진행 중인 포스팅에 넣지 않는다.
+단기 범위([설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md))가 끝난 뒤에 다룬다. 작업 중 떠오른 아이디어는 여기에만 적고, 진행 중인 포스팅에 넣지 않는다.
 
 ## 우선순위 순
 
-1. **Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](../Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
+1. **Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
 2. **인벤토리와 FastArray**: 일반 `TArray` 리플리케이션과 FastArray의 전송 바이트 비교. 소유자 전용 전송.
 3. **자원 노드 구역 매니저**: 노드당 액터 하나에서 구역별 매니저 + FastArray로 전환. 노드별 관련성을 잃는 트레이드오프.
 4. **기본 송신 한도에서의 포화와 우선순위**: 단기에서는 측정 조건으로 연결당 송신 한도를 올렸다. 엔진 기본 한도로 되돌렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지 다룬다.
@@ -26,7 +26,7 @@
 
 ## Iris 전환 때 볼 소스 위치
 
-포스팅 1\~4의 "Iris에서는" 섹션에 있던 내용이다(2026-10-02에 옮김, [ADR-0011](../Decisions/0011-no-iris-preview-section.md)). 모두 언리얼 엔진 5.8.3 소스에서 읽은 것이고 실행해 보지 않았다.
+포스팅 1\~4의 "Iris에서는" 섹션에 있던 내용이다(2026-10-02에 옮김, [ADR-0011](Decisions/0011-no-iris-preview-section.md)). 모두 언리얼 엔진 5.8.3 소스에서 읽은 것이고 실행해 보지 않았다.
 
 - **관련성(포스팅 1, 2).** Iris에서는 어떤 객체를 어떤 연결에 보낼지를 필터가 정한다. 엔진 기본 설정에서 액터의 기본 필터는 격자 기반 공간 필터 `UNetObjectGridWorldLocFilter`다(`Engine/Config/BaseEngine.ini:1498`의 `Spatial` 정의와 `1512`의 `DefaultSpatialFilterName=Spatial`). 이 필터의 컬 거리는 레거시와 같은 액터의 `NetCullDistanceSquared`에서 가져온다(`Engine/Source/Runtime/Engine/Private/Net/Iris/ReplicationSystem/NetActorFactory.cpp:659`). `bAlwaysRelevant`인 클래스에는 공간 필터를 쓰지 않는다(같은 폴더 `EngineReplicationBridge.cpp:242-253`). 소스대로라면 Iris에서도 같은 두 줄이 같은 Always Relevant 기준선을 만들고, 두 줄을 지우면 기본 공간 필터로 돌아간다. 필터 설정 `UNetObjectGridFilterConfig`의 기본값은 격자 칸 200m × 200m(`CellSizeX`, `CellSizeY` 20,000cm)이고, `bUseExactCullDistance`가 true라서 칸 단위가 아니라 객체와 시점 사이의 실제 거리로 판정한다(`Engine/Source/Runtime/Net/Iris/Public/Iris/ReplicationSystem/Filtering/NetObjectGridFilter.h:66-80`, 엔진 `BaseEngine.ini`에는 이 클래스의 설정 섹션이 없다). 비용이 어디에 얼마나 드는지는 모른다.
 - **휴면(포스팅 3).** 액터의 `NetDormancy`가 객체 하나의 "휴면을 원함" 비트로 전달되고(`FReplicationSystemUtil::NotifyActorDormancyChange` → `SetObjectWantsToBeDormant`, `Engine/Source/Runtime/Engine/Private/Net/Iris/ReplicationSystem/ReplicationSystemUtil.cpp:672-687`), 이 비트가 켜진 객체는 프레임마다의 폴링 대상에서 빠진다(`net.Iris.UseDormancyToFilterPolling` 기본값 true, `Engine/Source/Runtime/Net/Iris/Private/Iris/ReplicationSystem/ObjectReplicationBridge.cpp:77-80, 2075-2080`). `FlushNetDormancy()`는 그 객체를 한 번 폴링하게 한다(같은 파일 `2083-2098`). 소스대로라면 레거시처럼 연결마다 채널을 거쳐 휴면에 들어가는 구조가 아니라서 포스팅 3에서 남은 비용의 모양이 다를 텐데, 얼마나 다른지는 모른다.
@@ -34,10 +34,10 @@
 
 ## 작업 중 떠오른 것
 
-- **`GameNetDriver` 자체 시간 나누기(에디터 빌드).** 기본 트레이스에서는 `GameNetDriver` Excl(기준선 리플리케이션 시간의 37%)에 고려 목록 만들기, 연결마다의 우선순위 정렬, `Connection->Tick`의 송신이 섞여 나뉘지 않는다([Posts/01-baseline/candidates.md](../../Posts/01-baseline/candidates.md) 2절). `-statnamedevents`(`LaunchEngineLoop.cpp:1759`)를 더한 별도 실행으로 `STAT_NetConsiderActorsTime`(`NetDriver.cpp:5305`), `STAT_NetPrioritizeActorsTime`(`NetDriver.cpp:5530`), `Stat_NetConnectionTick` 같은 stat을 Insights 타이머로 보면 나눌 수 있다. 측정 조건이 달라지므로 그 실행의 수치는 비교에 쓰지 않고 비율만 본다. 클래스 타이머의 이름이 바뀌는지 먼저 확인한다(소스에서 읽은 추론). 위 "Test 패키지로 재측정"의 분해 실행과 같은 방식이다(2026-10-02, 태스크 10.3).
+- **`GameNetDriver` 자체 시간 나누기(에디터 빌드).** 기본 트레이스에서는 `GameNetDriver` Excl(기준선 리플리케이션 시간의 37%)에 고려 목록 만들기, 연결마다의 우선순위 정렬, `Connection->Tick`의 송신이 섞여 나뉘지 않는다([Posts/01-baseline/candidates.md](../Posts/01-baseline/candidates.md) 2절). `-statnamedevents`(`LaunchEngineLoop.cpp:1759`)를 더한 별도 실행으로 `STAT_NetConsiderActorsTime`(`NetDriver.cpp:5305`), `STAT_NetPrioritizeActorsTime`(`NetDriver.cpp:5530`), `Stat_NetConnectionTick` 같은 stat을 Insights 타이머로 보면 나눌 수 있다. 측정 조건이 달라지므로 그 실행의 수치는 비교에 쓰지 않고 비율만 본다. 클래스 타이머의 이름이 바뀌는지 먼저 확인한다(소스에서 읽은 추론). 위 "Test 패키지로 재측정"의 분해 실행과 같은 방식이다(2026-10-02, 태스크 10.3).
 - **같은 구성의 실행 사이 흔들림의 원인.** `baseline3`에서 느린 실행은 일의 양과 구성 비율이 같고 모든 하위 타이머가 1.12\~1.18배 느렸다(candidates.md 4절). CPU 클럭이나 같은 코어를 쓰는 다른 작업 같은 서버 밖의 요인으로 보이며 확인하지 않았다(2026-10-02, 태스크 10.3).
-- **휴면 노드가 클라이언트에 남는 문제.** 휴면으로 채널이 닫힌 노드는 플레이어가 멀어져도 서버가 닫을 채널이 없어 클라이언트에 남는다(`NetDriver.cpp:5877-5889`). `dormancy2-r2`에서 이동하는 클라이언트의 노드 수가 t=75s에 313개였다(적용 전 111개, [Posts/03-dormancy/candidates.md](../../Posts/03-dormancy/candidates.md) 3절). 오래 돌아다니면 맵의 노드를 모두 갖게 되고, 멀리 있는 동안 바뀐 상태는 다시 관련성 안에 들어와 채널이 열릴 때 받는다. 해결 후보: 클라이언트가 거리 밖의 휴면 액터를 스스로 지우기, 구역 단위로 묶어 구역이 관련성을 잃을 때 정리하기(위 "자원 노드 구역 매니저"), Replication Graph나 Iris의 필터(2026-10-02, 태스크 12).
-- **NPC 이동의 클라이언트 보간.** NPC의 `NetUpdateFrequency`를 10으로 낮추면 NPC 하나의 갱신 간격이 약 134ms(4패킷)가 되고 그 사이 NPC는 약 40cm를 움직인다(`update-frequency3-r1`, [Posts/04-update-frequency/candidates.md](../../Posts/04-update-frequency/candidates.md) 2절). `LabNpc`는 받은 위치를 그대로 적용하므로 끊겨 보일 수 있다. 클라이언트에서 받은 위치 사이를 보간하는 것은 포스팅 4에 넣지 않았다(2026-10-02, 태스크 13).
+- **휴면 노드가 클라이언트에 남는 문제.** 휴면으로 채널이 닫힌 노드는 플레이어가 멀어져도 서버가 닫을 채널이 없어 클라이언트에 남는다(`NetDriver.cpp:5877-5889`). `dormancy2-r2`에서 이동하는 클라이언트의 노드 수가 t=75s에 313개였다(적용 전 111개, [Posts/03-dormancy/candidates.md](../Posts/03-dormancy/candidates.md) 3절). 오래 돌아다니면 맵의 노드를 모두 갖게 되고, 멀리 있는 동안 바뀐 상태는 다시 관련성 안에 들어와 채널이 열릴 때 받는다. 해결 후보: 클라이언트가 거리 밖의 휴면 액터를 스스로 지우기, 구역 단위로 묶어 구역이 관련성을 잃을 때 정리하기(위 "자원 노드 구역 매니저"), Replication Graph나 Iris의 필터(2026-10-02, 태스크 12).
+- **NPC 이동의 클라이언트 보간.** NPC의 `NetUpdateFrequency`를 10으로 낮추면 NPC 하나의 갱신 간격이 약 134ms(4패킷)가 되고 그 사이 NPC는 약 40cm를 움직인다(`update-frequency3-r1`, [Posts/04-update-frequency/candidates.md](../Posts/04-update-frequency/candidates.md) 2절). `LabNpc`는 받은 위치를 그대로 적용하므로 끊겨 보일 수 있다. 클라이언트에서 받은 위치 사이를 보간하는 것은 포스팅 4에 넣지 않았다(2026-10-02, 태스크 13).
 - **끊김을 수치로 재기.** 포스팅 4에서는 시연용 NPC(`-LabShowcaseNpc`)를 60fps로 찍어 프레임마다 화면 위치를 읽었다(위치가 바뀐 간격 평균 46.4ms → 130.6ms, `visual9-r1`, `visual10-r1`). 남은 것: 클라이언트에서 NPC 위치가 바뀐 프레임의 간격을 직접 기록하기, `NetUpdateFrequency` 값을 여러 개(5, 10, 20)로 바꿔 대역폭과 간격을 함께 재기, 다른 거리와 이동 방향에서 보기(2026-10-02, 태스크 13).
 - **같은 코드의 두 묶음이 다른 이유.** `dormancy2`(원격 데스크톱 화면)와 `dormancy6`(본체 화면)은 코드가 같은데 `work_avg_ms` 중앙값이 14.409와 13.343이다. 측정 중 선호도 재설정도 포스팅 4의 측정 일곱 묶음 가운데 네 묶음에서 나왔다. 화면 조건, 포그라운드 창, 다른 프로그램 가운데 무엇이 원인인지 확인하지 않았다(2026-10-02, 태스크 13).
 - **노드를 고려 목록에서 빼기.** 휴면을 적용해도 `GameNetDriver` 자체 시간은 프레임당 9.43ms가 남았다(`dormancy2-r2`, 적용 전 10.50ms). 노드가 활성 목록에서 빠지려면 모든 연결에서 휴면이어야 하는데(`NetworkObjectList.cpp:348-376`), 실행 중 스폰한 노드는 채널을 연 연결에서만 휴면이 된다(engine-notes.md "휴면 액터와 관련성"). 맵에 놓인 `DORM_Initial` 액터는 고려 목록을 만들 때 바로 빠진다(`NetDriver.cpp:5369-5378`). 노드를 맵에 놓는 방식(에디터 작업 없이 가능한지 확인 필요), 구역 매니저, Replication Graph의 공간 격자로 이 몫을 재 본다(2026-10-02, 태스크 12).

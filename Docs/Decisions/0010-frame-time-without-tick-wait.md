@@ -2,7 +2,7 @@
 
 - 상태: 승인됨
 - 날짜: 2026-10-02 (사용자 승인)
-- 출처: [구현 계획](../Planning/2026-10-01-short-term-implementation-plan.md) "수치의 이름과 출처"의 "서버 프레임 시간", [설계 문서](../Planning/2026-10-01-short-term-portfolio-design.md) 8.3절, [ADR-0004](0004-insights-and-csv-metrics.md), [engine-notes.md](../Planning/engine-notes.md)의 프레임 순서 확인
+- 출처: [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md) "수치의 이름과 출처"의 "서버 프레임 시간", [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md) 8.3절, [ADR-0004](0004-insights-and-csv-metrics.md), [engine-notes.md](../Reference/engine-notes.md)의 프레임 순서 확인
 
 ## 맥락
 

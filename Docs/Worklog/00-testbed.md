@@ -4,7 +4,7 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 
 ## 2026-10-01 태스크 1\~7: 테스트베드 구축 (`smoke2`\~`smoke5`)
 
-테스트베드 구축 단계(태스크 1\~7)를 끝냈다. 사용자가 7.6(화면)과 7.8(수동 조작)을 확인했다(2026-10-01). 작은 규모 실행(클라이언트 2, 노드 101, NPC 10)이 종료 코드 0으로 끝나고 CSV 행과 자동 스크린샷(글자와 점)이 남는 것을 `smoke2`\~`smoke5`로 확인했다(`smoke5`는 템플릿 정리 후). 확인 내용은 [engine-notes.md](../Planning/engine-notes.md) 마절에 있다.
+테스트베드 구축 단계(태스크 1\~7)를 끝냈다. 사용자가 7.6(화면)과 7.8(수동 조작)을 확인했다(2026-10-01). 작은 규모 실행(클라이언트 2, 노드 101, NPC 10)이 종료 코드 0으로 끝나고 CSV 행과 자동 스크린샷(글자와 점)이 남는 것을 `smoke2`\~`smoke5`로 확인했다(`smoke5`는 템플릿 정리 후). 확인 내용은 [engine-notes.md](../Reference/engine-notes.md) 마절에 있다.
 
 ## 2026-10-01 실행 인자 `-DisablePython` (`smoke6-r1`, `smoke7-r1`)
 
@@ -48,7 +48,7 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 
 ## 2026-10-01 클라이언트 실행 인자에서 `-log` 제거 (`nolog1-r1`)
 
-클라이언트 실행 인자에서 `-log`를 뺐다(2026-10-01, `run-scenario.ps1`과 `run-manual.ps1`). 클라이언트마다 뜨던 로그 콘솔 창이 없어지고 로그 파일은 그대로 남는다(`nolog1-r1`에서 확인). 측정 조건이 바뀐 것이고, 클라이언트에 `-log`가 없는 실행은 `diag-d-r1`부터다. 근거는 [engine-notes.md](../Planning/engine-notes.md) 마절에 있다.
+클라이언트 실행 인자에서 `-log`를 뺐다(2026-10-01, `run-scenario.ps1`과 `run-manual.ps1`). 클라이언트마다 뜨던 로그 콘솔 창이 없어지고 로그 파일은 그대로 남는다(`nolog1-r1`에서 확인). 측정 조건이 바뀐 것이고, 클라이언트에 `-log`가 없는 실행은 `diag-d-r1`부터다. 근거는 [engine-notes.md](../Reference/engine-notes.md) 마절에 있다.
 
 ## 2026-10-01 ADR-0009 승인과 서버 마스크 252 (`calib-f-r1`, `diag-e-r1`)
 
@@ -79,7 +79,7 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 
 ## 2026-10-02 수동 조작에 달리기 (`sprint-a-r1`, `vis-e-r2`)
 
-수동 조작에 달리기를 넣었다(2026-10-02, 사용자 요청). 왼쪽 Shift를 누르는 동안 걷기(500cm/s)의 두 배인 1,000cm/s로 달린다. 새 클래스 `ULabCharacterMovement`가 달리기 여부를 저장된 이동의 압축 플래그 한 비트로 서버에 보내므로 송신량과 리플리케이트되는 속성은 그대로다. 입력은 에디터 에셋 없이 코드에서 만든다. 근거는 [engine-notes.md](../Planning/engine-notes.md) 마절에 있다. 사용자 지시로 워크트리(`feat/sprint` 브랜치)에서 작업하고 빌드한 뒤 main에 병합했다. 측정 경로가 바뀌지 않았는지 작은 규모로 `sprint-a-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, 트레이스 끔)을 실행했다. 종료 코드 0이고 `frames` 792, `work_avg_ms` 1.936, `out_bytes_per_sec_per_conn` 5143, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000이다. 같은 규모의 직전 실행 `vis-b-r1`(`frames` 897, `work_avg_ms` 2.113, `out_bytes_per_sec_per_conn` 5396, `open_actor_channels_per_conn` 118)과 비교하면 `frames`가 적고, 이 규모의 실행 사이에서 이미 680\~898로 흔들린 범위(`overlay2-r1` 680, `smoke7-r1` 898) 안이다. 로그의 경고 종류는 `vis-b-r1`과 같다. 사용자가 워크트리 빌드의 `run-manual.ps1`로 Shift 달리기가 잘 되는 것을 확인했다(2026-10-02). 그 뒤 워크트리를 등록 해제하고 `feat/sprint` 브랜치를 지웠다. 이 작업의 빌드(00:11:26\~00:12:20)가 같은 시각에 main에서 돌던 `vis-e-r2`의 측정 구간(00:11:11\~00:12:11)과 약 45초 겹쳤다. `vis-e-r2`의 `frames` 259는 `vis-e-r1`의 328보다 낮고, 이 실행의 수치는 쓰지 않는다. main의 `Binaries/`는 아직 달리기를 넣기 전의 빌드다.
+수동 조작에 달리기를 넣었다(2026-10-02, 사용자 요청). 왼쪽 Shift를 누르는 동안 걷기(500cm/s)의 두 배인 1,000cm/s로 달린다. 새 클래스 `ULabCharacterMovement`가 달리기 여부를 저장된 이동의 압축 플래그 한 비트로 서버에 보내므로 송신량과 리플리케이트되는 속성은 그대로다. 입력은 에디터 에셋 없이 코드에서 만든다. 근거는 [engine-notes.md](../Reference/engine-notes.md) 마절에 있다. 사용자 지시로 워크트리(`feat/sprint` 브랜치)에서 작업하고 빌드한 뒤 main에 병합했다. 측정 경로가 바뀌지 않았는지 작은 규모로 `sprint-a-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, 트레이스 끔)을 실행했다. 종료 코드 0이고 `frames` 792, `work_avg_ms` 1.936, `out_bytes_per_sec_per_conn` 5143, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000이다. 같은 규모의 직전 실행 `vis-b-r1`(`frames` 897, `work_avg_ms` 2.113, `out_bytes_per_sec_per_conn` 5396, `open_actor_channels_per_conn` 118)과 비교하면 `frames`가 적고, 이 규모의 실행 사이에서 이미 680\~898로 흔들린 범위(`overlay2-r1` 680, `smoke7-r1` 898) 안이다. 로그의 경고 종류는 `vis-b-r1`과 같다. 사용자가 워크트리 빌드의 `run-manual.ps1`로 Shift 달리기가 잘 되는 것을 확인했다(2026-10-02). 그 뒤 워크트리를 등록 해제하고 `feat/sprint` 브랜치를 지웠다. 이 작업의 빌드(00:11:26\~00:12:20)가 같은 시각에 main에서 돌던 `vis-e-r2`의 측정 구간(00:11:11\~00:12:11)과 약 45초 겹쳤다. `vis-e-r2`의 `frames` 259는 `vis-e-r1`의 328보다 낮고, 이 실행의 수치는 쓰지 않는다. main의 `Binaries/`는 아직 달리기를 넣기 전의 빌드다.
 
 ## 2026-10-02 내려다보기 화면의 플레이어 점 (`vis-f-r1`, `vis-g-r1`)
 
