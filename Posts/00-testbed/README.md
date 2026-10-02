@@ -86,9 +86,6 @@ powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 �
 - 기준선은 30Hz를 지키지 못하므로 30Hz로 환산한다. 환산 송신량 = 9,591 × 30 ÷ (100 ÷ 60) = 172,638바이트/초.
 - 그 두 배 345,276을 올림해 350,000으로 고정했다. 최적화로 30Hz가 돌아와도 포화되지 않게 하되, 한도가 없는 것과 같은 값은 피했다.
 - 바꾼 키는 `Config/DefaultEngine.ini`의 `[/Script/Engine.Player] ConfiguredInternetSpeed`, `[/Script/OnlineSubsystemUtils.IpNetDriver] MaxClientRate`, `MaxInternetClientRate` 세 개다. 클라이언트가 첫 번째 값을 서버에 보내고 서버가 나머지 두 값으로 자르기 때문에 셋을 함께 올려야 한다(`NetConnection.cpp:588`, `World.cpp:7465-7473`).
-- 사전 추정은 135\~180KB/s(NPC 300명 × 초당 30회 × 15\~20바이트)였고 환산값이 그 안에 들어왔다.
-
-엔진 기본 한도에서 무엇이 미뤄지는지는 이 시리즈 뒤의 별도 주제로 남겼다.
 
 ### 서버 코어
 
@@ -104,7 +101,7 @@ powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 �
 
 ## 엔진에서 확인한 것
 
-기억하던 기본값을 5.8.3 소스에서 다시 확인했다.
+5.8.3 소스에서 확인한 기본값이다.
 
 | 항목 | 값 | 위치 |
 | --- | --- | --- |
@@ -133,8 +130,6 @@ powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 �
 - 서버가 끝나기 전에 클라이언트가 죽음, 서버가 제한 시간 안에 끝나지 않음, CSV 행이 정확히 하나 늘지 않음.
 - 측정 시작 뒤에 프로세스의 코어 고정이 풀려 다시 설정됨.
 - 트레이스 파일이 없거나 비어 있음.
-
-같은 라벨은 다시 쓸 수 없다. 보정 과정에서 실제로 두 번(`calib-c-r1`, `calib-d-r1`) 코어 고정 재설정으로 실패 처리됐고, 그 수치는 쓰지 않았다.
 
 측정 전에 `\Processor Information(0,N)\% DPC Time`으로 논리 프로세서 2\~7의 DPC 시간이 0\~2%인지 확인한다.
 
