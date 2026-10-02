@@ -5,6 +5,7 @@
 #   -Out의 확장자로 형식을 정한다. .gif와 .webp는 MP4로 먼저 찍은 뒤 -GifFps, -Width로 줄여 변환한다.
 #   .png는 한 프레임만 찍는다(8개 창이 떠 있는 전체 화면 같은 정지 화면).
 #   -Delay N 을 주면 N초 기다렸다가 찍는다. -NoMouse는 커서를 빼고 찍는다.
+#   -RaiseSlots "1,2"  : 실행 인자가 -LabSlot=1, -LabSlot=2인 클라이언트 창을 찍는 동안 맨 위로 올린다. -Region과 함께 쓴다.
 #
 # 화면 전체나 영역에는 사용자의 다른 창이 찍힐 수 있다. 에이전트는 찍기 전에 사용자에게 허가를 받는다(AGENTS.md).
 #
@@ -13,7 +14,7 @@
 # 8개 클라이언트는 run-scenario.ps1로만 뜨므로, 수치를 쓰지 않는 시각 자료 전용 라벨(visualN)의 실행에서는
 # -AllowMeasuring으로 이 검사를 건너뛴다. 그 라벨의 수치는 포스팅과 STATUS.md의 비교에 쓰지 않는다.
 # 화면을 받으므로 창 위에 겹친 다른 창도 함께 찍힌다. -Window로 고른 창은 녹화하는 동안 맨 위로 올린다.
-# -Region이나 전체 화면은 그대로 찍으니 찍을 창을 앞에 두고 실행한다.
+# -Region이나 전체 화면은 그대로 찍으니 -RaiseSlots로 클라이언트 창을 올리거나, 찍을 창을 앞에 두고 실행한다.
 #
 # 찍은 뒤 6프레임을 한 장에 모은 미리보기를 Saved/Screenshots/Lab/<이름>-preview.png 에 남긴다.
 # 에이전트는 영상을 직접 볼 수 없어서 이 미리보기를 열어 제대로 찍혔는지 확인한다.
@@ -27,6 +28,7 @@ param(
     [int]$GifFps = 8,
     [int]$Width = 960,
     [double]$Delay = 0,
+    [string]$RaiseSlots = "",
     [switch]$NoMouse,
     [switch]$AllowMeasuring
 )
@@ -91,6 +93,21 @@ else {
     $L = 0; $T = 0; $R = $ScreenW; $B = $ScreenH
 }
 
+# -RaiseSlots의 창은 영역을 정하는 데 쓰지 않고 맨 위로 올리기만 한다.
+if ($RaiseSlots) {
+    $LabProcesses = @(Get-CimInstance Win32_Process -Filter "Name = 'UnrealEditor.exe'" -ErrorAction SilentlyContinue)
+    foreach ($Slot in ($RaiseSlots.Split(',') | ForEach-Object { [int]$_.Trim() })) {
+        $Matched = @($LabProcesses | Where-Object { $_.CommandLine -match "-LabSlot=$Slot(\s|$)" } |
+            ForEach-Object { Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue } |
+            Where-Object { $_ -and $_.MainWindowHandle -ne 0 })
+        if ($Matched.Count -eq 0) {
+            throw "No client window with -LabSlot=$Slot."
+        }
+        Write-Host ("RAISE: slot {0} pid {1}" -f $Slot, ($Matched.Id -join ', '))
+        $Targets += $Matched
+    }
+}
+
 # 주 모니터 안으로 자르고, H.264가 요구하는 짝수 크기로 맞춘다.
 $L = [math]::Max(0, $L); $T = [math]::Max(0, $T)
 $R = [math]::Min($ScreenW, $R); $B = [math]::Min($ScreenH, $B)
@@ -113,7 +130,7 @@ if ($Delay -gt 0) { Start-Sleep -Seconds $Delay }
 $DrawMouse = if ($NoMouse) { 0 } else { 1 }
 $Grab = "ddagrab=output_idx=0:framerate=${Fps}:draw_mouse=${DrawMouse}:offset_x=${L}:offset_y=${T}:video_size=${W}x${H}"
 Write-Host ("RECORD: {0},{1} {2}x{3} for {4}s at {5} fps" -f $L, $T, $W, $H, $Seconds, $Fps)
-# -Window로 고른 창은 녹화하는 동안만 항상 위에 두고 끝나면 되돌린다.
+# -Window와 -RaiseSlots로 고른 창은 녹화하는 동안만 항상 위에 두고 끝나면 되돌린다.
 # 백그라운드 프로세스는 SetForegroundWindow로 창을 앞으로 가져올 수 없어서 TOPMOST를 쓴다.
 $HWND_TOPMOST = [IntPtr](-1); $HWND_NOTOPMOST = [IntPtr](-2)
 $SWP_NOSIZE_NOMOVE_NOACTIVATE = 0x0001 -bor 0x0002 -bor 0x0010

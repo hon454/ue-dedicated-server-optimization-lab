@@ -57,7 +57,12 @@ if ($Running.Count -gt 0) {
 
 # 서버는 논리 프로세서 2~7, 클라이언트는 8 이상에 고정한다. 0번과 1번은 비운다(1번에 DPC가 몰린다. ADR-0009).
 $Logical = [Environment]::ProcessorCount
-$ClientMask = ([long][math]::Pow(2, $Logical) - 1) - [long]0xFF
+# 8개 이하면 클라이언트에 줄 논리 프로세서가 없고, 63개 이상이면 마스크가 64비트 정수를 넘는다.
+if ($Logical -le 8 -or $Logical -gt 62) {
+    Write-Host "FAIL: this script needs 9 to 62 logical processors (found $Logical). The server uses 2-7 and the clients use 8 and above."
+    exit 1
+}
+$ClientMask = (([long]1 -shl $Logical) - 1) - [long]0xFF
 
 # 에디터 실행 파일은 시작하는 동안 프로세스 선호도가 전체 코어로 되돌아간다(2026-10-01 smoke1, smoke3에서 관찰).
 # 그래서 실행 직후 한 번 설정하고, 서버를 기다리는 동안 2초마다 다시 읽어 달라져 있으면 다시 설정한다.
@@ -81,14 +86,11 @@ function Start-LabClient([int]$Index, [string]$RunLabel) {
     # 640x360 창을 4열로 배치한다.
     $X = ($Index % 4) * 640
     $Y = [math]::Floor($Index / 4) * 390
-    $ClientArgs = @(
-        "`"$Project`"", "127.0.0.1", "-game", "-windowed",
-        "-ResX=640", "-ResY=360", "-WinX=$X", "-WinY=$Y",
-        # -log는 로그 콘솔 창을 띄울 뿐이다(LaunchEngineLoop.cpp의 "Show log if wanted"). 로그 파일은 -LOG=만으로 남는다.
-        "-LOG=client$Index-$RunLabel.log", "-nosound", "-unattended", "-DisablePython",
+    $ClientArgs = (Get-LabClientArgs $Index $RunLabel "client$Index-$RunLabel.log" 640 360 $X $Y) + @(
+        "-unattended",
         # Unreal Insights가 떠 있으면 프로세스가 스스로 트레이스 서버에 연결한다(TraceAuxiliary.cpp의 TryAutoConnect). 그것을 막는다.
         "-traceautostart=0",
-        "-LabSlot=$Index", "-LabAutoMove", "-LabLabel=$RunLabel",
+        "-LabAutoMove",
         "-ExecCmds=`"t.MaxFPS 30`""
     )
     # 0번은 제자리 채집과 3인칭 스크린샷, 1번은 내려다보기 스크린샷을 맡는다.
@@ -126,11 +128,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     $TraceFile = "$TraceDir\$RunLabel.utrace"
     Write-Host "=== $RunLabel ==="
 
-    $ServerArgs = @(
-        "`"$Project`"", "/Game/Maps/L_Lab", "-server", "-log", "-unattended", "-DisablePython",
-        "-LOG=server-$RunLabel.log",
+    $ServerArgs = (Get-LabServerArgs "server-$RunLabel.log" $Nodes $Npcs) + @(
+        "-unattended",
         "-LabMeasure", "-LabLabel=$RunLabel",
-        "-LabNodes=$Nodes", "-LabNpcs=$Npcs",
         "-LabExpectedClients=$Clients", "-LabWarmup=$Warmup", "-LabMeasureSeconds=$Measure"
     )
     if ($ShowcaseNpc) {

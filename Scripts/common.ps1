@@ -29,3 +29,22 @@ $Editor = "$UE_ROOT\Engine\Binaries\Win64\UnrealEditor.exe"
 if (-not (Test-Path $Editor)) {
     throw "UnrealEditor.exe not found: $Editor"
 }
+
+# 서버와 클라이언트의 실행 인자 가운데 run-scenario.ps1과 run-manual.ps1이 함께 쓰는 부분.
+# 실행마다 다른 인자는 돌려받은 배열 뒤에 붙인다.
+function Get-LabServerArgs([string]$LogName, [int]$Nodes, [int]$Npcs) {
+    return @(
+        "`"$Project`"", "/Game/Maps/L_Lab", "-server", "-log", "-DisablePython",
+        "-LOG=$LogName", "-LabNodes=$Nodes", "-LabNpcs=$Npcs"
+    )
+}
+
+function Get-LabClientArgs([int]$Slot, [string]$Label, [string]$LogName, [int]$ResX, [int]$ResY, [int]$WinX, [int]$WinY) {
+    return @(
+        "`"$Project`"", "127.0.0.1", "-game", "-windowed",
+        "-ResX=$ResX", "-ResY=$ResY", "-WinX=$WinX", "-WinY=$WinY",
+        # -log는 로그 콘솔 창을 띄울 뿐이다(LaunchEngineLoop.cpp의 "Show log if wanted"). 로그 파일은 -LOG=만으로 남는다.
+        "-LOG=$LogName", "-nosound", "-DisablePython",
+        "-LabSlot=$Slot", "-LabLabel=$Label"
+    )
+}
