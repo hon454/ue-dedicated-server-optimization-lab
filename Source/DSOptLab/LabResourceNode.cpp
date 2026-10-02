@@ -13,6 +13,9 @@ ALabResourceNode::ALabResourceNode()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
+	// 상태가 바뀔 때만 깨워서 보낸다.
+	NetDormancy = DORM_DormantAll;
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(Mesh);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -49,6 +52,9 @@ void ALabResourceNode::Harvest()
 		return;
 	}
 
+	// 휴면 중이면 깨워서 아래 변경이 전송되게 한다.
+	FlushNetDormancy();
+
 	--Health;
 	OnRep_Health();
 	if (Health <= 0)
@@ -61,6 +67,8 @@ void ALabResourceNode::Harvest()
 
 void ALabResourceNode::Respawn()
 {
+	FlushNetDormancy();
+
 	Health = MaxHealth;
 	OnRep_Health();
 	bDepleted = false;
