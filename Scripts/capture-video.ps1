@@ -24,7 +24,7 @@ param(
     [string]$Window = "",
     [string]$Region = "",
     [int]$Fps = 30,
-    [int]$GifFps = 15,
+    [int]$GifFps = 8,
     [int]$Width = 960,
     [double]$Delay = 0,
     [switch]$NoMouse,
@@ -148,9 +148,10 @@ if ($Ext -eq '.png') {
 
 $Scale = "scale='min($Width,iw)':-2:flags=lanczos"
 if ($Ext -eq '.gif') {
-    # 팔레트를 영상에서 뽑아 쓰면 256색으로 줄일 때 색 띠가 덜 생긴다.
+    # 팔레트를 영상에서 뽑아 48색으로 줄인다. 256색, 15fps에서는 두 클라이언트 10초가 9~13MB였다(포스팅 2).
+    # 32색은 NPC의 빨간 점이 회색이 된다. bayer 디더와 바뀐 영역만 다시 그리기(diff_mode)가 프레임 사이 차이를 줄여 파일이 작다.
     & $Ffmpeg -hide_banner -loglevel error -y -i $Mp4Path `
-        -vf "fps=$GifFps,$Scale,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a" `
+        -vf "fps=$GifFps,$Scale,split[a][b];[a]palettegen=max_colors=48:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle" `
         -loop 0 $OutPath
 }
 elseif ($Ext -eq '.webp') {

@@ -90,7 +90,7 @@ xychart-beta
 | --- | --- | --- |
 | Timing Insights 프레임 그래프와 타이머 트리 | 포스팅마다 적용 후. 적용 전은 직전 포스팅의 것을 쓴다 | `before-timing.png`, `after-timing.png` |
 | Network Insights 패킷 내용 화면 | 포스팅마다 적용 후. 적용 전은 직전 포스팅의 것을 쓴다 | `before-network.png`, `after-network.png` |
-| 클라이언트 화면 영상 10초 안팎(GIF, 폭 960px, 15fps) | 정확성 확인 항목이 움직임일 때 | `before-clip.gif`, `after-clip.gif` |
+| 클라이언트 화면 영상 10초 안팎(GIF, 폭 960px, 8fps, 48색. 2026-10-02 사용자 결정으로 15fps에서 줄임) | 정확성 확인 항목이 움직임일 때 | `before-clip.gif`, `after-clip.gif` |
 | 8개 창이 떠 있는 전체 화면 | 테스트베드 포스팅에 한 번 | `all-clients.png` |
 
 Insights 스크린샷은 에이전트가 찍어 후보로 주고(2026-10-01 사용자 결정, `Docs/Guides/insights-reading.md`), 사람이 고르거나 직접 찍는다. Insights 스크린샷은 전후를 같은 확대 수준으로, 두 북마크 사이의 구간에서 찍는다. Insights 이미지에는 본문이 인용하는 값에 번호 붙은 외곽선 상자를 최대 3개 그린다(`Scripts/annotate-image.ps1`). 원본은 그대로 둔다.
