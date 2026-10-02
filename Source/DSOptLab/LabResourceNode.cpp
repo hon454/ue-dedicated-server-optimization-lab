@@ -50,6 +50,7 @@ void ALabResourceNode::Harvest()
 	}
 
 	--Health;
+	OnRep_Health();
 	if (Health <= 0)
 	{
 		bDepleted = true;
@@ -61,8 +62,16 @@ void ALabResourceNode::Harvest()
 void ALabResourceNode::Respawn()
 {
 	Health = MaxHealth;
+	OnRep_Health();
 	bDepleted = false;
 	OnRep_Depleted();
+}
+
+void ALabResourceNode::OnRep_Health()
+{
+	// 채집이 눈에 보이도록 체력에 비례해 노드 높이를 줄인다(체력 3일 때 원래 높이 3배).
+	const float HeightScale = 3.f * FMath::Max(Health, 1) / MaxHealth;
+	Mesh->SetRelativeScale3D(FVector(1.f, 1.f, HeightScale));
 }
 
 void ALabResourceNode::OnRep_Depleted()

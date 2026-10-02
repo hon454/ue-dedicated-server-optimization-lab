@@ -178,10 +178,12 @@ void ALabPlayerController::TickOverlay(const APawn& ControlledPawn)
 	for (TActorIterator<ALabResourceNode> It(World); It; ++It)
 	{
 		++NumNodes;
+		const bool bDamaged = It->IsDamaged();
 		if (Config.bTopDown)
 		{
-			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, 5.f,
-				It->IsDepleted() ? FColor::Black : FColor::Green, false, -1.f, SDPG_Foreground);
+			// 체력이 깎인 노드는 노란색으로 보여 채집이 진행 중임을 알린다.
+			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, bDamaged ? 12.f : 5.f,
+				It->IsDepleted() ? FColor::Black : bDamaged ? FColor::Yellow : FColor::Green, false, -1.f, SDPG_Foreground);
 		}
 	}
 

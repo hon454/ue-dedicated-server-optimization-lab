@@ -23,6 +23,9 @@ public:
 
 	bool IsDepleted() const { return bDepleted; }
 
+	/** 채집을 받아 체력이 깎인 상태인지. 화면 표시용이다. */
+	bool IsDamaged() const { return !bDepleted && Health < MaxHealth; }
+
 private:
 	static constexpr int32 MaxHealth = 3;
 	static constexpr float RespawnSeconds = 20.f;
@@ -30,11 +33,14 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_Health)
 	int32 Health = MaxHealth;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Depleted)
 	bool bDepleted = false;
+
+	UFUNCTION()
+	void OnRep_Health();
 
 	UFUNCTION()
 	void OnRep_Depleted();
