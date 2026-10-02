@@ -539,7 +539,7 @@ git commit -m "chore: fix scenario scale and baseline conditions after calibrati
 
 - [x] **9.3 자동 스크린샷을 넣는다.** `Posts/00-testbed/images/`에는 README용으로 `overlay2-r1`의 `tpp.png`(순번 01), `topdown.png`(순번 00)가 이미 있다. 아래의 확정 규모 이미지로 덮어쓴다. 태스크 8의 확정 규모 실행에서 나온 3인칭 화면 한 장과 내려다보기 화면 한 장을 골라 `Posts/00-testbed/images/`에 `tpp.png`, `topdown.png`로 복사하고 본문에 넣는다. 내려다보기 화면에는 점 색의 의미를 설명하는 캡션을 단다.
 
-- [ ] **9.4 나머지 시각 자료를 넣는다.** 에이전트가 녹화 계획(창, 실행 라벨 `visual1`, 길이, 파일 이름)을 채팅에 적어 허가를 받은 뒤, 확정 명령의 `run-scenario.ps1`을 `-Label visual1`로 돌리면서 `Scripts/capture-video.ps1 -AllowMeasuring`으로 8개 창이 떠 있는 전체 화면(`all-clients.png`)과 클라이언트가 걷는 10초 영상(`clip.gif`)을 찍어 `Posts/00-testbed/images/`에 넣고, 본문의 자리 표시를 이미지 링크로 바꾼다. Timing Insights와 Network Insights는 이미 넣은 `timing.png`, `network.png`를 쓴다. [사람] 넣은 자료를 보고 고르거나 바꾼다.
+- [x] **9.4 나머지 시각 자료를 넣는다.** 에이전트가 녹화 계획(창, 실행 라벨 `visual1`, 길이, 파일 이름)을 채팅에 적어 허가를 받은 뒤, 확정 명령의 `run-scenario.ps1`을 `-Label visual1`로 돌리면서 `Scripts/capture-video.ps1 -AllowMeasuring`으로 8개 창이 떠 있는 전체 화면(`all-clients.png`)과 클라이언트가 걷는 10초 영상(`clip.gif`)을 찍어 `Posts/00-testbed/images/`에 넣고, 본문의 자리 표시를 이미지 링크로 바꾼다. Timing Insights와 Network Insights는 이미 넣은 `timing.png`, `network.png`를 쓴다. [사람] 넣은 자료를 보고 고르거나 바꾼다.
 
 - [ ] **9.5 `Docs/STATUS.md`를 갱신하고 커밋, 태그한다.** 포스팅 진행표에서 0번을 "완료"로 바꾸고 태그 이름을 적는다.
 
@@ -769,7 +769,7 @@ void ALabResourceNode::Respawn()
 
 - [ ] **14.3 README를 마무리한다.** 포스팅 표의 상태, 누적 수치 표, 실행 방법의 명령을 최종값으로 맞춘다. 누적 수치 표 아래에 기준선 대비 최종 변화를 한 문단으로 적는다. 이 문단에서 "기본 관련성 복원으로 얻은 변화"와 "그 뒤의 기법으로 얻은 변화"를 나눠 적는다. 맨 아래에 "다음 주제" 절을 만들어 `Docs/Planning/backlog.md`의 우선순위 순 항목을 적는다.
 
-- [ ] **14.4 기준선 태그에서 재현되는지 확인한다.** `post-01-baseline` 태그를 체크아웃해 빌드하고 시나리오를 1회 실행한 뒤, 결과가 `Docs/STATUS.md`의 기준선 수치의 변동 폭 근처인지 본다. 끝나면 main으로 돌아온다. 재현을 확인한 태그는 이것 하나다. README에 "모든 태그에서 재현을 확인했다"고 쓰지 않는다. 태그를 만든 뒤에 실행 명령이나 측정 정의를 고쳤다면, 어느 태그부터 적용되는지 README의 실행 방법에 적는다.
+- [x] **14.4 기준선 태그에서 재현되는지 확인한다.** `post-01-baseline` 태그를 체크아웃해 빌드하고 시나리오를 1회 실행한 뒤, 결과가 `Docs/STATUS.md`의 기준선 수치의 변동 폭 근처인지 본다. 끝나면 main으로 돌아온다. 재현을 확인한 태그는 이것 하나다. README에 "모든 태그에서 재현을 확인했다"고 쓰지 않는다. 태그를 만든 뒤에 실행 명령이나 측정 정의를 고쳤다면, 어느 태그부터 적용되는지 README의 실행 방법에 적는다.
 
 ```bash
 git stash -u
