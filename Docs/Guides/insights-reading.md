@@ -50,7 +50,10 @@ powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라�
 
 ## 에이전트가 직접 열 때 알아 둘 것
 
-- Insights는 시작 메뉴에 없는 실행 파일이라, 실행한 뒤 컴퓨터 조작 권한을 `UnrealInsights.exe` 이름으로 요청한다.
+- Insights는 시작 메뉴에 없는 실행 파일이라, 실행한 뒤 컴퓨터 조작 권한을 실행 파일의 전체 경로(`<엔진>\Engine\Binaries\Win64\UnrealInsights.exe`)로 요청한다. 이름만으로는 잡히지 않았다.
+- 원격 데스크톱 세션에서는 컴퓨터 조작 도구의 마우스 이동이 듣지 않는다(클릭은 현재 커서 자리에 들어간다). 커서를 PowerShell(`[System.Windows.Forms.Cursor]::Position`)로 옮긴 뒤 클릭한다. 원격 창을 닫기만 한 연결 끊김 세션에서는 화면이 그려지지 않아 조작도 캡처도 되지 않는다([troubleshooting.md](troubleshooting.md)).
+- 창을 조작하기 어려우면 북마크 시각만 Log View에서 읽고, Timers와 Callees 값은 내보내기 명령으로 창 없이 얻는다: 아래 "P99 읽기"의 명령에서 `-ExecOnAnalysisCompleteCmd`를 `TimingInsights.ExportTimerStatistics <출력>.csv -threads=GameThread -startTime=<초> -endTime=<초>`나 `TimingInsights.ExportTimerCallees <출력>.csv -timers=WorldTick -threads=GameThread -startTime=<초> -endTime=<초>`로 바꾼다. `dormancy2-r2`에서 창의 값과 같았다([Posts/03-dormancy/candidates.md](../../Posts/03-dormancy/candidates.md)).
+- 포스팅용 캡처는 전후를 같은 창 크기(3000×2080)로 찍는다. 창 크기가 다르면 Networking 화면의 한 픽셀에 드는 패킷 수가 달라져 같은 범위를 고를 수 없다(`dormancy2-r2`: 1728 폭에서 1,788패킷, 3000 폭에서 1,785패킷).
 - 권한이 없는 다른 창은 Insights 뒤에 있어도 그 자리가 스크린샷에서 가려진다. 가리는 창을 치우거나 보기 권한을 받는다.
 - 문서에 넣을 캡처는 화면 복사가 아니라 창 내용만 찍는다: `powershell -ExecutionPolicy Bypass -File Scripts/capture-insights.ps1 -Label <라벨>-rN -Out <경로>.png`(`-Height N`이면 위쪽 N픽셀만). 화면 복사에는 에이전트가 화면을 조작하는 동안 화면 가장자리에 그려지는 주황 테두리가 들어간다(2026-10-02, `Posts/00-testbed`와 `Posts/01-baseline`의 이미지를 이 스크립트로 다시 찍었다). 타임라인 툴팁도 함께 찍힌다. 포스팅에 넣을 때는 본문이 인용하는 값에 `Scripts/annotate-image.ps1`로 번호 붙은 상자를 최대 3개 그려 포스팅용 이름으로 저장하고, 원본은 그대로 둔다.
 - 이 PC는 3840×2160에 150% 배율이다. Claude 앱의 작은 창이 화면 오른쪽 위에 항상 떠 있어서, 조작하는 동안 Insights 창을 그 왼쪽에 들어가는 크기(3000×2080픽셀, 왼쪽 위 0,0)로 둔다. 뒤에 있는 권한 없는 창(작업 관리자 같은 관리자 권한 창은 옮길 수 없다)이 조작용 스크린샷을 가리면 그 앱의 보기 권한을 받는다.

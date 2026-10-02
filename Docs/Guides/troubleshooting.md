@@ -8,6 +8,7 @@
 | 빌드가 DLL 잠금으로 실패한다 | 에디터가 열려 있는지 확인하고 닫는다 | [STATUS.md](../STATUS.md) "명령" |
 | `run-scenario.ps1`이 `FAIL: processor affinity was re-applied`로 끝난다 | 그 실행의 수치를 쓰지 않고 라벨을 바꿔 다시 실행한다. `-Warmup`은 바꾸지 않는다 | [Worklog/01-baseline.md](../Worklog/01-baseline.md) "태스크 10.1". 원인은 모른다 |
 | 녹화한 `visualN` 실행이 `FAIL: processor affinity was re-applied`(종료 코드 1)로 끝난다 | `visualN`은 수치를 쓰지 않으므로 미리보기에서 원하는 장면이 담겼으면 다시 실행하지 않는다 | `visual2-r1`(측정 시작 38초 뒤), `visual3-r1`(15초 뒤). 두 번 모두 측정 구간에 녹화했다. 녹화와 관련이 있는지는 확인하지 않았다 |
+| 녹화나 화면 조작이 되지 않고 화면 크기가 1728×1084로 잡힌다(두 클라이언트 영상의 2번 창이 화면 밖으로 잘린다) | `qwinsta`로 세션 상태를 본다. 원격 데스크톱으로 접속 중이면 화면이 원격 창 크기가 되고, 원격 창을 닫기만 하면 세션이 `Disc`가 되어 화면이 그려지지 않는다. 사용자에게 본체에 로그인해 달라고 요청한 뒤(3840×2160, 150%) 진행한다 | [Worklog/03-dormancy.md](../Worklog/03-dormancy.md) "태스크 11.5\~11.10" |
 | 같은 라벨로 다시 실행하면 스크립트가 거부한다 | 정상 동작이다. 실패한 실행의 로그와 트레이스가 남아 있어서다. 새 라벨을 쓴다 | [engine-notes.md](../Planning/engine-notes.md) 바절 "트레이스 인자" |
 | 클라이언트가 시작 직후 `Assertion failed: RefCount.load(...)`로 죽는다 | 시작 신호 전이면 스크립트가 다시 띄운다(실행당 최대 3번, 출력의 `RESTART:` 줄). 따로 할 일은 없다 | engine-notes.md 마절 "실행하면서 고친 것" |
 | 서버가 `Run failed: connection count changed after start`로 끝난다 | 측정 중에 클라이언트 창이 닫힌 것이다(`smoke6-r1`은 Alt-F4). 수치를 쓰지 않고 새 라벨로 다시 실행한다 | [Worklog/00-testbed.md](../Worklog/00-testbed.md) "실행 인자 `-DisablePython`" |

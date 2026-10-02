@@ -4,13 +4,13 @@
 
 ## 단계
 
-태스크 1\~12를 끝냈고 포스팅 1, 2, 3이 완료다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11)에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
+태스크 1\~12를 끝냈고 포스팅 1, 2, 3이 완료다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12)에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
 - 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
 
 ## 다음 할 일
 
-1. **태스크 13(포스팅 4: AI NPC 업데이트 빈도).** 태스크 11을 포스팅 4에 대해 수행한다. 코드는 구현 계획 "기법별 코드"의 다. 직전 구성은 `dormancy2`(중앙값 실행 `r2`)다. 시작하기 전에 아래 "포스팅 주기 진행"과 "측정 결과"의 포스팅 3 경위를 `Docs/Worklog/03-dormancy.md`로 옮긴다(정리안 승인 뒤).
+1. **태스크 13(포스팅 4: AI NPC 업데이트 빈도).** 태스크 11을 포스팅 4에 대해 수행한다. 코드는 구현 계획 "기법별 코드"의 다. 직전 구성은 `dormancy2`(중앙값 실행 `r2`)다. 겨냥하는 CPU 비용(NPC 직렬화 프레임당 0.41ms)이 `dormancy2`의 변동 폭보다 작아 시간 지표로는 구별되지 않을 수 있다([후보 기법 자료](../Posts/03-dormancy/candidates.md) 4절).
 2. **태스크 9.4.** 에이전트가 녹화 계획을 적어 허가를 받은 뒤 `visual1` 실행에서 `all-clients.png`와 `clip.gif`를 찍어 넣는다. [사람] 넣은 자료를 고르고 테스트베드 포스팅 초안을 읽고 다듬는다.
 3. 태스크 9.5(포스팅 진행표를 "완료"로, 커밋과 `post-00-testbed` 태그).
 4. 푸시는 사용자가 정한 시점에 한다.
@@ -35,6 +35,7 @@
 - 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 에이전트도 문서 편집을 포함해 다른 작업을 하지 않는다(`calib-g-r1` 실행 중의 문서 편집, [Worklog/00-testbed.md](Worklog/00-testbed.md) "태스크 9.1\~9.3"). 서버만 논리 프로세서 2\~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
 - Insights: `powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라벨>-rN`. 읽는 순서는 [insights-reading.md](Guides/insights-reading.md)에 있다.
 - 두 클라이언트 영상(1번 내려다보기, 2번 3인칭 이동): 이 PC의 150% 배율에서 두 창은 959,-47과 1919,-47(각 962×588)이라 `capture-video.ps1 -Region "959,0,1922,541" -NoMouse`로 찍는다. `-Region`은 창을 맨 위로 올리지 않으므로, 찍기 전에 두 창(명령줄 `-LabSlot=1`, `-LabSlot=2`)을 `SetWindowPos`로 TOPMOST로 올리고 끝나면 되돌린다(`visual2`, `visual3`에서 이렇게 찍었다).
+- 수동 확인을 에이전트가 할 때: `run-manual.ps1`은 `Read-Host`로 기다리므로 `Start-Process powershell`로 새 창에 띄우고, 끝나면 `UnrealEditor`와 그 창을 종료한다. 컴퓨터 조작 권한은 `UnrealEditor.exe`의 전체 경로로 요청한다. 관찰자 창을 클릭하면 마우스가 카메라를 돌리므로 클릭한 뒤 커서를 옮겨 카메라를 맞춘다. 달리기(`shift+w`) 28초가 약 275m다(2026-10-02, 포스팅 3의 정확성 확인).
 - 문서용 Insights 캡처: `powershell -ExecutionPolicy Bypass -File Scripts/capture-insights.ps1 -Label <라벨>-rN -Out <경로>.png`. 화면 복사 대신 창 내용만 찍는다.
 - Insights 이미지에 번호 붙은 상자 그리기: `powershell -ExecutionPolicy Bypass -File Scripts/annotate-image.ps1 -In <원본>.png -Out <포스팅용 이름>.png -Boxes "x,y,w,h;x,y,w,h"`. 좌표는 원본 픽셀 기준, 상자는 최대 3개, 원본은 그대로 둔다.
 - 빌드나 실행이 실패하면 [troubleshooting.md](Guides/troubleshooting.md)에서 증상을 찾는다.
@@ -104,26 +105,14 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 관련성 `relevancy2`(2026-10-02)는 `baseline3`와 구별되는 차이다. 틱 예산 안이라 `frames`(1,304\~1,797)와 초당 값 `out_bytes_per_sec_per_conn`이 틱 속도 제한 대기를 따라 흔들리므로, 다음 구성과의 비교는 `work_avg_ms`, `netflush_avg_ms`를 먼저 본다. Insights 값([ADR-0010](Decisions/0010-frame-time-without-tick-wait.md) 정의)은 [포스팅 2](../Posts/02-relevancy/README.md)에 있고, 경위는 [Worklog/02-relevancy.md](Worklog/02-relevancy.md)에 있다.
 
-자원 노드 휴면 `dormancy2`(2026-10-02, 태스크 11.3)는 노드에 `DORM_DormantAll`을 주고 `Harvest`/`Respawn`에서 `FlushNetDormancy()`를 부르는 빌드로 확정 명령에 `-Label dormancy2 -Runs 3`을 더해 실행했고 종료 코드 0, 선호도 재적용이 측정 시작 26\~29초 전에 끝났다. 앞선 `dormancy-r1`은 측정 중(15:49:20, 측정 시작 15:48:26)에 클라이언트 선호도가 다시 설정되어 실패 처리됐고 수치를 쓰지 않는다. `work_avg_ms`의 중앙값 실행은 `r2`다.
-
-- **`work_avg_ms`와 `netflush_avg_ms`는 차이가 있다.** 중앙값 변화가 두 구성의 변동 폭 중 큰 쪽보다 크다(2.971 > 2.032, 2.927 > 1.476). 포화는 없다.
-- **`work_p99_ms`는 이 측정으로 구별하지 못했다.** 변화 3.921이 `relevancy2`의 변동 폭 4.026보다 작다. 재측정하지 않고 그대로 적는다(사용자 결정, 2026-10-02).
-- **`out_bytes_per_sec_per_conn`도 구별하지 못했다.** +240은 변동 폭 604보다 작고, `frames`가 많은 실행일수록 큰 것은 `relevancy2`와 같다(1,288프레임 3,734, 1,788프레임 4,316).
-- **`dormancy2`의 변동 폭이 `relevancy2`보다 크다(`work_avg_ms` 2.032 대 0.193).** `r1`만 느리고(16.205) `frames`도 `r1`만 적다(1,288). 원인은 모른다.
-- `open_actor_channels_per_conn`은 118에서 20으로 줄었다. 열린 채널 수이고 클라이언트에 존재하는 액터 수가 아니다. 화면 글자의 노드 수는 늘었다(1번 클라이언트 t=45s 114 → 301).
-- **소스에서 예상한 대로였다.** Insights에서 노드 직렬화는 프레임당 1.86ms에서 0.007ms로 사라졌고, `GameNetDriver` Excl은 10.50ms에서 9.43ms로 대부분 남았다(중앙값, 차이는 변동 폭 안). 값은 [후보 기법 자료](../Posts/03-dormancy/candidates.md) 1절에 있다.
-- **측정 때의 원격 데스크톱 화면 크기가 `relevancy2` 때와 달랐다.** 세션이 15:39에 다시 연결되어 1728×1084가 됐다(그 전에는 3840×2160, 150%). 서버 수치에 영향이 있었는지는 확인하지 않았다.
+자원 노드 휴면 `dormancy2`(2026-10-02, 중앙값 실행 `r2`)는 `work_avg_ms`, `netflush_avg_ms`가 `relevancy2`와 구별되고, `work_p99_ms`와 `out_bytes_per_sec_per_conn`은 구별되지 않았다. `r1`만 느려서(`work_avg_ms` 16.205, `frames` 1,288) 변동 폭이 2.032로 크다(원인 모름). 다음 구성의 차이는 이 폭보다 커야 구별된다. Insights 값은 [포스팅 3](../Posts/03-dormancy/README.md)에 있고, 경위는 [Worklog/03-dormancy.md](Worklog/03-dormancy.md)에 있다.
 
 ## 포스팅 주기 진행
 
 구현 계획 태스크 11은 포스팅 2, 3, 4에 반복해서 쓴다. 현재 포스팅과 끝낸 단계를 여기에 적는다.
 
-- 현재 포스팅: 포스팅 3(자원 노드 휴면)이 끝났다(2026-10-02, 태그 `post-03-dormancy`). 다음은 포스팅 4다. 직전 구성은 `dormancy2`(중앙값 실행 `r2`)이고, 포스팅 3의 전후 자동 스크린샷 순번은 3인칭 04, 내려다보기 02와 04였다. 다음 시각 자료 라벨은 `visual6`이다.
-- 끝낸 단계: 11.1(코드), 11.2(빌드), 11.3(`dormancy2` 3회), 11.4(위 비교), 11.5(`Posts/03-dormancy/images/`의 `before-`/`after-` `tpp.png`, `topdown.png`, 순번 04의 `topdown-t75.png`. 직전 구성은 `relevancy2-r3`, 이번은 중앙값 실행 `dormancy2-r2`), 11.6의 Insights 캡처(`after-timing.png`, `after-network.png`. `before-`는 포스팅 2의 `after-`를 복사), 11.7, 11.9의 초안(11.8보다 먼저 썼다).
-- 11.6(2026-10-02, 화면이 3840×2160으로 돌아온 뒤): `visual5-r1`에서 `after-clip.gif`(t=50\~59s, 노드 306\~313)를 찍었다. 실행은 선호도 재적용(측정 시작 53초 뒤)으로 종료 코드 1이었고 수치는 쓰지 않는다. `before-clip.gif`는 포스팅 2의 `after-clip.gif`(t=49\~58s)를 복사했다(사용자 승인). Insights 캡처 두 장은 3000×2080 창으로 다시 찍었다(사용자 결정). Networking 화면의 고른 범위가 1,785패킷, 59.883초로 달라져 포스팅 본문의 비트 값을 이미지에 맞췄고, 연결당 송신 대역폭은 2,772바이트/초 그대로다(candidates.md 7절).
-- 정확성 확인 세 항목은 에이전트가 `run-manual.ps1`의 관찰자를 컴퓨터 조작 도구로 조작해 두 창을 1\~4초 간격으로 찍어 봤고, 사용자가 화면을 보고 세 항목을 포스팅에 쓰도록 승인했다. 원격 창을 닫기만 한 연결 끊김 세션(`qwinsta`의 `Disc`)에서는 화면이 그려지지 않아 녹화도 조작도 되지 않는다. 본체에 로그인해야 한다. 관찰자 창을 클릭하면 마우스가 카메라를 돌리므로, 클릭한 뒤 커서를 옮겨 카메라를 맞춘다. 달리기(`shift+w`) 28초가 약 275m다.
-- 11.10: 루트 README(포스팅 표, 상태 줄, 누적 수치 표와 차트 네 개), 구현 계획 태스크 12 체크, 커밋과 태그.
-- 이 원격 세션에서는 컴퓨터 조작 도구의 마우스 이동이 듣지 않는다(클릭은 현재 커서 자리에 들어간다). 커서를 PowerShell(`[System.Windows.Forms.Cursor]::Position`)로 옮긴 뒤 클릭하면 된다. 북마크 시각만 창에서 읽으면 Timers와 Callees 값은 `TimingInsights.ExportTimerStatistics`, `ExportTimerCallees`에 `-startTime`, `-endTime`을 줘서 창 없이 얻을 수 있고 창의 값과 같았다(`dormancy2-r2`).
+- 현재 포스팅: 포스팅 4(AI NPC 업데이트 빈도). 직전 구성은 `dormancy2`(중앙값 실행 `r2`)다. 다음 시각 자료 라벨은 `visual6`이다.
+- 끝낸 단계: 없음.
 
 ## 막힌 것
 
@@ -131,9 +120,7 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 사용자에게 요청한 일
 
-- **포스팅 3 "관찰"과 "선택"(태스크 11.8).** 인터뷰 답(2026-10-02: 관찰의 중심은 변하지 않는 노드의 매 프레임 확인, 선택에서는 포스팅 1의 기대가 틀렸음을 밝힘)을 에이전트가 문장으로 옮겼다. 사용자가 [초안](../Posts/03-dormancy/README.md)을 승인했다(2026-10-02).
 - **포스팅 3 확인.** [포스팅 3](../Posts/03-dormancy/README.md)의 "정확성 확인"에 넣은 전후 영상(`before-clip.gif`, `after-clip.gif`)과 세 항목의 표, 다시 찍은 `after-timing.png`, `after-network.png`를 보고 다른 장면이 좋으면 바꾼다. 요약의 내려다보기 화면은 순번 04(t=75s)다.
-- **포스팅 3 경위 정리안 승인.** 에이전트가 채팅에 보낸 정리안(`Docs/Worklog/03-dormancy.md`로 옮길 항목)을 승인하면 정리하고 태스크 13을 시작한다.
 - **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인). "관찰"의 서버 프레임 시간 문장은 ADR-0010에 맞춰 에이전트가 고쳤다(아직 확인하지 않음).
 - **태스크 9.4.** 에이전트가 8개 창 전체 화면(`Posts/00-testbed/images/all-clients.png`)과 클라이언트가 걷는 10초 영상(`clip.gif`)을 `visual1` 실행에서 찍기 전에 녹화 계획을 채팅으로 보낸다. 승인해 주면 찍어서 본문의 자리 표시를 바꾼다. 넣은 자료와 `timing.png`, `network.png`(에이전트가 찍은 것)를 보고 다른 장면이 좋으면 바꾼다. 테스트베드 포스팅 초안을 읽고 다듬는다.
 - 푸시는 사용자가 정한 시점에 한다.
