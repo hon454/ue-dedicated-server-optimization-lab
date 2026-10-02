@@ -120,3 +120,12 @@ ADR-0009를 사용자가 승인했다(2026-10-01). `run-scenario.ps1`의 `-Serve
 STATUS.md의 "사용자에게 요청한 일"에 있던 항목이다. `baseline3` 세 실행이 `-Warmup` 30초 그대로 성공해 끝났다.
 
 - **선호도 재설정 실패가 두 번 있었다(`calib-c-r1`, `calib-d-r1`).** 그 뒤 일곱 번의 실행(`calib-e-r1`, `diag-a-r1`\~`diag-e-r1`, `calib-f-r1`)에서는 다시 나오지 않았다. 기준선 3회 측정에서 다시 나오면 `-Warmup`을 늘릴지 정한다(구현 계획 7.3의 표).
+
+## 2026-10-02 태스크 9.4\~9.5, 14: 남은 시각 자료와 마무리 (`visual11-r1`, `verify-baseline-r1`)
+
+STATUS.md의 "태스크 14에서 한 일"에 있던 기록이다. 포스팅에 속하지 않는 마무리 작업이라 9.4\~9.5가 속한 이 파일에 적는다. `verify-baseline-r1`의 수치는 STATUS.md "측정 결과"의 `baseline3` 설명에 있다.
+
+- 9.4: `all-clients.png`(t=41s), `clip.gif`(t=50\~59s)를 `visual11-r1`(태그 `post-01-baseline`의 빌드, 종료 코드 0, 수치는 쓰지 않음)에서 찍어 넣었다. 9.5: 사용자 승인 뒤 `post-00-testbed` 태그.
+- 14.2: 점검에서 나온 여섯 곳을 고쳤다(`3736ac4`, `c78931a`, README는 14.3). 사용자 결정으로 "Iris에서는" 섹션을 빼고([ADR-0011](../Decisions/0011-no-iris-preview-section.md), `e104456`), 기법 이름을 원문으로, "포스팅 N"을 제목 링크로 바꿨다(`50209df`). 규칙은 AGENTS.md에 있다.
+- 14.2a: 여섯 파일을 한다체로 바꿨다(`57cd91d`). 14.3: README의 상태, 기준선 대비 최종 변화 문단, 태그별 차이를 넣었다. 14.4: STATUS.md "측정 결과"의 `verify-baseline-r1`.
+- 14.6\~14.7: 단계를 "단기 완료"로 바꿨다. `d165aea`까지 푸시했고 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02).

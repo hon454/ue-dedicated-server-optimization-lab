@@ -4,7 +4,7 @@
 
 ## 단계
 
-**단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. `d165aea`까지 푸시했고 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 남은 것은 사용자의 14.5(전체 읽기)다. 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
+**단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. `d165aea`까지 푸시했고 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 남은 것은 사용자의 14.5(전체 읽기)다. 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있고, 태스크 9.4\~9.5와 14는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 9.4\~9.5, 14"에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
 - 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
 
@@ -12,13 +12,7 @@
 
 1. **[사람] 태스크 14.5.** 포스팅 0\~4와 README를 처음부터 끝까지 읽는다. 고칠 곳이 나오면 에이전트가 고친다. 이미 붙인 태그는 옮기지 않는다.
 2. 14.5에서 고친 것이 생기면 커밋한 뒤, 푸시는 사용자가 정한 시점에 한다.
-3. 다음 세션을 시작할 때 이 파일에 남은 태스크 9.4\~9.5, 14의 기록(아래 "태스크 14에서 한 일")을 `Worklog/00-testbed.md`로 옮기는 정리안을 낸다. 그 뒤의 주제는 [backlog.md](Planning/backlog.md)의 우선순위 순이다.
-
-### 태스크 14에서 한 일 (2026-10-02)
-
-- 9.4: `all-clients.png`(t=41s), `clip.gif`(t=50\~59s)를 `visual11-r1`(태그 `post-01-baseline`의 빌드, 종료 코드 0, 수치는 쓰지 않음)에서 찍어 넣었다. 9.5: 사용자 승인 뒤 `post-00-testbed` 태그.
-- 14.2: 점검에서 나온 여섯 곳을 고쳤다(`3736ac4`, `c78931a`, README는 14.3). 사용자 결정으로 "Iris에서는" 섹션을 빼고([ADR-0011](Decisions/0011-no-iris-preview-section.md), `e104456`), 기법 이름을 원문으로, "포스팅 N"을 제목 링크로 바꿨다(`50209df`). 규칙은 AGENTS.md에 있다.
-- 14.2a: 여섯 파일을 한다체로 바꿨다(`57cd91d`). 14.3: README의 상태, 기준선 대비 최종 변화 문단, 태그별 차이를 넣었다. 14.4: 아래 "측정 결과"의 `verify-baseline-r1`.
+3. 그 뒤의 주제는 [backlog.md](Planning/backlog.md)의 우선순위 순이다.
 
 ## 포스팅 진행
 
