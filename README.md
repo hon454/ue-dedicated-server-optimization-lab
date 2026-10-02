@@ -7,9 +7,9 @@
 아주 단순한 오픈월드 서바이벌 환경을 최적화가 전혀 없는 상태에서 시작합니다. 포스팅 하나에 기법 하나만 적용하고, 같은 시나리오를 다시 측정해 무엇이 얼마나 달라졌는지 수치와 화면으로 보여줍니다.
 
 - **대상**: 레거시 리플리케이션(기본 NetDriver). 게임 코드는 표준 `UPROPERTY` 리플리케이션과 RPC만 씁니다.
-- **다루는 기법**: 관련성(컬 거리), 액터 휴면, 업데이트 빈도.
+- **다루는 기법**: Relevancy(Net Cull Distance), 액터 Dormancy, Net Update Frequency.
 - **측정 도구**: Unreal Insights(Timing, Network)와 서버가 남기는 수치 CSV.
-- **상태**: 기준선 측정(포스팅 1), 관련성(포스팅 2), 자원 노드 휴면(포스팅 3), AI NPC 업데이트 빈도(포스팅 4)를 마쳤습니다. 세 기법을 모두 적용했고, 남은 것은 테스트베드 포스팅의 시각 자료와 전체 다듬기입니다.
+- **상태**: 기준선 측정, Relevancy, 자원 노드 Dormancy, AI NPC Net Update Frequency까지 마쳤습니다. 세 기법을 모두 적용했고, 남은 것은 테스트베드 포스팅의 시각 자료와 전체 다듬기입니다.
 
 ## 포스팅
 
@@ -17,11 +17,11 @@
 | --- | --- | --- | --- |
 | 0 | [테스트베드와 측정 방법](Posts/00-testbed/README.md) | 시나리오 규모와 근거, 트레이스 수집법, 지표의 정의, 측정의 한계 | 초안(전체 화면과 영상을 넣으면 완료) |
 | 1 | [무법지대 측정](Posts/01-baseline/README.md) | 최적화가 없는 기준선의 수치, Insights에서 가장 큰 비용을 찾는 과정 | 완료 |
-| 2 | [관련성과 컬 거리](Posts/02-relevancy/README.md) | 멀리 있는 액터를 보내지 않기. 기준선이 끈 엔진 기본 컬 거리 150m의 복원 | 완료 |
-| 3 | [자원 노드 휴면](Posts/03-dormancy/README.md) | 거의 변하지 않는 액터를 프레임마다 확인하지 않기. 휴면이 줄인 비용과 줄이지 못한 비용 | 완료 |
-| 4 | [AI NPC 업데이트 빈도](Posts/04-update-frequency/README.md) | 계속 움직이는 다수 액터의 리플리케이션 빈도 낮추기. 대역폭은 절반이 됐고 CPU는 거의 그대로였던 이유 | 완료 |
+| 2 | [Relevancy와 Net Cull Distance](Posts/02-relevancy/README.md) | 멀리 있는 액터를 보내지 않기. 기준선이 끈 엔진 기본 Net Cull Distance 150m의 복원 | 완료 |
+| 3 | [자원 노드 Dormancy](Posts/03-dormancy/README.md) | 거의 변하지 않는 액터를 프레임마다 확인하지 않기. Dormancy가 줄인 비용과 줄이지 못한 비용 | 완료 |
+| 4 | [AI NPC Net Update Frequency](Posts/04-update-frequency/README.md) | 계속 움직이는 다수 액터의 리플리케이션 빈도 낮추기. 대역폭은 절반이 됐고 CPU는 거의 그대로였던 이유 | 완료 |
 
-포스팅 2\~4의 순서는 기준선에서 가장 큰 비용을 보고 정했습니다. 이유는 [포스팅 1의 "선택"](Posts/01-baseline/README.md#선택)에 있습니다.
+세 기법의 순서는 기준선에서 가장 큰 비용을 보고 정했습니다. 이유는 [무법지대 측정의 "선택"](Posts/01-baseline/README.md#선택)에 있습니다.
 
 ## 진행 방식
 
@@ -46,8 +46,8 @@ flowchart LR
 | 요소 | 구현 | 비용 패턴 | 겨냥하는 기법 |
 | --- | --- | --- | --- |
 | 플레이어 캐릭터 | 실제 클라이언트가 접속해 조종하는 3인칭 캐릭터. 고정 경유점을 따라 자동으로 걷습니다 | 수는 적고 연결마다 비용이 듭니다 | 연결당 비용 읽기 |
-| 자원 노드 | 실린더 액터. 체력과 고갈 여부만 리플리케이트하고 채집 RPC가 하나 있습니다 | 수가 많고 거의 변하지 않습니다 | 관련성, 휴면 |
-| AI NPC | 원뿔 액터. 서버에서 단순 배회합니다 | 수가 많고 계속 움직입니다 | 업데이트 빈도 |
+| 자원 노드 | 실린더 액터. 체력과 고갈 여부만 리플리케이트하고 채집 RPC가 하나 있습니다 | 수가 많고 거의 변하지 않습니다 | Relevancy, Dormancy |
+| AI NPC | 원뿔 액터. 서버에서 단순 배회합니다 | 수가 많고 계속 움직입니다 | Net Update Frequency |
 
 시나리오 규모는 클라이언트 8개, 자원 노드 5,000개(와 검증용 1개), AI NPC 300명입니다. 기준선이 네 조건(초기 전송 완료, 지속적인 틱 예산 초과, 송신 한도에 포화되지 않음, 가장 큰 비용이 네트워크)을 만족하는 것을 확인하고 고정했습니다. 이 규모에서 최적화가 없는 서버는 한 프레임에 약 168ms를 쓰고(틱 예산 33.3ms의 5.0배), 그 96%가 네트워크 드라이버의 송신 쪽 처리입니다(보정 실행 `calib-f-r1` 한 번의 값). 보정 과정과 근거는 [테스트베드와 측정 방법](Posts/00-testbed/README.md)에 있습니다.
 
@@ -78,7 +78,7 @@ flowchart LR
 | 연결당 열린 액터 채널 수 | 서버 CSV |
 | 클라이언트에 존재하는 액터 수 | 클라이언트 화면 위 글자 |
 
-열린 액터 채널 수와 클라이언트에 존재하는 액터 수는 다른 수치입니다. 휴면에 들어간 액터는 채널이 닫혀도 클라이언트에 남습니다.
+열린 액터 채널 수와 클라이언트에 존재하는 액터 수는 다른 수치입니다. Dormant 상태에 들어간 액터는 채널이 닫혀도 클라이언트에 남습니다.
 
 ## 누적 수치
 
@@ -87,22 +87,22 @@ flowchart LR
 | 구성 | 서버 프레임 시간 평균 | 서버 프레임 시간 P99 | 리플리케이션 시간 | 연결당 송신 대역폭 | 연결당 열린 액터 채널 수 |
 | --- | --- | --- | --- | --- | --- |
 | [기준선](Posts/01-baseline/README.md)(`baseline3`) | 198.43ms | 262.96ms | 188.97ms | 28,048바이트/초 | 5,314 |
-| [관련성](Posts/02-relevancy/README.md)(`relevancy2`) | 17.64ms | 26.64ms | 13.14ms | 2,897바이트/초 | 118 |
-| [휴면](Posts/03-dormancy/README.md)(`dormancy2`) | 14.69ms | 22.53ms | 10.17ms | 2,772바이트/초 | 20 |
-| 휴면, 다시 잰 값(`dormancy6`) | 13.60ms | 20.84ms | 9.35ms | 2,793바이트/초 | 20 |
-| [업데이트 빈도](Posts/04-update-frequency/README.md)(`update-frequency3`) | 13.16ms | 19.50ms | 8.73ms | 1,303바이트/초 | 20 |
+| [Relevancy](Posts/02-relevancy/README.md)(`relevancy2`) | 17.64ms | 26.64ms | 13.14ms | 2,897바이트/초 | 118 |
+| [Dormancy](Posts/03-dormancy/README.md)(`dormancy2`) | 14.69ms | 22.53ms | 10.17ms | 2,772바이트/초 | 20 |
+| Dormancy, 다시 잰 값(`dormancy6`) | 13.60ms | 20.84ms | 9.35ms | 2,793바이트/초 | 20 |
+| [Net Update Frequency](Posts/04-update-frequency/README.md)(`update-frequency3`) | 13.16ms | 19.50ms | 8.73ms | 1,303바이트/초 | 20 |
 
-- 업데이트 빈도는 바로 앞에서 다시 잰 휴면(`dormancy6`)과 비교합니다. 같은 코드의 `dormancy2`와 `dormancy6`이 서버 프레임 시간 평균에서 1.09ms 달라(측정한 화면 조건이 달랐고 원인은 확인하지 않았습니다), 연달아 잰 묶음끼리만 비교했습니다. 휴면과 업데이트 빈도 사이에서 서버 프레임 시간 평균의 차이는 변동 폭보다 작아 구별되는 차이가 아니고, P99와 리플리케이션 시간, 연결당 송신 대역폭은 구별됩니다([포스팅 4의 "결과"](Posts/04-update-frequency/README.md#결과)).
-- 관련성과 휴면 사이에서 서버 프레임 시간 P99와 연결당 송신 대역폭의 차이는 실행 사이의 변동 폭보다 작아, 구별되는 차이가 아닙니다([포스팅 3의 "결과"](Posts/03-dormancy/README.md#결과)).
-- 연결당 송신 대역폭은 기준선이 중앙값 실행 `r1`, 관련성이 `r3`, 휴면이 `r2`, 다시 잰 휴면과 업데이트 빈도가 `r1`의 값입니다. 나머지 실행은 Network Insights에서 읽지 않았습니다. 관련성부터는 연결마다 받는 액터가 위치에 따라 달라, `Connection 0`(제자리에서 채집하는 클라이언트)이 서버 CSV의 8개 연결 평균보다 35% 작습니다([포스팅 2의 "한계와 다음"](Posts/02-relevancy/README.md#한계와-다음)).
-- 서버 프레임 시간은 프레임 시간에서 틱 속도 제한 대기를 뺀 시간입니다([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md)). P99는 측정 구간의 프레임마다 이 값을 Insights에서 내보내 읽은 99백분위 경계값입니다. 세 실행 중 중앙값인 실행의 값이고, 기준선은 `r3`, 관련성은 `r1`, 휴면은 `r2`, 다시 잰 휴면과 업데이트 빈도는 `r1`입니다.
+- Net Update Frequency는 바로 앞에서 다시 잰 Dormancy(`dormancy6`)와 비교합니다. 같은 코드의 `dormancy2`와 `dormancy6`이 서버 프레임 시간 평균에서 1.09ms 달라(측정한 화면 조건이 달랐고 원인은 확인하지 않았습니다), 연달아 잰 묶음끼리만 비교했습니다. Dormancy와 Net Update Frequency 사이에서 서버 프레임 시간 평균의 차이는 변동 폭보다 작아 구별되는 차이가 아니고, P99와 리플리케이션 시간, 연결당 송신 대역폭은 구별됩니다([AI NPC Net Update Frequency의 "결과"](Posts/04-update-frequency/README.md#결과)).
+- Relevancy와 Dormancy 사이에서 서버 프레임 시간 P99와 연결당 송신 대역폭의 차이는 실행 사이의 변동 폭보다 작아, 구별되는 차이가 아닙니다([자원 노드 Dormancy의 "결과"](Posts/03-dormancy/README.md#결과)).
+- 연결당 송신 대역폭은 기준선이 중앙값 실행 `r1`, Relevancy가 `r3`, Dormancy가 `r2`, 다시 잰 Dormancy와 Net Update Frequency가 `r1`의 값입니다. 나머지 실행은 Network Insights에서 읽지 않았습니다. Relevancy부터는 연결마다 받는 액터가 위치에 따라 달라, `Connection 0`(제자리에서 채집하는 클라이언트)이 서버 CSV의 8개 연결 평균보다 35% 작습니다([Relevancy와 Net Cull Distance의 "한계와 다음"](Posts/02-relevancy/README.md#한계와-다음)).
+- 서버 프레임 시간은 프레임 시간에서 틱 속도 제한 대기를 뺀 시간입니다([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md)). P99는 측정 구간의 프레임마다 이 값을 Insights에서 내보내 읽은 99백분위 경계값입니다. 세 실행 중 중앙값인 실행의 값이고, 기준선은 `r3`, Relevancy는 `r1`, Dormancy는 `r2`, 다시 잰 Dormancy와 Net Update Frequency는 `r1`입니다.
 
-차트의 "휴면"은 `dormancy2`, "휴면(재측정)"은 `dormancy6`입니다.
+차트의 "Dormancy"는 `dormancy2`, "Dormancy(재측정)"은 `dormancy6`입니다.
 
 ```mermaid
 xychart-beta
     title "서버 프레임 시간 평균 (ms)"
-    x-axis ["기준선", "관련성", "휴면", "휴면(재측정)", "업데이트 빈도"]
+    x-axis ["기준선", "Relevancy", "Dormancy", "Dormancy(재측정)", "Net Update Frequency"]
     y-axis "ms" 0 --> 300
     bar [198.43, 17.64, 14.69, 13.60, 13.16]
 ```
@@ -110,7 +110,7 @@ xychart-beta
 ```mermaid
 xychart-beta
     title "서버 프레임 시간 P99 (ms)"
-    x-axis ["기준선", "관련성", "휴면", "휴면(재측정)", "업데이트 빈도"]
+    x-axis ["기준선", "Relevancy", "Dormancy", "Dormancy(재측정)", "Net Update Frequency"]
     y-axis "ms" 0 --> 300
     bar [262.96, 26.64, 22.53, 20.84, 19.50]
 ```
@@ -118,7 +118,7 @@ xychart-beta
 ```mermaid
 xychart-beta
     title "리플리케이션 시간 (ms/프레임)"
-    x-axis ["기준선", "관련성", "휴면", "휴면(재측정)", "업데이트 빈도"]
+    x-axis ["기준선", "Relevancy", "Dormancy", "Dormancy(재측정)", "Net Update Frequency"]
     y-axis "ms" 0 --> 250
     bar [188.97, 13.14, 10.17, 9.35, 8.73]
 ```
@@ -126,7 +126,7 @@ xychart-beta
 ```mermaid
 xychart-beta
     title "연결당 송신 대역폭 (바이트/초)"
-    x-axis ["기준선", "관련성", "휴면", "휴면(재측정)", "업데이트 빈도"]
+    x-axis ["기준선", "Relevancy", "Dormancy", "Dormancy(재측정)", "Net Update Frequency"]
     y-axis "바이트/초" 0 --> 40000
     bar [28048, 2897, 2772, 2793, 1303]
 ```
@@ -136,7 +136,7 @@ xychart-beta
 - 에디터 빌드 실행 파일을 쿠킹 없이 사용합니다. 절대 수치는 출시 빌드와 다릅니다.
 - 서버와 클라이언트가 같은 PC에서 돕니다. 서로 다른 물리 코어에 고정하지만 캐시와 메모리 대역폭 경합은 남습니다. 네트워크는 루프백입니다.
 - 수치는 같은 조건의 전후 비교로만 해석해 주세요. 서버 코드만의 CPU 개선률이 아닙니다.
-- 기준선은 인위적인 출발점입니다. 엔진의 기본 관련성 판정을 의도적으로 끄고(`bAlwaysRelevant = true`), 기준선이 엔진 기본 송신 한도(연결당 100,000바이트/초)에 포화되어 한도를 350,000바이트/초로 올려 고정했습니다(기준선 송신량을 30Hz로 환산한 172,638바이트/초의 약 두 배). 그래서 관련성 포스팅의 개선은 "엔진 기본 동작의 복원"이고, 그 뒤의 포스팅들이 "기본 동작 위의 개선"입니다.
+- 기준선은 인위적인 출발점입니다. 엔진의 기본 Relevancy 판정을 의도적으로 끄고(`bAlwaysRelevant = true`), 기준선이 엔진 기본 송신 한도(연결당 100,000바이트/초)에 포화되어 한도를 350,000바이트/초로 올려 고정했습니다(기준선 송신량을 30Hz로 환산한 172,638바이트/초의 약 두 배). 그래서 Relevancy로 얻은 개선은 "엔진 기본 동작의 복원"이고, 그 뒤의 두 기법이 "기본 동작 위의 개선"입니다.
 - AI NPC는 움직이는 리플리케이트 액터의 대역입니다. 길 찾기나 행동 트리 같은 AI 비용은 측정하지 않습니다.
 - 채집 RPC는 자동 실험용입니다. 서버가 대상 탐색과 거리 검사, 호출 간격 제한을 하지만 그 밖의 악의적 호출은 막지 않습니다.
 
@@ -210,7 +210,7 @@ Docs/                      작업 문서
 | [구현 계획](Docs/Planning/2026-10-01-short-term-implementation-plan.md) | 태스크별 체크리스트, 수치의 이름과 출처 |
 | [엔진 소스 확인 기록](Docs/Planning/engine-notes.md) | 5.8.3 소스에서 확인한 기본값과 동작 순서(파일과 줄 번호) |
 | [현재 상태](Docs/STATUS.md) | 진행 상황, 확정값, 측정 결과 |
-| 작업 기록: [테스트베드](Docs/Worklog/00-testbed.md), [포스팅 1](Docs/Worklog/01-baseline.md), [포스팅 2](Docs/Worklog/02-relevancy.md), [포스팅 3](Docs/Worklog/03-dormancy.md), [포스팅 4](Docs/Worklog/04-update-frequency.md) | 끝낸 작업의 경위, 실패한 실행, 보정 실행 수치 |
+| 작업 기록: [테스트베드](Docs/Worklog/00-testbed.md), [무법지대 측정](Docs/Worklog/01-baseline.md), [Relevancy](Docs/Worklog/02-relevancy.md), [Dormancy](Docs/Worklog/03-dormancy.md), [Net Update Frequency](Docs/Worklog/04-update-frequency.md) | 끝낸 작업의 경위, 실패한 실행, 보정 실행 수치 |
 | [Insights 읽는 순서](Docs/Guides/insights-reading.md), [단계별 기록](Docs/Guides/insights-walkthrough-calib-f.md) | 트레이스에서 수치를 읽는 절차와, 화면을 하나씩 캡처하며 읽은 예 |
 | [문제 해결](Docs/Guides/troubleshooting.md) | 빌드나 실행이 실패했을 때의 증상별 대처와 근거 위치 |
 | [PC 사양](Docs/Planning/pc-specs.md) | 측정 환경 |
@@ -223,6 +223,6 @@ Docs/                      작업 문서
 2. **인벤토리와 FastArray**: 일반 `TArray` 리플리케이션과 FastArray의 전송 바이트 비교, 소유자 전용 전송.
 3. **자원 노드 구역 매니저**: 노드당 액터 하나에서 구역별 매니저와 FastArray로 전환.
 4. **기본 송신 한도에서의 포화와 우선순위**: 엔진 기본 한도로 되돌렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지.
-5. **건축물**: 플레이어가 배치하는 정적 액터의 휴면과 초기 전송 비용.
+5. **건축물**: 플레이어가 배치하는 정적 액터의 Dormancy와 초기 전송 비용.
 6. **Replication Graph**: 레거시, Replication Graph, Iris 세 시스템 비교.
 7. **Test 패키지로 재측정**: 기준선과 세 기법을 모두 적용한 구성을 출시 빌드에 가까운 Test 패키지로 다시 재서, 에디터 빌드에서 본 개선이 유지되는지 확인합니다.

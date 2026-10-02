@@ -16,7 +16,7 @@
 | 연결당 송신 한도 | 350,000바이트/초(엔진 기본값 100,000에서 올림) |
 | 서버 코어 | 논리 프로세서 2\~7 |
 
-이 규모에서 최적화가 없는 서버는 한 프레임에 약 168ms를 쓰고(틱 예산의 5.0배), 그 96%가 네트워크 드라이버의 송신 쪽 처리입니다(`calib-f-r1`, 아래 "시나리오 규모와 근거"). 같은 규모를 3회 측정한 기준선의 서버 프레임 시간 평균은 198.43ms입니다([포스팅 1](../01-baseline/README.md)).
+이 규모에서 최적화가 없는 서버는 한 프레임에 약 168ms를 쓰고(틱 예산의 5.0배), 그 96%가 네트워크 드라이버의 송신 쪽 처리입니다(`calib-f-r1`, 아래 "시나리오 규모와 근거"). 같은 규모를 3회 측정한 기준선의 서버 프레임 시간 평균은 198.43ms입니다([무법지대 측정](../01-baseline/README.md)).
 
 ## 월드 구성
 
@@ -25,12 +25,12 @@
 | 요소 | 구현 | 비용 패턴 | 겨냥하는 기법 |
 | --- | --- | --- | --- |
 | 플레이어 캐릭터 | 실제 클라이언트가 접속해 조종하는 3인칭 캐릭터. 고정 경유점을 따라 자동으로 걷습니다 | 수는 적고 연결마다 비용이 듭니다 | 연결당 비용 읽기 |
-| 자원 노드 | 실린더 액터. 체력과 고갈 여부만 리플리케이트하고 채집 RPC가 하나 있습니다 | 수가 많고 거의 변하지 않습니다 | 관련성, 휴면 |
-| AI NPC | 원뿔 액터. 서버에서 단순 배회합니다 | 수가 많고 계속 움직입니다 | 업데이트 빈도 |
+| 자원 노드 | 실린더 액터. 체력과 고갈 여부만 리플리케이트하고 채집 RPC가 하나 있습니다 | 수가 많고 거의 변하지 않습니다 | Relevancy, Dormancy |
+| AI NPC | 원뿔 액터. 서버에서 단순 배회합니다 | 수가 많고 계속 움직입니다 | Net Update Frequency |
 
 - 노드와 NPC는 맵에 미리 놓지 않고 서버가 시작할 때 고정 시드로 생성합니다. 실행마다 같은 자리에 놓입니다.
 - 0번 클라이언트는 제자리에서 검증용 노드 하나를 반복 채집합니다. 2초 간격 3회에 고갈되고 20초 뒤 재생되어 약 26초 주기의 상태 변화가 생깁니다. 거의 변하지 않는 노드들 사이에서 "변경이 실제로 전달되는가"를 확인하는 용도입니다.
-- 기준선에서는 노드와 NPC에 `bAlwaysRelevant = true`를 주어 엔진의 거리 기반 관련성 판정을 의도적으로 끕니다. "모든 것을 모든 플레이어에게 보낸다"는 가장 단순한 구현을 출발점으로 삼기 위해서입니다.
+- 기준선에서는 노드와 NPC에 `bAlwaysRelevant = true`를 주어 엔진의 거리 기반 Relevancy 판정을 의도적으로 끕니다. "모든 것을 모든 플레이어에게 보낸다"는 가장 단순한 구현을 출발점으로 삼기 위해서입니다.
 
 | 3인칭 화면(0번 클라이언트) | 내려다보기 화면(1번 클라이언트) |
 | --- | --- |
@@ -109,14 +109,14 @@ powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 �
 | 항목 | 값 | 위치 |
 | --- | --- | --- |
 | 서버 틱 | `NetServerMaxTickRate=30`. 틱 예산 1000 ÷ 30 = 33.3ms | `Engine/Config/BaseEngine.ini:1867`. 적용은 `UGameEngine::GetMaxTickRate`(`GameEngine.cpp:1719-1765`). 실행 중에도 30초에 898프레임(`smoke2-r1`) |
-| 컬 거리 | `NetCullDistanceSquared` 225,000,000(150m) | `Engine/Source/Runtime/Engine/Private/Actor.cpp:312` |
-| 업데이트 빈도 | `NetUpdateFrequency` 100, `MinNetUpdateFrequency` 2 | `Actor.cpp:295-296` |
+| Net Cull Distance | `NetCullDistanceSquared` 225,000,000(150m) | `Engine/Source/Runtime/Engine/Private/Actor.cpp:312` |
+| Net Update Frequency | `NetUpdateFrequency` 100, `MinNetUpdateFrequency` 2 | `Actor.cpp:295-296` |
 | 연결당 송신 한도 | 100,000바이트/초 | `BaseEngine.ini:1839-1840, 1860-1861` |
 | 리플리케이션 시스템 | 레거시. `net.Iris.UseIrisReplication`의 기본값이 0 | `IrisConfig.cpp:15-16`. 서버 로그 `using replication model Generic`(`smoke2-r1`) |
-| 적응형 업데이트 빈도 | 꺼짐. `net.UseAdaptiveNetUpdateFrequency` 기본값 0 | `NetDriver.cpp:523-526` |
+| Adaptive Net Update Frequency | 꺼짐. `net.UseAdaptiveNetUpdateFrequency` 기본값 0 | `NetDriver.cpp:523-526` |
 
-- 기본 업데이트 빈도 100Hz는 서버 틱 30Hz보다 높습니다. 그래서 노드와 NPC 모두 사실상 매 틱 리플리케이션 고려 대상이 됩니다(`NetDriver.cpp:5319-5323, 5420-5425`).
-- 관련성 판정의 기준 위치는 서버가 계산한 3인칭 카메라 위치입니다. 클라이언트가 보내는 카메라 위치를 서버가 쓰지 않도록 양쪽에서 `bUseClientSideCameraUpdates`를 껐습니다. 내려다보기 화면은 클라이언트에서만 보이는 카메라이고 관련성 판정에 영향을 주지 않습니다(`PlayerController.cpp:1836-1870`, `PlayerCameraManager.cpp:812-818`).
+- 기본 Net Update Frequency 100Hz는 서버 틱 30Hz보다 높습니다. 그래서 노드와 NPC 모두 사실상 매 틱 리플리케이션 고려 대상이 됩니다(`NetDriver.cpp:5319-5323, 5420-5425`).
+- Relevancy 판정의 기준 위치는 서버가 계산한 3인칭 카메라 위치입니다. 클라이언트가 보내는 카메라 위치를 서버가 쓰지 않도록 양쪽에서 `bUseClientSideCameraUpdates`를 껐습니다. 내려다보기 화면은 클라이언트에서만 보이는 카메라이고 Relevancy 판정에 영향을 주지 않습니다(`PlayerController.cpp:1836-1870`, `PlayerCameraManager.cpp:812-818`).
 
 ## 측정 절차
 
@@ -148,7 +148,7 @@ powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 �
 | 연결당 열린 액터 채널 수 | 연결 하나에 열려 있는 액터 채널 수 | 서버 CSV |
 | 클라이언트에 존재하는 액터 수 | 클라이언트 화면 위 글자의 노드 수와 NPC 수 | 스크린샷 |
 
-열린 액터 채널 수와 클라이언트에 존재하는 액터 수는 다른 수치입니다. 휴면에 들어간 액터는 채널이 닫혀도 클라이언트에 남습니다.
+열린 액터 채널 수와 클라이언트에 존재하는 액터 수는 다른 수치입니다. Dormant 상태에 들어간 액터는 채널이 닫혀도 클라이언트에 남습니다.
 
 서버는 측정 구간의 시작과 끝에 `Lab_MeasureStart`, `Lab_MeasureEnd` 북마크를 트레이스에 남기고, 같은 구간의 수치를 CSV 한 줄로 씁니다. CSV의 두 시간 값은 한 프레임 안에서 다음 구간입니다.
 
@@ -178,7 +178,7 @@ CSV 값과 Insights 값은 정의가 달라서 같은 이름으로 부르지 않
 | --- | --- |
 | ![Timing Insights](images/timing.png) | ![Network Insights](images/network.png) |
 
-`GameNetDriver` 안에서는 자원 노드가 52.30%(30.05초, 14,242,848회 = 5,001 × 8 × 356), NPC가 9.72%(5.58초), 드라이버 자체가 37.4%(21.51초)입니다. 반면 나간 비트는 76.0%가 NPC이고 노드는 60초 동안 576비트뿐입니다. 이 수치를 어떻게 읽을지는 포스팅 1에서 기준선을 3회 측정한 뒤 다룹니다. Insights에서 값을 읽은 과정은 [단계별 기록](../../Docs/Guides/insights-walkthrough-calib-f.md)에 있습니다.
+`GameNetDriver` 안에서는 자원 노드가 52.30%(30.05초, 14,242,848회 = 5,001 × 8 × 356), NPC가 9.72%(5.58초), 드라이버 자체가 37.4%(21.51초)입니다. 반면 나간 비트는 76.0%가 NPC이고 노드는 60초 동안 576비트뿐입니다. 이 수치를 어떻게 읽을지는 [무법지대 측정](../01-baseline/README.md)에서 기준선을 3회 측정한 뒤 다룹니다. Insights에서 값을 읽은 과정은 [단계별 기록](../../Docs/Guides/insights-walkthrough-calib-f.md)에 있습니다.
 
 ## 한계
 
@@ -186,12 +186,12 @@ CSV 값과 Insights 값은 정의가 달라서 같은 이름으로 부르지 않
 - 서버와 클라이언트가 같은 PC에서 돕니다. 서로 다른 물리 코어에 고정하지만 캐시와 메모리 대역폭 경합은 남습니다. 네트워크는 루프백입니다.
 - 서버 코어는 이 PC에서 DPC 부하가 몰리는 코어를 피해 고른 것입니다. 다른 PC에서는 같은 번호가 맞지 않을 수 있습니다.
 - 수치는 같은 조건의 전후 비교로만 해석해 주세요. 서버 코드만의 CPU 개선률이 아닙니다.
-- 기준선은 인위적인 출발점입니다. 엔진의 기본 관련성 판정을 의도적으로 끄고(`bAlwaysRelevant = true`), 연결당 송신 한도를 100,000에서 350,000바이트/초로 올렸습니다.
+- 기준선은 인위적인 출발점입니다. 엔진의 기본 Relevancy 판정을 의도적으로 끄고(`bAlwaysRelevant = true`), 연결당 송신 한도를 100,000에서 350,000바이트/초로 올렸습니다.
 - 기준선은 30Hz를 지키지 못합니다(60초에 356프레임). 초당 송신량은 서버가 빨라지면 늘어날 수 있으므로 `frames`와 함께 읽어야 합니다.
 - AI NPC는 움직이는 리플리케이트 액터의 대역입니다. 길 찾기나 행동 트리 같은 AI 비용은 측정하지 않습니다.
 - 채집 RPC는 자동 실험용입니다. 서버가 대상 탐색과 거리 검사, 호출 간격 제한을 하지만 그 밖의 악의적 호출은 막지 않습니다.
-- 이 글의 수치는 보정 실행 한 번씩의 값입니다. 3회 중앙값은 포스팅 1부터 씁니다.
+- 이 글의 수치는 보정 실행 한 번씩의 값입니다. 3회 중앙값은 [무법지대 측정](../01-baseline/README.md)부터 씁니다.
 
 ## 다음
 
-[포스팅 1](../01-baseline/README.md)에서는 이 규모의 기준선을 3회 측정하고, Insights에서 가장 큰 비용을 찾아 관련성, 휴면, 업데이트 빈도 세 기법의 순서를 정합니다.
+[무법지대 측정](../01-baseline/README.md)에서는 이 규모의 기준선을 3회 측정하고, Insights에서 가장 큰 비용을 찾아 Relevancy, Dormancy, Net Update Frequency 세 기법의 순서를 정합니다.

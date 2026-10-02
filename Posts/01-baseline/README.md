@@ -2,7 +2,7 @@
 
 ## 요약
 
-최적화가 없는 기준선을 같은 조건으로 세 번 측정했습니다. 서버는 프레임마다 약 198ms를 써서 틱 예산 33.3ms의 약 6배이고, 그 95%가 리플리케이션입니다. Unreal Insights로 보면 리플리케이션 시간의 절반은 거의 바뀌지 않는 자원 노드 5,001개를 연결 8개마다 매 프레임 확인하는 데 쓰이고, 송신 비트의 76%는 NPC 300명의 이동입니다. 다음 포스팅에서는 이 기준선이 일부러 끈 엔진의 거리 기반 관련성을 되돌립니다.
+최적화가 없는 기준선을 같은 조건으로 세 번 측정했습니다. 서버는 프레임마다 약 198ms를 써서 틱 예산 33.3ms의 약 6배이고, 그 95%가 리플리케이션입니다. Unreal Insights로 보면 리플리케이션 시간의 절반은 거의 바뀌지 않는 자원 노드 5,001개를 연결 8개마다 매 프레임 확인하는 데 쓰이고, 송신 비트의 76%는 NPC 300명의 이동입니다. 다음 포스팅에서는 이 기준선이 일부러 끈 엔진의 거리 기반 Relevancy를 되돌립니다.
 
 | 지표 | 기준선 | 근거 |
 | --- | --- | --- |
@@ -67,19 +67,19 @@ CPU를 가장 많이 쓰는 대상(노드 확인, 리플리케이션 시간의 5
 
 | 순서 | 기법 | 바꿀 코드 | 이 기준선에서 겨냥하는 것(`r1`) |
 | --- | --- | --- | --- |
-| 포스팅 2 | 관련성(엔진 기본 컬 거리 복원) | `LabResourceNode.cpp`, `LabNpc.cpp` 생성자에서 `bAlwaysRelevant = true;` 두 줄을 지움 | 노드 확인 프레임당 98.5ms, NPC 프레임당 19.5ms, NPC 송신 비트 76.0% |
-| 포스팅 3 | 자원 노드 휴면 | `LabResourceNode.cpp` 생성자에 `NetDormancy = DORM_DormantAll;`, 채집과 재생에서 상태를 바꾸기 전에 `FlushNetDormancy()` | 고려 목록에 남은 노드 5,001개 |
-| 포스팅 4 | NPC 업데이트 빈도 | `LabNpc.cpp` 생성자에 `SetNetUpdateFrequency(10.f);` | NPC 이동 송신 |
+| 1 | [Relevancy](../02-relevancy/README.md)(엔진 기본 Net Cull Distance 복원) | `LabResourceNode.cpp`, `LabNpc.cpp` 생성자에서 `bAlwaysRelevant = true;` 두 줄을 지움 | 노드 확인 프레임당 98.5ms, NPC 프레임당 19.5ms, NPC 송신 비트 76.0% |
+| 2 | [자원 노드 Dormancy](../03-dormancy/README.md) | `LabResourceNode.cpp` 생성자에 `NetDormancy = DORM_DormantAll;`, 채집과 재생에서 상태를 바꾸기 전에 `FlushNetDormancy()` | 고려 목록에 남은 노드 5,001개 |
+| 3 | [NPC Net Update Frequency](../04-update-frequency/README.md) | `LabNpc.cpp` 생성자에 `SetNetUpdateFrequency(10.f);` | NPC 이동 송신 |
 
-**관련성을 먼저 합니다.** 이 기준선은 엔진 기본 동작인 거리 기반 관련성을 일부러 끈 상태입니다([ADR-0003](../../Docs/Decisions/0003-lawless-baseline.md)). 기본 동작을 먼저 되돌려야 뒤의 두 기법을 "엔진 기본 동작 위의 개선"으로 읽을 수 있습니다. 코드 변경은 두 줄을 지우는 것으로 셋 중 가장 작고, 가장 큰 비용(노드 확인)과 대역폭을 가장 많이 쓰는 대상(NPC 이동)을 함께 겨냥합니다. 엔진 기본 컬 거리는 150m(`SetNetCullDistanceSquared(225000000.0f)`, `Engine/Source/Runtime/Engine/Private/Actor.cpp:312`)이고, 노드와 NPC가 배치 영역(1.9km × 1.9km, `Source/DSOptLab/LabScenarioConfig.h`의 `WorldHalfExtent` 95,000cm)에 고르게 퍼져 있다면 반경 150m 안의 기대 수는 노드 약 98개(5,000 × π × 150² ÷ 1,900²), NPC 약 6명(300 × π × 150² ÷ 1,900²)입니다.
+**Relevancy 최적화를 먼저 적용합니다.** 이 기준선은 엔진 기본 동작인 거리 기반 Relevancy를 일부러 끈 상태입니다([ADR-0003](../../Docs/Decisions/0003-lawless-baseline.md)). 기본 동작을 먼저 되돌려야 뒤의 두 기법을 "엔진 기본 동작 위의 개선"으로 읽을 수 있습니다. 코드 변경은 두 줄을 지우는 것으로 셋 중 가장 작고, 가장 큰 비용(노드 확인)과 대역폭을 가장 많이 쓰는 대상(NPC 이동)을 함께 겨냥합니다. 엔진 기본 Net Cull Distance는 150m(`SetNetCullDistanceSquared(225000000.0f)`, `Engine/Source/Runtime/Engine/Private/Actor.cpp:312`)이고, 노드와 NPC가 배치 영역(1.9km × 1.9km, `Source/DSOptLab/LabScenarioConfig.h`의 `WorldHalfExtent` 95,000cm)에 고르게 퍼져 있다면 반경 150m 안의 기대 수는 노드 약 98개(5,000 × π × 150² ÷ 1,900²), NPC 약 6명(300 × π × 150² ÷ 1,900²)입니다.
 
-**휴면이 두 번째입니다.** 관련성을 복원해도 서버는 채널이 없는 액터마다 연결별로 거리 검사를 합니다(`NetDriver.cpp:5580-5593`). 노드 5,001개 × 연결 8개의 검사는 남습니다. 모든 연결에서 휴면 상태가 된 노드는 활성 목록에서 빠지고(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`), 고려 목록은 활성 목록만 돕니다(`NetDriver.cpp:5315`). 그래서 휴면은 관련성이 남긴 몫을 줄입니다. 이 몫이 실행 사이의 변동 폭(중앙값의 12.8%)보다 클지는 아직 모릅니다.
+**두 번째로 자원 노드에 Dormancy를 적용합니다.** Relevancy를 복원해도 서버는 채널이 없는 액터마다 연결별로 거리 검사를 합니다(`NetDriver.cpp:5580-5593`). 노드 5,001개 × 연결 8개의 검사는 남습니다. 모든 연결에서 Dormant 상태가 된 노드는 활성 목록에서 빠지고(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`), 고려 목록은 활성 목록만 돕니다(`NetDriver.cpp:5315`). 그래서 Dormancy는 Relevancy가 남긴 몫을 줄입니다. 이 몫이 실행 사이의 변동 폭(중앙값의 12.8%)보다 클지는 아직 모릅니다.
 
-**NPC 업데이트 빈도가 마지막입니다.** 빈도를 10으로 낮추면 NPC의 다음 고려 시각은 지금 + 0\~1/30초 + 0.1초가 됩니다(`NetDriver.cpp:5420-5425`, `6341-6348`). 기준선의 프레임 간격(약 0.18\~0.2초)에서는 다음 프레임이 올 때 이 시각이 이미 지나 있어서, 계산상 효과가 없습니다. 앞의 두 기법으로 프레임 간격이 0.133초보다 짧아져야 건너뛰는 프레임이 생기기 시작합니다.
+**NPC의 Net Update Frequency 조정은 마지막에 합니다.** `NetUpdateFrequency`를 10으로 낮추면 NPC의 다음 고려 시각은 지금 + 0\~1/30초 + 0.1초가 됩니다(`NetDriver.cpp:5420-5425`, `6341-6348`). 기준선의 프레임 간격(약 0.18\~0.2초)에서는 다음 프레임이 올 때 이 시각이 이미 지나 있어서, 계산상 효과가 없습니다. 앞의 두 기법으로 프레임 간격이 0.133초보다 짧아져야 건너뛰는 프레임이 생기기 시작합니다.
 
 **구현하지 않는 후보.**
 
-- 적응형 업데이트 빈도(`net.UseAdaptiveNetUpdateFrequency`): 보낼 것이 없는 액터의 고려 간격을 늘립니다. 노드 비용을 겨냥하지만 노드를 고려 목록에서 빼지는 않고, 같은 비용은 휴면이 겨냥합니다.
+- Adaptive Net Update Frequency(`net.UseAdaptiveNetUpdateFrequency`): 보낼 것이 없는 액터의 고려 간격을 늘립니다. 노드 비용을 겨냥하지만 노드를 고려 목록에서 빼지는 않고, 같은 비용은 Dormancy가 겨냥합니다.
 - 푸시 모델: 프로퍼티 비교 비용을 줄입니다. 이 트레이스에서는 비교 비용이 클래스 타이머 안에 섞여 따로 보이지 않아, 얼마나 줄지 가늠할 근거가 없습니다.
 - 송신 한도와 우선순위: 기준선은 연결당 한도 350,000바이트/초에서 포화되지 않았습니다(`saturated_ratio` 0.000). 줄일 대상이 없습니다.
 
@@ -87,7 +87,7 @@ CPU를 가장 많이 쓰는 대상(노드 확인, 리플리케이션 시간의 5
 
 ## 적용
 
-포스팅 1은 기법을 적용하지 않고, 출발점이 된 코드를 보여 줍니다. 자원 노드와 AI NPC의 생성자에 한 줄씩 들어 있습니다.
+이 글은 기법을 적용하지 않고, 출발점이 된 코드를 보여 줍니다. 자원 노드와 AI NPC의 생성자에 한 줄씩 들어 있습니다.
 
 ```cpp
 // Source/DSOptLab/LabResourceNode.cpp
@@ -116,17 +116,17 @@ ALabNpc::ALabNpc()
 }
 ```
 
-**이 기준선은 엔진 기본 동작을 일부러 끈 인위적인 출발점입니다.** 레거시 리플리케이션의 `AActor`에는 아무 설정 없이도 컬 거리 150m가 있습니다(`SetNetCullDistanceSquared(225000000.0f)`, `Engine/Source/Runtime/Engine/Private/Actor.cpp:312`). 엔진 기본값을 그대로 기준선으로 쓰면 출발점에 이미 거리 기반 관련성 판정이 들어 있어서, 관련성이 비용을 얼마나 줄이는지 보여 줄 수 없습니다. 그래서 두 클래스에 `bAlwaysRelevant = true`를 주어 "모든 액터를 모든 플레이어에게 보내는" 가장 단순한 구현을 출발점으로 삼았습니다([ADR-0003](../../Docs/Decisions/0003-lawless-baseline.md)). 연결당 송신 한도도 엔진 기본값 100,000바이트/초에서 350,000바이트/초로 올렸습니다. 이유는 [테스트베드와 측정 방법](../00-testbed/README.md)에 있습니다.
+**이 기준선은 엔진 기본 동작을 일부러 끈 인위적인 출발점입니다.** 레거시 리플리케이션의 `AActor`에는 아무 설정 없이도 Net Cull Distance 150m가 있습니다(`SetNetCullDistanceSquared(225000000.0f)`, `Engine/Source/Runtime/Engine/Private/Actor.cpp:312`). 엔진 기본값을 그대로 기준선으로 쓰면 출발점에 이미 거리 기반 Relevancy 판정이 들어 있어서, Relevancy가 비용을 얼마나 줄이는지 보여 줄 수 없습니다. 그래서 두 클래스에 `bAlwaysRelevant = true`를 주어 "모든 액터를 모든 플레이어에게 보내는" 가장 단순한 구현을 출발점으로 삼았습니다([ADR-0003](../../Docs/Decisions/0003-lawless-baseline.md)). 연결당 송신 한도도 엔진 기본값 100,000바이트/초에서 350,000바이트/초로 올렸습니다. 이유는 [테스트베드와 측정 방법](../00-testbed/README.md)에 있습니다.
 
 그래서 이 시리즈의 개선은 두 종류입니다.
 
-| 포스팅 | 기법 | 개선의 종류 |
+| 글 | 기법 | 개선의 종류 |
 | --- | --- | --- |
-| 2 | 관련성 | 기본 동작의 복원. 위의 두 줄을 지워 엔진 기본 컬 거리로 돌아갑니다 |
-| 3 | 자원 노드 휴면 | 기본 동작 위의 개선 |
-| 4 | NPC 업데이트 빈도 | 기본 동작 위의 개선 |
+| [Relevancy와 Net Cull Distance](../02-relevancy/README.md) | Relevancy | 기본 동작의 복원. 위의 두 줄을 지워 엔진 기본 Net Cull Distance로 돌아갑니다 |
+| [자원 노드 Dormancy](../03-dormancy/README.md) | 자원 노드 Dormancy | 기본 동작 위의 개선 |
+| [AI NPC Net Update Frequency](../04-update-frequency/README.md) | NPC Net Update Frequency | 기본 동작 위의 개선 |
 
-포스팅 2의 수치는 "최적화가 없는 서버를 얼마나 고쳤나"가 아니라 "엔진이 원래 하던 일을 끄면 얼마나 비싸지는가"로 읽어야 합니다. 이 시점의 코드는 태그 [`post-01-baseline`](https://github.com/hon454/ue-dedicated-server-optimization-lab/tree/post-01-baseline)에 있습니다.
+[Relevancy와 Net Cull Distance](../02-relevancy/README.md)의 수치는 "최적화가 없는 서버를 얼마나 고쳤나"가 아니라 "엔진이 원래 하던 일을 끄면 얼마나 비싸지는가"로 읽어야 합니다. 이 시점의 코드는 태그 [`post-01-baseline`](https://github.com/hon454/ue-dedicated-server-optimization-lab/tree/post-01-baseline)에 있습니다.
 
 ## 결과
 
@@ -215,10 +215,10 @@ xychart-beta
 
 이 측정이 말해 주지 않는 것은 다음과 같습니다.
 
-- **`GameNetDriver` 자체 시간(37%)의 내역.** 고려 목록 만들기, 연결마다의 우선순위 정렬, 프레임 끝의 송신이 한데 섞여 있습니다. 관련성이나 휴면이 이 몫을 얼마나 줄일지는 이 트레이스로 미리 알 수 없습니다. 나누려면 `-statnamedevents`를 준 별도 실행이 필요하고, 그러면 측정 조건이 달라집니다.
+- **`GameNetDriver` 자체 시간(37%)의 내역.** 고려 목록 만들기, 연결마다의 우선순위 정렬, 프레임 끝의 송신이 한데 섞여 있습니다. Relevancy나 Dormancy가 이 몫을 얼마나 줄일지는 이 트레이스로 미리 알 수 없습니다. 나누려면 `-statnamedevents`를 준 별도 실행이 필요하고, 그러면 측정 조건이 달라집니다.
 - **실행 사이 흔들림의 원인.** 변동 폭은 중앙값의 12.8%입니다. 이보다 작은 효과는 이 측정으로 구별하지 못합니다.
 - **연결당 송신 대역폭의 일부.** `Connection 0` 하나를 읽었고(`Connection 7`은 패킷 하나만 봤습니다), `r2`는 읽지 않았습니다. CSV와 3% 다른 이유도 확인하지 않았습니다.
-- **선택에 적은 기대 효과.** 반경 150m 안의 기대 개수, 휴면이 줄일 몫, NPC 업데이트 빈도가 효과를 내는 프레임 간격은 모두 계산이나 엔진 소스에서 읽은 추론이고 실행으로 확인하지 않았습니다.
+- **선택에 적은 기대 효과.** 반경 150m 안의 기대 개수, Dormancy가 줄일 몫, NPC Net Update Frequency가 효과를 내는 프레임 간격은 모두 계산이나 엔진 소스에서 읽은 추론이고 실행으로 확인하지 않았습니다.
 - 에디터 빌드, 같은 PC의 서버와 클라이언트, 루프백 네트워크 같은 측정 환경의 한계는 [테스트베드와 측정 방법](../00-testbed/README.md)의 "한계"에 있습니다.
 
-**다음: 관련성.** 포스팅 2에서는 위 두 줄의 `bAlwaysRelevant = true`를 지워 엔진 기본 컬 거리 150m를 되돌립니다. 소스와 계산대로라면 내려다보기 화면에서는 플레이어 주변 반경 150m 원 안에만 점이 남고(노드 약 98개, NPC 약 6명), 연결당 열린 액터 채널 수도 함께 줄어야 합니다. 서버 프레임 시간과 리플리케이션 시간이 얼마나 줄어드는지, 연결마다의 거리 검사가 얼마나 남는지를 같은 시나리오로 재서 보여 드리겠습니다.
+**다음: Relevancy.** [Relevancy와 Net Cull Distance](../02-relevancy/README.md)에서는 위 두 줄의 `bAlwaysRelevant = true`를 지워 엔진 기본 Net Cull Distance 150m를 되돌립니다. 소스와 계산대로라면 내려다보기 화면에서는 플레이어 주변 반경 150m 원 안에만 점이 남고(노드 약 98개, NPC 약 6명), 연결당 열린 액터 채널 수도 함께 줄어야 합니다. 서버 프레임 시간과 리플리케이션 시간이 얼마나 줄어드는지, 연결마다의 거리 검사가 얼마나 남는지를 같은 시나리오로 재서 보여 드리겠습니다.
