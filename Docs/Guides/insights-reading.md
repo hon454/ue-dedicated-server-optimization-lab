@@ -32,12 +32,21 @@ powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라�
 | Insights에서 읽은 값 | 식 | 대조할 CSV 열 |
 | --- | --- | --- |
 | 서버 프레임 시간 | 선택 구간 길이 ÷ `Frame`의 Count | `work_avg_ms` |
+| 서버 프레임 시간 P99 | 측정 구간에 걸친 `Frame` 이벤트 길이를 정렬한 뒤 ceil(N × 0.99)번째 값(아래 "P99 읽기") | `work_p99_ms` |
 | 리플리케이션 시간 | `GameNetDriver`의 Incl ÷ `WorldTick`의 Count | `netflush_avg_ms` |
 | 연결당 송신량 | (`Actor` Incl + `PacketHeaderAndInfo` Incl) ÷ 8 ÷ 선택 범위의 시간 길이 | `out_bytes_per_sec_per_conn` |
 
 `calib-f-r1`에서 세 값의 차이는 각각 0.1%, 0.2%, 3.0%였다. 이보다 크게 벌어지면 구간 선택이 틀렸는지 먼저 본다.
 
 리플리케이션 시간으로 쓰는 타이머는 `GameNetDriver`다(태스크 8.5에서 사용자가 확정). 이후 바꾸지 않는다.
+
+**P99 읽기.** Timers 패널에는 백분위가 없어서, 프레임 하나하나의 길이를 Insights의 내보내기 명령으로 받는다(`TimingInsights.ExportTimingEvents`, `Engine/Source/Developer/TraceInsights/Private/Insights/TimingProfiler/TimingProfilerManager.cpp:802`). 창 없이 실행하는 방법은 엔진 테스트 `ExportCommandsTests.cpp`와 같다.
+
+```
+<엔진>\Engine\Binaries\Win64\UnrealInsights.exe -OpenTraceFile="Saved\Traces\<라벨>-rN.utrace" -AutoQuit -NoUI -log -ExecOnAnalysisCompleteCmd="TimingInsights.ExportTimingEvents <출력>.csv -columns=ThreadName,TimerName,StartTime,EndTime,Duration -threads=GameThread -timers=Frame"
+```
+
+출력의 `StartTime`, `EndTime`은 Log View의 Session Time과 같은 기준(초)이다. 두 북마크 시각에 걸친 `Frame` 이벤트(시작이 `Lab_MeasureEnd`보다 앞이고 끝이 `Lab_MeasureStart`보다 뒤)를 고르면 개수가 Timers 패널의 `Frame` Count와 같다(`baseline3-r1`\~`r3`: 303, 293, 335). 그 길이를 정렬해 ceil(N × 0.99)번째 값을 읽는다. 서버 CSV의 `work_p99_ms`(`LabMetricsSubsystem.cpp`의 `Percentile99`)와 같은 방식이다. 같은 이벤트로 계산한 평균(구간 길이 ÷ 개수)이 2단계의 서버 프레임 시간과 같은지도 확인한다. `baseline3`에서 P99와 `work_p99_ms`의 차이는 +0.08\~+0.13%였다.
 
 ## 에이전트가 직접 열 때 알아 둘 것
 
