@@ -36,7 +36,7 @@
 | --- | --- | --- | --- |
 | `work` | 월드 틱 시작부터 프레임 끝까지의 경과 시간. CPU 실행 시간이 아니라 경과 시간이라서 그 구간의 스레드 대기와 OS 스케줄링 지연이 들어간다 | CSV | `Docs/STATUS.md`, 에이전트의 전후 비교 |
 | `netflush` | 액터 틱 종료부터 프레임 끝까지의 경과 시간. 리플리케이션 전용 시간이 아니다 | CSV | `Docs/STATUS.md`, 보조 지표 |
-| 서버 프레임 시간 | Timing Insights의 프레임 시간 | Insights | 포스팅과 README의 표 |
+| 서버 프레임 시간 | Timing Insights의 프레임 시간에서 틱 속도 제한 대기(`FEngineLoop_UpdateTimeAndHandleMaxTickRate`)를 뺀 시간. 평균은 (측정 구간 길이 − 구간 안의 대기 Incl) ÷ `Frame` Count, P99는 프레임마다 (`Frame` − 대기)의 99백분위 경계값([ADR-0010](../Decisions/0010-frame-time-without-tick-wait.md)) | Insights | 포스팅과 README의 표 |
 | 리플리케이션 시간 | Insights 타이머 `GameNetDriver`의 프레임당 Incl(선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 골랐고(2026-10-01) 이후 바꾸지 않는다 | Insights | 포스팅과 README의 표 |
 | 연결당 송신 대역폭 | 측정 구간의 연결당 초당 송신 바이트 | CSV와 Network Insights | 둘 다 |
 | 연결당 열린 액터 채널 수 | 연결 하나에 열려 있는 액터 채널 수. 휴면 액터는 채널이 닫히므로 "클라이언트에 존재하는 액터 수"와 다르다 | CSV | 둘 다 |

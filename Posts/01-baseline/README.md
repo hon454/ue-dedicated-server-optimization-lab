@@ -6,8 +6,8 @@
 
 | 지표 | 기준선 | 근거 |
 | --- | --- | --- |
-| 서버 프레임 시간 평균 | 198.44ms | Timing Insights, 세 실행의 중앙값(`baseline3-r1`) |
-| 서버 프레임 시간 P99 | 262.97ms | Timing Insights `Frame` 이벤트, 세 실행의 중앙값(`r3`) |
+| 서버 프레임 시간 평균 | 198.43ms | Timing Insights, 세 실행의 중앙값(`baseline3-r1`) |
+| 서버 프레임 시간 P99 | 262.96ms | Timing Insights `Frame` 이벤트, 세 실행의 중앙값(`r3`) |
 | 리플리케이션 시간 | 188.97ms/프레임 | Timing Insights `GameNetDriver`, 세 실행의 중앙값(`r1`) |
 | 연결당 송신 대역폭 | 28,048바이트/초 | Network Insights `Connection 0`, `r1` |
 | 연결당 열린 액터 채널 수 | 5,314 | CSV, 세 실행 모두 같음 |
@@ -23,7 +23,7 @@
 
 ① `GameNetDriver`, ② 그 아래의 `LabResourceNode`와 `LabNpc`, ③ 측정 구간의 양 끝인 두 북마크입니다.
 
-`WorldTick` 아래에서 `GameNetDriver`가 95.17%(①의 `% Root`)를 차지합니다. 측정 구간의 서버 프레임 시간은 198.44ms(선택 구간 60.128초 ÷ `Frame` Count 303)이고, 그중 리플리케이션 시간이 188.97ms(`GameNetDriver` Incl 57.07초 ÷ `WorldTick` Count 302)입니다.
+`WorldTick` 아래에서 `GameNetDriver`가 95.17%(①의 `% Root`)를 차지합니다. 측정 구간의 서버 프레임 시간은 198.43ms((선택 구간 60.128초 − 틱 속도 제한 대기 0.004초) ÷ `Frame` Count 303)이고, 그중 리플리케이션 시간이 188.97ms(`GameNetDriver` Incl 57.07초 ÷ `WorldTick` Count 302)입니다.
 
 ### 가장 큰 비용은 변하지 않는 자원 노드를 매 프레임 확인하는 일입니다
 
@@ -145,7 +145,7 @@ Iris에서는 어떤 객체를 어떤 연결에 보낼지를 필터가 정합니
 | 조건 | 결과 | 근거(`baseline3-r1` / `r2` / `r3`) |
 | --- | --- | --- |
 | 초기 전송 완료 | 예 | `open_actor_channels_per_conn` 5,314 / 5,314 / 5,314. 같은 규모의 `calib-f-r1`에서 측정 시작 22초 전에 이 값에 도달하고 더 늘지 않았습니다 |
-| 지속적인 예산 초과 | 예 | `over_budget_frames`가 `frames`와 같습니다(302 / 292 / 334). 서버 프레임 시간의 중앙값 198.44ms는 틱 예산 33.3ms의 약 6.0배입니다 |
+| 지속적인 예산 초과 | 예 | `over_budget_frames`가 `frames`와 같습니다(302 / 292 / 334). 서버 프레임 시간의 중앙값 198.43ms는 틱 예산 33.3ms의 약 6.0배입니다 |
 | 송신 한도에 포화되지 않음 | 예 | `saturated_ratio` 0.000 / 0.000 / 0.000 |
 | 가장 큰 비용이 네트워크 | 예 | Timing Insights 측정 구간에서 `GameNetDriver`가 `WorldTick`의 95.17% / 95.00% / 95.80% |
 
@@ -155,19 +155,19 @@ Insights에서 두 북마크 사이를 읽은 값입니다. 중앙값 실행은 
 
 | 지표 | `r1` | `r2` | `r3` | 중앙값 | 변동 폭 |
 | --- | --- | --- | --- | --- | --- |
-| 서버 프레임 시간 평균(ms) | 198.44 | 204.82 | 179.47 | 198.44 | 25.35 |
-| 서버 프레임 시간 P99(ms) | 268.70 | 239.05 | 262.97 | 262.97 | 29.65 |
+| 서버 프레임 시간 평균(ms) | 198.43 | 204.81 | 179.45 | 198.43 | 25.36 |
+| 서버 프레임 시간 P99(ms) | 268.69 | 239.03 | 262.96 | 262.96 | 29.66 |
 | 리플리케이션 시간(ms/프레임) | 188.97 | 194.69 | 171.89 | 188.97 | 22.80 |
 | 연결당 송신 대역폭(바이트/초, `Connection 0`) | 28,048 | 읽지 않음 | 31,012 | | |
 | 연결당 열린 액터 채널 수(CSV) | 5,314 | 5,314 | 5,314 | 5,314 | 0 |
 | 클라이언트에 존재하는 액터 수(화면 글자) | 노드 5,001, NPC 300 | | | | |
 
-- 서버 프레임 시간 평균은 측정 구간 ÷ `Frame` Count(`r1`: 60.128초 ÷ 303), 리플리케이션 시간은 `GameNetDriver` Incl ÷ `WorldTick` Count(`r1`: 57.07초 ÷ 302)입니다.
-- 서버 프레임 시간 P99는 측정 구간에 걸친 GameThread `Frame` 이벤트(`r1` 303개)의 길이를 Insights의 `TimingInsights.ExportTimingEvents` 명령으로 내보내, 정렬한 뒤 ceil(N × 0.99)번째 값을 읽은 것입니다. 99백분위 경계값이며 느린 1%의 평균이 아닙니다.
+- 서버 프레임 시간은 프레임 시간에서 틱 속도 제한 대기(`FEngineLoop_UpdateTimeAndHandleMaxTickRate`)를 뺀 시간입니다([ADR-0010](../../Docs/Decisions/0010-frame-time-without-tick-wait.md)). 기준선은 틱 예산을 늘 넘어서 이 대기가 프레임당 0.01\~0.02ms뿐입니다. 평균은 (측정 구간 − 대기) ÷ `Frame` Count(`r1`: (60.128초 − 0.004초) ÷ 303), 리플리케이션 시간은 `GameNetDriver` Incl ÷ `WorldTick` Count(`r1`: 57.07초 ÷ 302)입니다.
+- 서버 프레임 시간 P99는 측정 구간에 걸친 GameThread `Frame` 이벤트(`r1` 303개)마다 대기를 뺀 길이를 Insights의 `TimingInsights.ExportTimingEvents` 명령으로 내보내, 정렬한 뒤 ceil(N × 0.99)번째 값을 읽은 것입니다. 99백분위 경계값이며 느린 1%의 평균이 아닙니다.
 - 연결당 송신 대역폭은 (`Actor` Incl + `PacketHeaderAndInfo` Incl) ÷ 8 ÷ 선택 범위 시간입니다. `r2`는 Network Insights에서 읽지 않았습니다.
 - 클라이언트에 존재하는 액터 수는 `r1`의 자동 스크린샷 두 장(아래)의 화면 글자입니다.
 
-서버가 남긴 CSV는 다음과 같습니다. Insights 값과의 차이는 서버 프레임 시간 평균과 `work_avg_ms`가 -0.11\~-0.17%, P99와 `work_p99_ms`가 +0.08\~+0.13%, 리플리케이션 시간과 `netflush_avg_ms`가 -0.21\~-0.24%입니다. 연결당 송신 대역폭은 CSV `out_bytes_per_sec_per_conn`이 Insights보다 3.0%(`r1`), 3.2%(`r3`) 큽니다.
+서버가 남긴 CSV는 다음과 같습니다. Insights 값과의 차이는 서버 프레임 시간 평균과 `work_avg_ms`가 -0.12\~-0.17%, P99와 `work_p99_ms`가 +0.08\~+0.12%, 리플리케이션 시간과 `netflush_avg_ms`가 -0.21\~-0.24%입니다. 연결당 송신 대역폭은 CSV `out_bytes_per_sec_per_conn`이 Insights보다 3.0%(`r1`), 3.2%(`r3`) 큽니다.
 
 | 라벨 | `frames` | `work_avg_ms` | `work_p99_ms` | `netflush_avg_ms` | `out_bytes_per_sec_per_conn` | `open_actor_channels_per_conn` | `saturated_ratio` |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -184,7 +184,7 @@ xychart-beta
     title "서버 프레임 시간 평균 (ms)"
     x-axis ["r1", "r2", "r3"]
     y-axis "ms" 0 --> 300
-    bar [198.44, 204.82, 179.47]
+    bar [198.43, 204.81, 179.45]
 ```
 
 ```mermaid
@@ -192,7 +192,7 @@ xychart-beta
     title "서버 프레임 시간 P99 (ms)"
     x-axis ["r1", "r2", "r3"]
     y-axis "ms" 0 --> 300
-    bar [268.70, 239.05, 262.97]
+    bar [268.69, 239.03, 262.96]
 ```
 
 ```mermaid

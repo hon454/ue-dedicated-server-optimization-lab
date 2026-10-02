@@ -86,17 +86,17 @@ flowchart LR
 
 | 구성 | 서버 프레임 시간 평균 | 서버 프레임 시간 P99 | 리플리케이션 시간 | 연결당 송신 대역폭 | 연결당 열린 액터 채널 수 |
 | --- | --- | --- | --- | --- | --- |
-| [기준선](Posts/01-baseline/README.md)(`baseline3`) | 198.44ms | 262.97ms | 188.97ms | 28,048바이트/초 | 5,314 |
+| [기준선](Posts/01-baseline/README.md)(`baseline3`) | 198.43ms | 262.96ms | 188.97ms | 28,048바이트/초 | 5,314 |
 
 - 기준선의 연결당 송신 대역폭은 중앙값 실행 `r1`의 값입니다. `r2`는 Network Insights에서 읽지 않았습니다.
-- 서버 프레임 시간 P99는 측정 구간의 프레임 길이를 Insights에서 내보내 읽은 99백분위 경계값입니다. 기준선의 값은 세 실행 중 중앙값인 `r3`의 것입니다.
+- 서버 프레임 시간은 프레임 시간에서 틱 속도 제한 대기를 뺀 시간입니다([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md)). P99는 측정 구간의 프레임마다 이 값을 Insights에서 내보내 읽은 99백분위 경계값입니다. 기준선의 값은 세 실행 중 중앙값인 `r3`의 것입니다.
 
 ```mermaid
 xychart-beta
     title "서버 프레임 시간 평균 (ms)"
     x-axis ["기준선"]
     y-axis "ms" 0 --> 300
-    bar [198.44]
+    bar [198.43]
 ```
 
 ```mermaid
@@ -104,7 +104,7 @@ xychart-beta
     title "서버 프레임 시간 P99 (ms)"
     x-axis ["기준선"]
     y-axis "ms" 0 --> 300
-    bar [262.97]
+    bar [262.96]
 ```
 
 ```mermaid

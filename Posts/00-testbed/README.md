@@ -137,7 +137,7 @@ powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 �
 
 | 지표 | 정의 | 출처 |
 | --- | --- | --- |
-| 서버 프레임 시간(평균, P99) | Timing Insights의 프레임 시간 | Insights |
+| 서버 프레임 시간(평균, P99) | Timing Insights의 프레임 시간에서 틱 속도 제한 대기를 뺀 시간. 서버가 틱 예산을 넘는 동안에는 대기가 거의 없어 프레임 시간과 같습니다 | Insights |
 | 리플리케이션 시간(프레임당) | Timing Insights 타이머 `GameNetDriver`의 프레임당 Incl | Insights |
 | 연결당 송신 대역폭 | 측정 구간의 연결당 초당 송신 바이트 | Network Insights, 서버 CSV와 대조 |
 | 연결당 열린 액터 채널 수 | 연결 하나에 열려 있는 액터 채널 수 | 서버 CSV |

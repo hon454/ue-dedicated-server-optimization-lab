@@ -22,7 +22,7 @@ powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라�
 ## 읽는 순서
 
 1. **Timing Insights 탭.** 아래 Log View 검색 칸에 `Lab_Measure`를 넣는다. `Lab_MeasureStart` 줄을 클릭하고 `Lab_MeasureEnd` 줄을 Shift-클릭한다. 타임라인에 약 60초의 선택 영역이 생긴다.
-2. **Timers 패널.** `Frame`, `WorldTick`, `GameNetDriver`의 Count, Incl, Excl을 읽는다. 프레임당 값은 Incl ÷ `WorldTick`의 Count다. 이 패널은 모든 스레드의 합이므로 비율은 여기서 계산하지 않는다.
+2. **Timers 패널.** `Frame`, `WorldTick`, `GameNetDriver`, `FEngineLoop_UpdateTimeAndHandleMaxTickRate`(틱 속도 제한 대기)의 Count, Incl, Excl을 읽는다. 프레임당 값은 Incl ÷ `WorldTick`의 Count다. 이 패널은 모든 스레드의 합이므로 비율은 여기서 계산하지 않는다.
 3. **Callees 패널.** Timers에서 `WorldTick`을 클릭한다. `GameNetDriver`의 `% Parent`와 그 아래 액터 클래스별 Count, Incl, `% Parent`를 읽는다. `GameNetDriver`의 Excl도 적는다.
 4. **타임라인 확대.** 마우스 휠로 프레임 십여 개가 보일 때까지 확대해, 프레임들이 같은 모양인지 본다.
 5. **Networking Insights 탭.** 드롭다운을 `Game Instance 0 [Server]`, `Connection 0`, `Outgoing`으로 맞춘다.
@@ -31,8 +31,8 @@ powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라�
 
 | Insights에서 읽은 값 | 식 | 대조할 CSV 열 |
 | --- | --- | --- |
-| 서버 프레임 시간 | 선택 구간 길이 ÷ `Frame`의 Count | `work_avg_ms` |
-| 서버 프레임 시간 P99 | 측정 구간에 걸친 `Frame` 이벤트 길이를 정렬한 뒤 ceil(N × 0.99)번째 값(아래 "P99 읽기") | `work_p99_ms` |
+| 서버 프레임 시간 | (선택 구간 길이 − `FEngineLoop_UpdateTimeAndHandleMaxTickRate`의 Incl) ÷ `Frame`의 Count | `work_avg_ms` |
+| 서버 프레임 시간 P99 | 측정 구간에 걸친 프레임마다 (`Frame` 길이 − 그 안의 `FEngineLoop_UpdateTimeAndHandleMaxTickRate` 길이)를 정렬한 뒤 ceil(N × 0.99)번째 값(아래 "P99 읽기") | `work_p99_ms` |
 | 리플리케이션 시간 | `GameNetDriver`의 Incl ÷ `WorldTick`의 Count | `netflush_avg_ms` |
 | 연결당 송신량 | (`Actor` Incl + `PacketHeaderAndInfo` Incl) ÷ 8 ÷ 선택 범위의 시간 길이 | `out_bytes_per_sec_per_conn` |
 
@@ -43,10 +43,10 @@ powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라�
 **P99 읽기.** Timers 패널에는 백분위가 없어서, 프레임 하나하나의 길이를 Insights의 내보내기 명령으로 받는다(`TimingInsights.ExportTimingEvents`, `Engine/Source/Developer/TraceInsights/Private/Insights/TimingProfiler/TimingProfilerManager.cpp:802`). 창 없이 실행하는 방법은 엔진 테스트 `ExportCommandsTests.cpp`와 같다.
 
 ```
-<엔진>\Engine\Binaries\Win64\UnrealInsights.exe -OpenTraceFile="Saved\Traces\<라벨>-rN.utrace" -AutoQuit -NoUI -log -ExecOnAnalysisCompleteCmd="TimingInsights.ExportTimingEvents <출력>.csv -columns=ThreadName,TimerName,StartTime,EndTime,Duration -threads=GameThread -timers=Frame"
+<엔진>\Engine\Binaries\Win64\UnrealInsights.exe -OpenTraceFile="Saved\Traces\<라벨>-rN.utrace" -AutoQuit -NoUI -log -ExecOnAnalysisCompleteCmd="TimingInsights.ExportTimingEvents <출력>.csv -columns=ThreadName,TimerName,StartTime,EndTime,Duration -threads=GameThread -timers=Frame,FEngineLoop_UpdateTimeAndHandleMaxTickRate"
 ```
 
-출력의 `StartTime`, `EndTime`은 Log View의 Session Time과 같은 기준(초)이다. 두 북마크 시각에 걸친 `Frame` 이벤트(시작이 `Lab_MeasureEnd`보다 앞이고 끝이 `Lab_MeasureStart`보다 뒤)를 고르면 개수가 Timers 패널의 `Frame` Count와 같다(`baseline3-r1`\~`r3`: 303, 293, 335). 그 길이를 정렬해 ceil(N × 0.99)번째 값을 읽는다. 서버 CSV의 `work_p99_ms`(`LabMetricsSubsystem.cpp`의 `Percentile99`)와 같은 방식이다. 같은 이벤트로 계산한 평균(구간 길이 ÷ 개수)이 2단계의 서버 프레임 시간과 같은지도 확인한다. `baseline3`에서 P99와 `work_p99_ms`의 차이는 +0.08\~+0.13%였다.
+출력의 `StartTime`, `EndTime`은 Log View의 Session Time과 같은 기준(초)이다. 두 북마크 시각에 걸친 `Frame` 이벤트(시작이 `Lab_MeasureEnd`보다 앞이고 끝이 `Lab_MeasureStart`보다 뒤)를 고르면 개수가 Timers 패널의 `Frame` Count와 같다(`baseline3-r1`\~`r3`: 303, 293, 335). 프레임마다 길이에서 그 안에 든 `FEngineLoop_UpdateTimeAndHandleMaxTickRate` 이벤트의 길이를 빼고([ADR-0010](../Decisions/0010-frame-time-without-tick-wait.md)), 정렬해 ceil(N × 0.99)번째 값을 읽는다. 서버 CSV의 `work_p99_ms`(`LabMetricsSubsystem.cpp`의 `Percentile99`)와 같은 방식이다. 같은 이벤트로 계산한 평균이 2단계의 서버 프레임 시간과 같은지도 확인한다. P99와 `work_p99_ms`의 차이는 `baseline3`에서 +0.08\~+0.12%, `relevancy2`에서 +1.6\~+2.5%였다. 서버가 틱 예산 안에 들어오면 대기가 프레임당 15\~28ms가 되므로(`relevancy2`) 빼지 않으면 값이 틱 간격에 붙는다.
 
 ## 에이전트가 직접 열 때 알아 둘 것
 
