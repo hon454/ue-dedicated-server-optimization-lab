@@ -14,9 +14,6 @@ ALabNpc::ALabNpc()
 	bReplicates = true;
 	SetReplicatingMovement(true);
 
-	// 기준선: 거리와 무관하게 모든 연결에 보낸다.
-	bAlwaysRelevant = true;
-
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(Mesh);
 	Mesh->SetMobility(EComponentMobility::Movable);
