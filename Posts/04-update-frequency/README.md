@@ -32,7 +32,7 @@ Dormancy까지 적용한 트레이스(`dormancy6-r1`, 측정 구간 60.028초)�
 
 ① `GameNetDriver`(Incl 16.76초, Excl 15.55초), ② 그 아래의 `LabNpc`(Count 78,876, 671.55ms, `% Parent` 4.01%), ③ 두 북마크다.
 
-서버가 NPC를 직렬화하는 시간은 프레임당 0.375ms이다(671.55ms ÷ `WorldTick` 1,792). 리플리케이션 시간 9.35ms의 4.0%이다. 나머지 대부분(프레임당 8.68ms)은 `GameNetDriver`의 Exclusive이고, [자원 노드 Dormancy](../03-dormancy/README.md)에서 본 대로 이 트레이스로는 내역이 나뉘지 않는다.
+서버가 NPC를 직렬화하는 시간은 프레임당 0.375ms이다(671.55ms ÷ `WorldTick` 1,792). 리플리케이션 시간 9.35ms의 4.0%이다. 나머지 대부분(프레임당 8.68ms)은 `GameNetDriver`의 Exclusive이고, [자원 노드 Dormancy](../03-dormancy/README.md)에서 본 대로 이 트레이스로는 내역을 볼 수 없다.
 
 ![적용 전 r1 Connection 0 Outgoing 측정 구간의 Net Stats](images/before-network.png)
 
@@ -71,7 +71,7 @@ NPC의 Net Update Frequency 조정은 세 기법 가운데 세 번째로 골랐�
 
 **이 설정은 NPC의 서버 틱을 바꾸지 않는다.** NPC는 여전히 서버 프레임마다 움직인다. 바뀌는 것은 서버가 이 액터를 리플리케이션 대상으로 고려하는 빈도다. 서버는 프레임마다 활성 목록을 돌면서, 다음 고려 시각이 아직 오지 않은 액터를 건너뛴다(`World->TimeSeconds <= ActorInfo->NextUpdateTime`, `Engine/Source/Runtime/Engine/Private/NetDriver.cpp:5319-5323`). 건너뛴 액터는 그 프레임에 어느 연결에도 고려되지 않는다.
 
-**값 10이 100ms 간격을 보장하지 않는다.** 고려된 액터의 다음 고려 시각은 `지금 + RandDelay + 1 / NetUpdateFrequency`이고, `RandDelay`는 0에서 서버 틱 시간(1 ÷ 30초) 사이의 난수다(`NetDriver.cpp:5420-5425`, `6341-6348`). 적응형 빈도는 꺼져 있다(`net.UseAdaptiveNetUpdateFrequency` 기본값 0, `NetDriver.cpp:523-526`). 30Hz에서 계산하면 다음과 같다.
+**값 10이 100ms 간격을 보장하지 않는다.** 고려된 액터의 다음 고려 시각은 `지금 + RandDelay + 1 / NetUpdateFrequency`이고, `RandDelay`는 0에서 서버 틱 시간(1 ÷ 30초) 사이의 난수다(`NetDriver.cpp:5420-5425`, `6341-6348`). Adaptive Net Update Frequency는 꺼져 있다(`net.UseAdaptiveNetUpdateFrequency` 기본값 0, `NetDriver.cpp:523-526`). 30Hz에서 계산하면 다음과 같다.
 
 | | 다음 고려 시각까지 | 다시 고려되는 프레임 | 평균 간격 |
 | --- | --- | --- | --- |
@@ -165,7 +165,7 @@ xychart-beta
 각 값은 타이머 Incl(Exclusive는 Excl) ÷ `WorldTick` Count이고, 괄호는 리플리케이션 시간 대비 비율이다. 두 구성 모두 리플리케이션 시간의 중앙값 실행이다.
 
 - **NPC 직렬화 호출이 약 3분의 1이 됐다.** 연결 하나가 프레임마다 처리하는 NPC가 5.50개에서 1.78개가 됐다(Net Update Frequency `r1`: 25,580 ÷ 1,797 ÷ 8. 세 실행에서 1.78\~1.79, Dormancy는 5.49\~5.50). 비율 0.324는 "적용"의 계산값 0.325와 맞는다.
-- **줄어든 0.62ms 가운데 NPC 타이머의 몫은 0.23ms이다.** 나머지 0.39ms는 `GameNetDriver` Exclusive에서 줄었는데, 세 실행의 범위(8.05\~8.36ms)가 Dormancy의 범위(8.33\~8.78ms)와 겹쳐 줄었다고 확정할 수 없다. 고려되지 않은 NPC는 연결마다의 Relevancy 검사와 우선순위 정렬에도 들어가지 않으므로 Exclusive가 함께 줄 수 있지만, 이 트레이스로는 그 몫을 나눠 볼 수 없다.
+- **줄어든 0.62ms 가운데 NPC 타이머의 몫은 0.23ms이다.** 나머지 0.39ms는 `GameNetDriver` Exclusive에서 줄었는데, 세 실행의 범위(8.05\~8.36ms)가 Dormancy의 범위(8.33\~8.78ms)와 겹쳐 줄었다고 확정할 수 없다. 고려되지 않은 NPC는 연결마다의 Relevancy 검사와 우선순위 정렬에도 들어가지 않으므로 Exclusive가 함께 줄 수 있지만, 이 트레이스로는 그 몫을 따로 볼 수 없다.
 
 ![적용 후 r1 측정 구간의 Timers와 WorldTick Callees](images/after-timing.png)
 
@@ -237,7 +237,7 @@ NPC가 지나가는 띠(440×120픽셀)만 줄이지 않고 잘라 4배 느리�
 - **끊김은 시연용 NPC 하나로만 확인했다.** 0번 자리 앞 10m에서 화면을 가로지르는 NPC 하나를 30fps 클라이언트의 화면에서 본 것이다. 거리나 이동 방향이 다른 NPC, 프레임 수가 다른 클라이언트에서는 다르게 보일 수 있다. 화면 위치는 영상에서 색으로 찾은 값이고, 클라이언트가 위치를 적용한 시각을 직접 기록한 것은 아니다. 시연용 NPC가 있는 실행은 측정 실행과 액터 수가 하나 달라 수치를 쓰지 않았다.
 - **이 시나리오는 송신 한도에 포화되지 않았다.** 두 구성 모두 `saturated_ratio`가 0.000이라, 줄어든 대역폭이 다른 액터의 전송을 앞당기는 효과는 이 측정에 없다. 대역폭이 모자란 조건에서의 효과는 재지 않았다.
 - **값 하나만 쟀다.** 10 하나만 적용했고, 다른 값에서 대역폭과 간격이 어떻게 변하는지는 재지 않았다. 30Hz 서버에서 10은 실제로 약 7.5Hz였다.
-- **`GameNetDriver` 자체 시간은 여전히 남았다.** 프레임당 8.29ms로 리플리케이션 시간의 95%이다. 0.39ms 준 것이 실제 변화인지 이 측정으로는 가릴 수 없고, 내역도 여전히 모른다. 이것을 줄이려면 자원 노드가 고려 목록에 들어오지 않게 해야 하고, 이 시리즈의 세 기법 밖이다.
+- **`GameNetDriver` 자체 시간은 여전히 남았다.** 프레임당 8.29ms로 리플리케이션 시간의 95%이다. 0.39ms 준 것이 실제 변화인지 이 측정으로는 가릴 수 없고, 내역도 여전히 모른다. 이것을 줄이려면 자원 노드가 Consider List에 들어오지 않게 해야 하고, 이 시리즈의 세 기법 밖이다.
 - **연결당 송신 대역폭은 `r1`의 `Connection 0` 하나만 읽었다.** 제자리에서 채집하는 연결이다. 8개 연결 평균인 CSV로는 -44.4%이다.
 - **같은 코드의 두 묶음(`dormancy2`, `dormancy6`)이 7\~8% 달랐다.** 원인을 확인하지 않았다. [자원 노드 Dormancy](../03-dormancy/README.md)의 수치와 이 글의 수치를 직접 비교하면 안 된다.
 - **측정 중 선호도 재설정으로 네 묶음이 실패했다.** 원인은 여전히 모른다. 실패한 실행의 수치는 쓰지 않았다.

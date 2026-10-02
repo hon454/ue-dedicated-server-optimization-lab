@@ -41,7 +41,7 @@
 
 ### `GameNetDriver` 자체 시간도 쌍의 수를 따라 줄 것으로 봤다
 
-`GameNetDriver`의 Exclusive는 프레임당 69.9ms(37%)이다. 고려 목록 만들기, 연결마다의 우선순위 정렬, 송신이 섞여 있어 이 트레이스로는 나뉘지 않는다. 우선순위 정렬은 연결마다 보낼 후보 액터를 정렬하므로 쌍의 수가 줄면 함께 줄 것으로 봤지만, 얼마나 줄지는 이 트레이스로 알 수 없었다.
+`GameNetDriver`의 Exclusive는 프레임당 69.9ms(37%)이다. Consider List 만들기, 연결마다의 우선순위 정렬, 송신이 섞여 있어 이 트레이스로는 따로 볼 수 없다. 우선순위 정렬은 연결마다 보낼 후보 액터를 정렬하므로 쌍의 수가 줄면 함께 줄 것으로 봤지만, 얼마나 줄지는 이 트레이스로 알 수 없었다.
 
 ## 선택
 
@@ -200,8 +200,8 @@ xychart-beta
 
 - **서버가 틱 예산 안에 들어오면서 `frames`가 실행마다 크게 다르다(1,304\~1,797).** 일한 시간은 거의 같고(`work_avg_ms` 변동 폭 0.193), 틱 속도 제한 대기가 실행마다 다르다(프레임당 15.75\~28.41ms). 대기가 왜 다른지는 확인하지 않았다. 서버 프레임 시간은 대기를 빼서 읽었지만([ADR-0010](../../Docs/Decisions/0010-frame-time-without-tick-wait.md)), 초당 값인 연결당 송신 대역폭은 프레임 수를 따라 흔들린다. CSV `out_bytes_per_sec_per_conn`은 `frames`가 많은 실행일수록 크다(1,304프레임 3,871, 1,488프레임 4,076, 1,797프레임 4,475).
 - **연결당 송신 대역폭은 `r3`의 `Connection 0` 하나만 읽었다.** 2,897바이트/초는 CSV의 8개 연결 평균 4,475보다 35% 작다. CSV는 패킷마다 IP와 UDP 헤더 28바이트를 더하는데(`OutTotalBytes += SendBuffer.GetNumBytes() + PacketOverhead`, `Engine/Source/Runtime/Engine/Private/NetConnection.cpp:2562-2586`), 헤더를 더해도 3,736바이트/초로 평균보다 작다. 이제 연결마다 받는 액터가 위치에 따라 다르므로, 제자리에서 채집하는 `Connection 0`이 평균보다 적게 받는 것으로 보인다. 나머지 연결과 `r1`, `r2`는 읽지 않았다. 기준선은 모든 연결이 같은 액터를 받아 차이가 3%였다.
-- **`GameNetDriver` 자체 시간(프레임당 10.43\~10.80ms)의 내역을 모른다.** 리플리케이션 시간의 79\~82%인데, 고려 목록 만들기, Net Cull Distance 검사, 우선순위 정렬, 송신이 한데 섞여 이 트레이스로는 나뉘지 않는다.
+- **`GameNetDriver` 자체 시간(프레임당 10.43\~10.80ms)의 내역을 모른다.** 리플리케이션 시간의 79\~82%인데, Consider List 만들기, Net Cull Distance 검사, 우선순위 정렬, 송신이 한데 섞여 이 트레이스로는 따로 볼 수 없다.
 - **수치를 잰 빌드와 태그의 코드가 조금 다르다.** 위 "적용"의 화면 표시 변경이다.
 - 에디터 빌드, 같은 PC의 서버와 클라이언트, 루프백 네트워크 같은 측정 환경의 한계는 [테스트베드와 측정 방법](../00-testbed/README.md)의 "한계"에 있다.
 
-**다음: 자원 노드 Dormancy.** Relevancy를 되돌려도 서버는 채널이 없는 액터마다 연결별로 Net Cull Distance를 검사한다(`NetDriver.cpp:5580-5593`). 맵의 자원 노드 5,001개는 모두 고려 목록에 남아 있고, 연결 8개마다 거리 검사를 받는다. 이 검사는 클래스 타이머가 아니라 `GameNetDriver` 자체 시간에 들어 있다고 본다. Dormancy는 채널이 열린 자원 노드의 직렬화를 건너뛰게 한다. 자원 노드가 활성 목록에서 빠지려면 모든 연결에서 Dormant 상태여야 하는데(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`), 연결별 Dormant 상태는 채널을 통해서만 정해진다(`Engine/Source/Runtime/Engine/Private/DataChannel.cpp:2354, 2461, 2728`). 한 자원 노드에 채널을 여는 연결은 가까이 있는 몇 개뿐이라, 이 시나리오에서는 거리 검사가 대부분 남을 것으로 본다. [자원 노드 Dormancy](../03-dormancy/README.md)에서는 자원 노드에 `DORM_DormantAll`을 주고, 실제로 얼마나 줄어드는지를 같은 시나리오로 재서 보인다. 이제 서버 프레임 시간의 변동 폭이 0.16ms(중앙값의 0.9%)라서, 기준선 때보다 훨씬 작은 차이도 구별할 수 있다.
+**다음: 자원 노드 Dormancy.** Relevancy를 되돌려도 서버는 채널이 없는 액터마다 연결별로 Net Cull Distance를 검사한다(`NetDriver.cpp:5580-5593`). 맵의 자원 노드 5,001개는 모두 Consider List에 남아 있고, 연결 8개마다 거리 검사를 받는다. 이 검사는 클래스 타이머가 아니라 `GameNetDriver` 자체 시간에 들어 있다고 본다. Dormancy는 채널이 열린 자원 노드의 직렬화를 건너뛰게 한다. 자원 노드가 활성 목록에서 빠지려면 모든 연결에서 Dormant 상태여야 하는데(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`), 연결별 Dormant 상태는 채널을 통해서만 정해진다(`Engine/Source/Runtime/Engine/Private/DataChannel.cpp:2354, 2461, 2728`). 한 자원 노드에 채널을 여는 연결은 가까이 있는 몇 개뿐이라, 이 시나리오에서는 거리 검사가 대부분 남을 것으로 본다. [자원 노드 Dormancy](../03-dormancy/README.md)에서는 자원 노드에 `DORM_DormantAll`을 주고, 실제로 얼마나 줄어드는지를 같은 시나리오로 재서 보인다. 이제 서버 프레임 시간의 변동 폭이 0.16ms(중앙값의 0.9%)라서, 기준선 때보다 훨씬 작은 차이도 구별할 수 있다.

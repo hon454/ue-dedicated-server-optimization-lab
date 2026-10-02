@@ -37,9 +37,9 @@ Relevancy를 적용한 뒤의 트레이스(`relevancy2-r3`, 측정 구간 60.019
 
 그런데 같은 60초 동안 `Connection 0`으로 실제로 나간 노드 데이터는 27번, 1,314비트뿐이다(②). 노드의 상태는 채집할 때와 재생성될 때만 바뀌고, 그 일은 검증용 노드 하나에서만 일어난다. 8개 연결을 합쳐 100만 번 넘게 확인했고, `Connection 0`에 보낸 것은 27번이다. 이동하는 `Connection 1`은 새로 Net Cull Distance 안에 들어온 노드를 받느라 145번이었다. 확인 자체를 하지 않게 만드는 것이 Dormancy가 겨냥한 자리다.
 
-### `GameNetDriver` 자체 시간은 이 트레이스로 나뉘지 않는다
+### `GameNetDriver` 자체 시간의 내역은 이 트레이스로 볼 수 없다
 
-리플리케이션 시간의 79\~82%(프레임당 10.43\~10.80ms)는 `GameNetDriver`의 Exclusive이다. 고려 목록 만들기, 연결마다의 거리 검사, 우선순위 정렬, 송신이 섞여 있고, 이 가운데 자원 노드 때문에 드는 몫이 얼마인지는 이 트레이스로 알 수 없다.
+리플리케이션 시간의 79\~82%(프레임당 10.43\~10.80ms)는 `GameNetDriver`의 Exclusive이다. Consider List 만들기, 연결마다의 거리 검사, 우선순위 정렬, 송신이 섞여 있고, 이 가운데 자원 노드 때문에 드는 몫이 얼마인지는 이 트레이스로 알 수 없다.
 
 ## 선택
 
@@ -76,7 +76,7 @@ Relevancy를 적용한 뒤의 트레이스(`relevancy2-r3`, 측정 구간 60.019
  		return;
  	}
  
-+	// 휴면 중이면 깨워서 아래 변경이 전송되게 한다.
++	// Dormant 상태면 깨워서 아래 변경이 전송되게 한다.
 +	FlushNetDormancy();
 +
  	--Health;
@@ -92,7 +92,7 @@ Relevancy를 적용한 뒤의 트레이스(`relevancy2-r3`, 측정 구간 60.019
 
 **Dormant 상태는 연결마다, 채널을 통해서 정해진다.** 레거시 리플리케이션에서 `DORM_DormantAll`인 액터는 채널이 열려 초기 상태가 전송된 뒤, 그 연결에서 Dormant 상태에 들어가고 채널이 닫힌다(`ShouldActorGoDormant`는 채널이 없으면 false, `Engine/Source/Runtime/Engine/Private/NetDriver.cpp:5506-5526`). 그 뒤로 서버는 이 연결에 대해 이 액터를 건너뛴다(`NetDriver.cpp:5618-5624`). `FlushNetDormancy()`는 Dormant 상태를 풀어 바뀐 프로퍼티가 한 번 전송되게 하고, 액터는 다시 Dormant 상태에 들어간다(`NetDormancy` 값은 그대로다. `Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h:3176-3178`).
 
-**활성 목록에서 빠지지는 않는다.** 서버가 프레임마다 도는 고려 목록은 활성 목록에서 만들어지고(`NetDriver.cpp:5315`), 액터가 활성 목록에서 빠지는 것은 모든 연결에서 Dormant 상태가 됐을 때다(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`). 연결별 Dormant 상태는 액터 채널에서만 등록되는데(`Engine/Source/Runtime/Engine/Private/DataChannel.cpp:2354, 2461, 2728`), Relevancy를 적용한 뒤에는 한 자원 노드에 채널을 여는 연결이 가까이 있는 몇 개뿐이다. 그래서 이 시나리오의 자원 노드는 거의 모두 활성 목록에 남고, 채널이 없는 연결마다 거리 검사(`NetDriver.cpp:5580-5593`)를 계속 받는다. 맵에 미리 놓인 `DORM_Initial` 액터만 예외로 처음부터 빠지는데(`NetDriver.cpp:5369-5378`), 이 프로젝트의 자원 노드는 실행 중에 스폰한다.
+**활성 목록에서 빠지지는 않는다.** 서버가 프레임마다 도는 Consider List는 활성 목록에서 만들어지고(`NetDriver.cpp:5315`), 액터가 활성 목록에서 빠지는 것은 모든 연결에서 Dormant 상태가 됐을 때다(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`). 연결별 Dormant 상태는 액터 채널에서만 등록되는데(`Engine/Source/Runtime/Engine/Private/DataChannel.cpp:2354, 2461, 2728`), Relevancy를 적용한 뒤에는 한 자원 노드에 채널을 여는 연결이 가까이 있는 몇 개뿐이다. 그래서 이 시나리오의 자원 노드는 거의 모두 활성 목록에 남고, 채널이 없는 연결마다 거리 검사(`NetDriver.cpp:5580-5593`)를 계속 받는다. 맵에 미리 놓인 `DORM_Initial` 액터만 예외로 처음부터 빠지는데(`NetDriver.cpp:5369-5378`), 이 프로젝트의 자원 노드는 실행 중에 스폰한다.
 
 이 시점의 코드는 태그 [`post-03-dormancy`](https://github.com/hon454/ue-dedicated-server-optimization-lab/tree/post-03-dormancy)에 있다.
 
@@ -220,7 +220,7 @@ xychart-beta
 
 ## 한계와 다음
 
-- **Dormancy는 이 시나리오에서 거리 검사를 줄이지 못했다.** [Always Relevant 기준선](../01-baseline/README.md)에서는 Dormancy가 자원 노드 5,001 × 연결 8의 확인을 줄일 것으로 기대했지만, Relevancy를 적용한 뒤에는 노드가 모든 연결에서 Dormant 상태가 되지 못해 활성 목록에 남는다. 줄어든 것은 채널이 열린 자원 노드(연결당 약 98개)의 직렬화뿐이다. 남은 `GameNetDriver` 자체 시간(프레임당 9.43ms)을 줄이려면 자원 노드가 고려 목록에 들어오지 않게 해야 하고, 이 시리즈의 세 기법 밖이다.
+- **Dormancy는 이 시나리오에서 거리 검사를 줄이지 못했다.** [Always Relevant 기준선](../01-baseline/README.md)에서는 Dormancy가 자원 노드 5,001 × 연결 8의 확인을 줄일 것으로 기대했지만, Relevancy를 적용한 뒤에는 노드가 모든 연결에서 Dormant 상태가 되지 못해 활성 목록에 남는다. 줄어든 것은 채널이 열린 자원 노드(연결당 약 98개)의 직렬화뿐이다. 남은 `GameNetDriver` 자체 시간(프레임당 9.43ms)을 줄이려면 자원 노드가 Consider List에 들어오지 않게 해야 하고, 이 시리즈의 세 기법 밖이다.
 - **`GameNetDriver` 자체 시간의 내역을 여전히 모른다.** 거리 검사, 우선순위 정렬, 송신이 섞여 있다. 1.00ms 줄어든 것이 실제 변화인지도 이 측정으로는 가릴 수 없다.
 - **Dormant 노드가 클라이언트에 쌓인다.** 위 "정확성 확인"의 동작이다. 이 실험은 90초라서 300개 남짓이지만, 오래 돌아다니면 맵의 노드를 모두 갖게 된다. 해결은 이 포스팅에서 구현하지 않았다.
 - **`r1`이 다른 두 실행보다 11\~17% 느렸다.** 이유를 확인하지 않았다. 이 때문에 변동 폭이 Relevancy 때보다 크고, P99와 연결당 송신 대역폭은 구별되는 차이가 아니다.

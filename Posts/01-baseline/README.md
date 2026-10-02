@@ -33,12 +33,12 @@
 
 `LabNpc`는 ②의 `% Parent` 10.31%(프레임당 19.5ms)이고, 나머지 액터 클래스 일곱 개는 모두 합쳐 약 0.5%이다.
 
-### 고려, 직렬화, 송신으로는 일부만 나뉜다
+### 리플리케이션 비용 가운데 직렬화만 따로 보인다
 
-리플리케이션 비용을 고려(어떤 액터를 누구에게 보낼지 판단), 직렬화(프로퍼티 비교와 쓰기), 송신(패킷 전송)으로 나눠 보려 했지만, 이 트레이스로는 일부만 나뉜다.
+리플리케이션 비용을 Consider List 만들기(어떤 액터를 누구에게 보낼지 고르는 일, `ServerReplicateActors_BuildConsiderList`), 직렬화(프로퍼티 비교와 쓰기), 송신(패킷 전송)으로 나눠 보려 했지만, 이 트레이스에서 따로 보이는 것은 직렬화뿐이다.
 
 - **직렬화는 클래스 타이머로 보인다.** 액터 하나를 연결 하나에 보내는 `UActorChannel::ReplicateActor`가 C++ 부모 클래스 이름으로 타이머를 남긴다(`Engine/Source/Runtime/Engine/Private/DataChannel.cpp:3622-3625`의 `SCOPE_CYCLE_UOBJECT`). 위의 `LabResourceNode` 52%와 `LabNpc` 10%가 이 타이머다. 송신 버퍼가 차서 그 자리에서 패킷을 내보내는 시간도 이 안에 섞일 수 있다.
-- **고려와 송신은 나뉘지 않는다.** 나머지는 `GameNetDriver`의 Exclusive 37%(프레임당 69.9ms)에 들어 있다. 고려 목록 만들기, 연결마다의 우선순위 정렬, 프레임 끝의 송신이 모두 여기에 섞인다. 이들을 재는 `STAT_NetConsiderActorsTime` 같은 stat은 기본 트레이스(`-trace=default,net`)에 남지 않는다.
+- **Consider List 만들기와 송신은 따로 보이지 않는다.** 나머지는 `GameNetDriver`의 Exclusive 37%(프레임당 69.9ms)에 들어 있다. Consider List 만들기, 연결마다의 우선순위 정렬, 프레임 끝의 송신이 모두 여기에 섞인다. 이들을 재는 `STAT_NetConsiderActorsTime` 같은 stat은 기본 트레이스(`-trace=default,net`)에 남지 않는다.
 - **추정(실행으로 확인하지 않음).** 프레임 하나를 확대하면 `GameNetDriver` 아래의 자식 타이머가 덩어리 8개로 뭉쳐 있고, 덩어리 사이마다 빈 구간이 있다(눈금으로 어림해 3.6\~5.2ms). 엔진은 연결마다 `SendClientAdjustment`(`Engine/Source/Runtime/Engine/Private/NetDriver.cpp:5981`, 이하 `NetDriver.cpp`) 다음에 우선순위 정렬(`NetDriver.cpp:6007`)을 부르고, 덩어리 경계에 `ClientMoveResponsePacked` 타이머가 있다. 그래서 덩어리 하나가 연결 하나이고 그 앞의 빈 구간이 그 연결의 우선순위 정렬이라고 본다. 빈 구간 8개를 합쳐도 그 프레임 Exclusive 76.64ms의 절반쯤(3.6\~5.2ms × 8 = 29\~42ms)이라, 나머지가 어디에 쓰였는지는 이 화면으로 알 수 없다.
 
 ### 대역폭은 NPC가 쓴다
@@ -68,19 +68,19 @@ CPU를 가장 많이 쓰는 대상(자원 노드 확인, 리플리케이션 시�
 | 순서 | 기법 | 바꿀 코드 | 이 기준선에서 겨냥하는 것(`r1`) |
 | --- | --- | --- | --- |
 | 1 | [Relevancy](../02-relevancy/README.md)(엔진 기본 Net Cull Distance 복원) | `LabResourceNode.cpp`, `LabNpc.cpp` 생성자에서 `bAlwaysRelevant = true;` 두 줄을 지움 | 자원 노드 확인 프레임당 98.5ms, NPC 프레임당 19.5ms, NPC 송신 비트 76.0% |
-| 2 | [자원 노드 Dormancy](../03-dormancy/README.md) | `LabResourceNode.cpp` 생성자에 `NetDormancy = DORM_DormantAll;`, 채집과 재생에서 상태를 바꾸기 전에 `FlushNetDormancy()` | 고려 목록에 남은 자원 노드 5,001개 |
+| 2 | [자원 노드 Dormancy](../03-dormancy/README.md) | `LabResourceNode.cpp` 생성자에 `NetDormancy = DORM_DormantAll;`, 채집과 재생에서 상태를 바꾸기 전에 `FlushNetDormancy()` | Consider List에 남은 자원 노드 5,001개 |
 | 3 | [NPC Net Update Frequency](../04-update-frequency/README.md) | `LabNpc.cpp` 생성자에 `SetNetUpdateFrequency(10.f);` | NPC 이동 송신 |
 
 **Relevancy 최적화를 먼저 적용한다.** 이 기준선은 엔진 기본 동작인 거리 기반 Relevancy를 일부러 끈 상태다([ADR-0003](../../Docs/Decisions/0003-lawless-baseline.md)). 기본 동작을 먼저 되돌려야 뒤의 두 기법을 "엔진 기본 동작 위의 개선"으로 읽을 수 있다. 코드 변경은 두 줄을 지우는 것으로 셋 중 가장 작고, 가장 큰 비용(자원 노드 확인)과 대역폭을 가장 많이 쓰는 대상(NPC 이동)을 함께 겨냥한다. 엔진 기본 Net Cull Distance는 150m(`SetNetCullDistanceSquared(225000000.0f)`, `Engine/Source/Runtime/Engine/Private/Actor.cpp:312`)이고, 노드와 NPC가 배치 영역(1.9km × 1.9km, `Source/DSOptLab/LabScenarioConfig.h`의 `WorldHalfExtent` 95,000cm)에 고르게 퍼져 있다면 반경 150m 안의 기대 수는 노드 약 98개(5,000 × π × 150² ÷ 1,900²), NPC 약 6명(300 × π × 150² ÷ 1,900²)이다.
 
-**두 번째로 자원 노드에 Dormancy를 적용한다.** Relevancy를 복원해도 서버는 채널이 없는 액터마다 연결별로 거리 검사를 한다(`NetDriver.cpp:5580-5593`). 자원 노드 5,001개 × 연결 8개의 검사는 남는다. 모든 연결에서 Dormant 상태가 된 자원 노드는 활성 목록에서 빠지고(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`), 고려 목록은 활성 목록만 돈다(`NetDriver.cpp:5315`). 그래서 Dormancy는 Relevancy가 남긴 몫을 줄인다. 이 몫이 실행 사이의 변동 폭(중앙값의 12.8%)보다 클지는 아직 모른다.
+**두 번째로 자원 노드에 Dormancy를 적용한다.** Relevancy를 복원해도 서버는 채널이 없는 액터마다 연결별로 거리 검사를 한다(`NetDriver.cpp:5580-5593`). 자원 노드 5,001개 × 연결 8개의 검사는 남는다. 모든 연결에서 Dormant 상태가 된 자원 노드는 활성 목록에서 빠지고(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`), Consider List는 활성 목록만 돈다(`NetDriver.cpp:5315`). 그래서 Dormancy는 Relevancy가 남긴 몫을 줄인다. 이 몫이 실행 사이의 변동 폭(중앙값의 12.8%)보다 클지는 아직 모른다.
 
 **NPC의 Net Update Frequency 조정은 마지막에 한다.** `NetUpdateFrequency`를 10으로 낮추면 NPC의 다음 고려 시각은 지금 + 0\~1/30초 + 0.1초가 된다(`NetDriver.cpp:5420-5425`, `6341-6348`). 기준선의 프레임 간격(약 0.18\~0.2초)에서는 다음 프레임이 올 때 이 시각이 이미 지나 있어서, 계산상 효과가 없다. 앞의 두 기법으로 프레임 간격이 0.133초보다 짧아져야 건너뛰는 프레임이 생기기 시작한다.
 
 **구현하지 않는 후보.**
 
-- Adaptive Net Update Frequency(`net.UseAdaptiveNetUpdateFrequency`): 보낼 것이 없는 액터의 고려 간격을 늘린다. 자원 노드의 비용을 겨냥하지만 자원 노드를 고려 목록에서 빼지는 않고, 같은 비용은 Dormancy가 겨냥한다.
-- 푸시 모델: 프로퍼티 비교 비용을 줄인다. 이 트레이스에서는 비교 비용이 클래스 타이머 안에 섞여 따로 보이지 않아, 얼마나 줄지 가늠할 근거가 없다.
+- Adaptive Net Update Frequency(`net.UseAdaptiveNetUpdateFrequency`): 보낼 것이 없는 액터의 고려 간격을 늘린다. 자원 노드의 비용을 겨냥하지만 자원 노드를 Consider List에서 빼지는 않고, 같은 비용은 Dormancy가 겨냥한다.
+- Push Model: 프로퍼티 비교 비용을 줄인다. 이 트레이스에서는 비교 비용이 클래스 타이머 안에 섞여 따로 보이지 않아, 얼마나 줄지 가늠할 근거가 없다.
 - 송신 한도와 우선순위: 기준선은 연결당 한도 350,000바이트/초에서 포화되지 않았다(`saturated_ratio` 0.000). 줄일 대상이 없다.
 
 후보 기법과 엔진 소스 위치, Insights에서 읽은 값은 [후보 기법 자료](candidates.md)에 있다.
@@ -215,7 +215,7 @@ xychart-beta
 
 이 측정이 말해 주지 않는 것은 다음과 같다.
 
-- **`GameNetDriver` 자체 시간(37%)의 내역.** 고려 목록 만들기, 연결마다의 우선순위 정렬, 프레임 끝의 송신이 한데 섞여 있다. Relevancy나 Dormancy가 이 몫을 얼마나 줄일지는 이 트레이스로 미리 알 수 없다. 나누려면 `-statnamedevents`를 준 별도 실행이 필요하고, 그러면 측정 조건이 달라진다.
+- **`GameNetDriver` 자체 시간(37%)의 내역.** Consider List 만들기, 연결마다의 우선순위 정렬, 프레임 끝의 송신이 한데 섞여 있다. Relevancy나 Dormancy가 이 몫을 얼마나 줄일지는 이 트레이스로 미리 알 수 없다. 나누려면 `-statnamedevents`를 준 별도 실행이 필요하고, 그러면 측정 조건이 달라진다.
 - **실행 사이 흔들림의 원인.** 변동 폭은 중앙값의 12.8%이다. 이보다 작은 효과는 이 측정으로 구별하지 못한다.
 - **연결당 송신 대역폭의 일부.** `Connection 0` 하나를 읽었고(`Connection 7`은 패킷 하나만 봤다), `r2`는 읽지 않았다. CSV와 3% 다른 이유도 확인하지 않았다.
 - **선택에 적은 기대 효과.** 반경 150m 안의 기대 개수, Dormancy가 줄일 몫, NPC Net Update Frequency가 효과를 내는 프레임 간격은 모두 계산이나 엔진 소스에서 읽은 추론이고 실행으로 확인하지 않았다.

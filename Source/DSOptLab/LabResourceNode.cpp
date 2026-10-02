@@ -52,7 +52,7 @@ void ALabResourceNode::Harvest()
 		return;
 	}
 
-	// 휴면 중이면 깨워서 아래 변경이 전송되게 한다.
+	// Dormant 상태면 깨워서 아래 변경이 전송되게 한다.
 	FlushNetDormancy();
 
 	--Health;
