@@ -10,8 +10,7 @@
 
 ## 다음 할 일
 
-1. **태스크 11(포스팅 2: 관련성) 계속.** 11.6의 녹화(아래 계획, 사용자 승인됨), 11.8([사람] "관찰"과 "선택"), 11.9(나머지 섹션), 11.10(README, 커밋, `post-02-relevancy` 태그) 순서다.
-   - **녹화 계획(2026-10-02 사용자 승인, 이 목록에만 유효).** 적용 후: 지금 빌드로 `visual2` 실행(확정 명령에 `-Label visual2 -Runs 1`), 클라이언트 1번(내려다보기, 창 640,0)과 2번(3인칭 이동, 창 1280,0)을 감싸는 영역을 10초 찍어 `Posts/02-relevancy/images/after-clip.gif`. 적용 전: 두 클래스의 `bAlwaysRelevant = true` 두 줄을 잠시 되돌려 빌드하고 `visual3`에서 같은 영역을 찍어 `before-clip.gif`, 그 뒤 코드를 되돌리고(`git checkout -- Source`) 다시 빌드한다. 두 실행 모두 `capture-video.ps1`에 `-AllowMeasuring`, 찍은 뒤 미리보기를 연다. `visualN`의 수치는 비교에 쓰지 않는다.
+1. **태스크 12(포스팅 3: 자원 노드 휴면).** 구현 계획 "기법별 코드"의 나. 직전 구성은 `relevancy2`(중앙값 실행 `r3`)다. 시작하기 전에 아래 "포스팅 주기 진행"의 포스팅 2 기록을 `Docs/Worklog/02-relevancy.md`(새 파일)로 옮기는 정리안을 보여 주고 승인받는다.
 2. **태스크 9.4.** 에이전트가 녹화 계획을 적어 허가를 받은 뒤 `visual1` 실행에서 `all-clients.png`와 `clip.gif`를 찍어 넣는다. [사람] 넣은 자료를 고르고 테스트베드 포스팅 초안을 읽고 다듬는다.
 3. 태스크 9.5(포스팅 진행표를 "완료"로, 커밋과 `post-00-testbed` 태그).
 4. 푸시는 사용자가 정한 시점에 한다.
@@ -22,7 +21,7 @@
 | --- | --- | --- |
 | 0. 테스트베드와 측정 방법 | 초안(태스크 9.4, 9.5 남음) | |
 | 1. 무법지대 측정 | 완료 | `post-01-baseline` |
-| 2. 관련성과 컬 거리 | 진행 중(11.1\~11.5, 11.7 끝, 11.6 일부) | |
+| 2. 관련성과 컬 거리 | 완료 | `post-02-relevancy` |
 | 3. 자원 노드 휴면 | 시작 전 | |
 | 4. AI NPC 업데이트 빈도 | 시작 전 | |
 
@@ -35,6 +34,7 @@
 - 작은 규모 확인용: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 라벨> -Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`
 - 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 에이전트도 문서 편집을 포함해 다른 작업을 하지 않는다(`calib-g-r1` 실행 중의 문서 편집, [Worklog/00-testbed.md](Worklog/00-testbed.md) "태스크 9.1\~9.3"). 서버만 논리 프로세서 2\~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
 - Insights: `powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라벨>-rN`. 읽는 순서는 [insights-reading.md](Guides/insights-reading.md)에 있다.
+- 두 클라이언트 영상(1번 내려다보기, 2번 3인칭 이동): 이 PC의 150% 배율에서 두 창은 959,-47과 1919,-47(각 962×588)이라 `capture-video.ps1 -Region "959,0,1922,541" -NoMouse`로 찍는다. `-Region`은 창을 맨 위로 올리지 않으므로, 찍기 전에 두 창(명령줄 `-LabSlot=1`, `-LabSlot=2`)을 `SetWindowPos`로 TOPMOST로 올리고 끝나면 되돌린다(`visual2`, `visual3`에서 이렇게 찍었다).
 - 문서용 Insights 캡처: `powershell -ExecutionPolicy Bypass -File Scripts/capture-insights.ps1 -Label <라벨>-rN -Out <경로>.png`. 화면 복사 대신 창 내용만 찍는다.
 - Insights 이미지에 번호 붙은 상자 그리기: `powershell -ExecutionPolicy Bypass -File Scripts/annotate-image.ps1 -In <원본>.png -Out <포스팅용 이름>.png -Boxes "x,y,w,h;x,y,w,h"`. 좌표는 원본 픽셀 기준, 상자는 최대 3개, 원본은 그대로 둔다.
 - 빌드나 실행이 실패하면 [troubleshooting.md](Guides/troubleshooting.md)에서 증상을 찾는다.
@@ -108,8 +108,8 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 구현 계획 태스크 11은 포스팅 2, 3, 4에 반복해서 쓴다. 현재 포스팅과 끝낸 단계를 여기에 적는다.
 
 - 현재 포스팅: 포스팅 2(관련성과 컬 거리). 직전 구성은 `baseline3`이고 전후 자동 스크린샷 순번은 3인칭 04, 내려다보기 02다.
-- 끝낸 단계: 11.1(코드), 11.2(빌드), 11.3(`relevancy2` 3회), 11.4(위 비교), 11.5(`Posts/02-relevancy/images/`의 `before-`/`after-` `tpp.png`, `topdown.png`, 직전 구성은 `baseline3-r1`, 이번은 중앙값 실행 `relevancy2-r3`), 11.7([후보 기법 자료](../Posts/02-relevancy/candidates.md)). 11.6은 Insights 값을 읽고 캡처 후보 2장(`insights-r3-timers.png`, `insights-r3-net-stats.png`)을 찍었다. 녹화는 하지 않았다.
-- 아직 커밋하지 않은 것은 없다(코드와 자료는 `feat(relevancy)` 커밋에 넣었다).
+- 끝낸 단계: 11.1(코드), 11.2(빌드), 11.3(`relevancy2` 3회), 11.4(위 비교), 11.5(`Posts/02-relevancy/images/`의 `before-`/`after-` `tpp.png`, `topdown.png`, 직전 구성은 `baseline3-r1`, 이번은 중앙값 실행 `relevancy2-r3`), 11.7([후보 기법 자료](../Posts/02-relevancy/candidates.md)), 11.6, 11.8(2026-10-02 인터뷰, 네 질문 모두 에이전트 추천을 고름. 초안을 사용자가 승인), 11.9, 11.10(커밋과 `post-02-relevancy` 태그). 포스팅 2가 끝났다.
+- 11.6(2026-10-02): `visual2-r1`(지금 빌드)에서 `after-clip.gif`, 두 줄을 잠시 되돌린 빌드의 `visual3-r1`에서 `before-clip.gif`를 측정 구간에 10초씩 찍었다. 15fps로는 9.51MB, 13.26MB라 사용자 요청으로 폭 960px 그대로 8fps, 48색(`palettegen=max_colors=48`, `paletteuse=dither=bayer:bayer_scale=3:diff_mode=rectangle`)으로 다시 변환해 3.62MB, 4.49MB로 줄였다. 32색은 NPC의 빨간 점이 회색이 되어 버렸다. 미리보기에서 적용 후는 원 안의 점(화면 글자 노드 108\~115)이 플레이어를 따라 바뀌고, 적용 전은 `nodes=5001`로 화면 끝까지 점이 찬 것을 확인했다. 그 뒤 `git checkout -- Source`, 빌드 성공, 소스 변경 없음을 확인했다. 두 실행은 녹화 중 클라이언트 선호도 재적용으로 종료 코드 1이었고 수치는 쓰지 않는다. 영상의 빌드에는 `8075998`(채집 진행 표시)이 들어 있고 `relevancy2`의 측정 빌드(`b438852`)에는 없다. `after-timing.png`, `after-network.png`는 후보 캡처에 포스팅 1과 같은 자리의 상자를 그렸고(사용자 선택), `before-timing.png`, `before-network.png`는 포스팅 1의 `timing.png`, `network.png`를 복사했다.
 
 ## 막힌 것
 
@@ -117,7 +117,6 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 사용자에게 요청한 일
 
-- **태스크 11.8.** [포스팅 2 후보 기법 자료](../Posts/02-relevancy/candidates.md)를 보고 포스팅 2의 "관찰"과 "선택"을 쓴다(포스팅 1처럼 인터뷰로 해도 된다). 다음 기법은 포스팅 1에서 정한 대로 자원 노드 휴면이다.
-- **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인).
+- **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인). "관찰"의 서버 프레임 시간 문장은 ADR-0010에 맞춰 에이전트가 고쳤다(아직 확인하지 않음).
 - **태스크 9.4.** 에이전트가 8개 창 전체 화면(`Posts/00-testbed/images/all-clients.png`)과 클라이언트가 걷는 10초 영상(`clip.gif`)을 `visual1` 실행에서 찍기 전에 녹화 계획을 채팅으로 보낸다. 승인해 주면 찍어서 본문의 자리 표시를 바꾼다. 넣은 자료와 `timing.png`, `network.png`(에이전트가 찍은 것)를 보고 다른 장면이 좋으면 바꾼다. 테스트베드 포스팅 초안을 읽고 다듬는다.
 - 푸시는 사용자가 정한 시점에 한다.
