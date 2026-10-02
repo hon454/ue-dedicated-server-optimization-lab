@@ -13,6 +13,8 @@ ALabNpc::ALabNpc()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	bReplicates = true;
 	SetReplicatingMovement(true);
+	// 초당 10회만 리플리케이션 대상으로 고려한다.
+	SetNetUpdateFrequency(10.f);
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(Mesh);
