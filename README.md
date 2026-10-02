@@ -179,8 +179,6 @@ xychart-beta
 
 5. 클라이언트 두 개를 같은 자리에 띄워 직접 조작해 보려면 `Scripts/run-manual.ps1`을 쓴다. 왼쪽 Shift를 누르고 있는 동안 걷기의 두 배 속도로 달린다. 측정 시나리오에서는 달리지 않는다.
 
-태그를 체크아웃해 실행할 때 달라지는 것이 있다. 서버 프레임 시간에서 틱 속도 제한 대기를 빼는 정의([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md))는 `post-02-relevancy`부터 문서에 들어 있고, `run-scenario.ps1`의 `-ShowcaseNpc`는 `post-04-update-frequency`부터 있다. 재현을 확인한 태그는 `post-01-baseline` 하나다. 이 태그를 다시 빌드해 확정 규모로 1회 실행하니(`verify-baseline-r1`) CSV `work_avg_ms`가 161.649로 `baseline3`의 세 실행(179.673\~205.150)보다 낮았고, `open_actor_channels_per_conn` 5,314와 `saturated_ratio` 0.000, 모든 프레임의 틱 예산 초과(`over_budget_frames` 371 = `frames` 371)는 같았다.
-
 ## 레포 구조
 
 ```
