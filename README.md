@@ -92,10 +92,10 @@ flowchart LR
 | Dormancy, 다시 잰 값(`dormancy6`) | 13.60ms | 20.84ms | 9.35ms | 2,793바이트/초 | 20 |
 | [Net Update Frequency](Posts/04-update-frequency/README.md)(`update-frequency3`) | 13.16ms | 19.50ms | 8.73ms | 1,303바이트/초 | 20 |
 
-- Net Update Frequency는 바로 앞에서 다시 잰 Dormancy(`dormancy6`)와 비교한다. 같은 코드의 `dormancy2`와 `dormancy6`이 서버 프레임 시간 평균에서 1.09ms 달라(측정한 화면 조건이 달랐고 원인은 확인하지 않았다), 연달아 잰 묶음끼리만 비교했다. Dormancy와 Net Update Frequency 사이에서 서버 프레임 시간 평균의 차이는 변동 폭보다 작아 구별되는 차이가 아니고, P99와 리플리케이션 시간, 연결당 송신 대역폭은 구별된다([AI NPC Net Update Frequency의 "결과"](Posts/04-update-frequency/README.md#결과)).
+- Net Update Frequency는 바로 앞에서 다시 잰 Dormancy(`dormancy6`)와 비교한다. 같은 코드인 `dormancy2`와 `dormancy6`의 서버 프레임 시간 평균이 1.09ms 달라, 연달아 잰 묶음끼리만 비교했다. Dormancy와 Net Update Frequency 사이에서 서버 프레임 시간 평균의 차이는 변동 폭보다 작아 구별되는 차이가 아니고, P99와 리플리케이션 시간, 연결당 송신 대역폭은 구별된다([AI NPC Net Update Frequency의 "결과"](Posts/04-update-frequency/README.md#결과)).
 - Relevancy와 Dormancy 사이에서 서버 프레임 시간 P99와 연결당 송신 대역폭의 차이는 실행 사이의 변동 폭보다 작아, 구별되는 차이가 아니다([자원 노드 Dormancy의 "결과"](Posts/03-dormancy/README.md#결과)).
-- 연결당 송신 대역폭은 기준선이 중앙값 실행 `r1`, Relevancy가 `r3`, Dormancy가 `r2`, 다시 잰 Dormancy와 Net Update Frequency가 `r1`의 값이다. 나머지 실행은 Network Insights에서 읽지 않았다. Relevancy부터는 연결마다 받는 액터가 위치에 따라 달라, `Connection 0`(제자리에서 채집하는 클라이언트)이 서버 CSV의 8개 연결 평균보다 35% 작다([Relevancy와 Net Cull Distance의 "한계와 다음"](Posts/02-relevancy/README.md#한계와-다음)).
-- 서버 프레임 시간은 프레임 시간에서 틱 속도 제한 대기를 뺀 시간이다([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md)). P99는 측정 구간의 프레임마다 이 값을 Insights에서 내보내 읽은 99백분위 경계값이다. 세 실행 중 중앙값인 실행의 값이고, 기준선은 `r3`, Relevancy는 `r1`, Dormancy는 `r2`, 다시 잰 Dormancy와 Net Update Frequency는 `r1`이다.
+- 연결당 송신 대역폭은 세 실행 가운데 일부만 Network Insights에서 읽었고, 어느 실행의 값인지는 각 포스팅의 "결과"에 있다. Relevancy부터는 연결마다 받는 액터가 위치에 따라 달라, `Connection 0`(제자리에서 채집하는 클라이언트)이 서버 CSV의 8개 연결 평균보다 35% 작다([Relevancy와 Net Cull Distance의 "한계와 다음"](Posts/02-relevancy/README.md#한계와-다음)).
+- 서버 프레임 시간은 프레임 시간에서 틱 속도 제한 대기를 뺀 시간이다([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md)). P99는 측정 구간의 프레임마다 이 값을 Insights에서 내보내 읽은 99백분위 경계값이다.
 
 **기준선 대비 최종 변화.** 세 기법을 모두 적용한 구성(`update-frequency3`)은 기준선(`baseline3`)보다 서버 프레임 시간 평균이 93.4%(198.43ms → 13.16ms), P99가 92.6%(262.96ms → 19.50ms), 리플리케이션 시간이 95.4%(188.97ms → 8.73ms), 연결당 송신 대역폭이 95.4%(28,048 → 1,303바이트/초, `Connection 0`) 줄었다. 이 변화는 둘로 나눠 읽어야 한다. 기본 Relevancy 복원으로 얻은 변화가 대부분이다. 서버 프레임 시간 평균이 줄어든 185.27ms 가운데 180.79ms가 여기서 나왔고(198.43ms → 17.64ms, -91.1%), 이것은 기준선이 일부러 끈 엔진 기본 동작을 되돌린 것이다. 그 뒤의 두 기법으로 얻은 변화는 각 글에서 연달아 잰 묶음끼리 비교한 값이다. 자원 노드 Dormancy는 서버 프레임 시간 평균을 16.7%(17.64ms → 14.69ms), 리플리케이션 시간을 22.6%(13.14ms → 10.17ms) 줄였다. AI NPC Net Update Frequency는 연결당 송신 대역폭을 53.3%(2,793 → 1,303바이트/초), 리플리케이션 시간을 6.6%(9.35ms → 8.73ms) 줄였고, 서버 프레임 시간 평균은 구별되는 차이가 없었다. 기준선과 `update-frequency3`은 측정한 화면 조건이 다르지만, 같은 코드가 화면 조건에 따라 달라진 폭(1.09ms)은 기준선과의 차이(185.27ms)에 비해 작다.
 
@@ -177,7 +177,7 @@ xychart-beta
 
    같은 라벨은 다시 쓸 수 없다. 다시 실행할 때는 라벨을 바꾼다. 실행 중에는 클라이언트 창에 키 입력을 하지 않는다.
 
-5. 클라이언트 두 개를 같은 자리에 띄워 직접 조작해 보려면 `Scripts/run-manual.ps1`을 쓴다. 왼쪽 Shift를 누르고 있는 동안 걷기의 두 배 속도로 달린다. 측정 시나리오에서는 달리지 않는다.
+5. 클라이언트 두 개를 같은 자리에 띄워 직접 조작해 보려면 `Scripts/run-manual.ps1`을 쓴다. 왼쪽 Shift로 달린다.
 
 ## 레포 구조
 
