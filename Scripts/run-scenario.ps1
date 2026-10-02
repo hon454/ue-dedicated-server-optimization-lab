@@ -152,6 +152,8 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
         $Server = Start-Process -FilePath $Editor -ArgumentList $ServerArgs -PassThru
         # 핸들을 미리 잡아 두어야 종료 후 ExitCode를 읽을 수 있다.
         $null = $Server.Handle
+        # 서버 콘솔 창이 가려지거나 최소화돼도 틱이 약 21Hz로 떨어지지 않게 한다(ADR-0012).
+        Disable-LabTimerThrottle $Server
         $null = Set-Affinity $Server $ServerMask
 
         # 서버가 맵을 열고 월드를 생성할 시간.

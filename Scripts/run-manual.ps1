@@ -7,7 +7,9 @@
 
 $Processes = @()
 try {
-    $Processes += Start-Process -FilePath $Editor -PassThru -ArgumentList (Get-LabServerArgs "server-manual.log" $Nodes $Npcs)
+    $Server = Start-Process -FilePath $Editor -PassThru -ArgumentList (Get-LabServerArgs "server-manual.log" $Nodes $Npcs)
+    $Processes += $Server
+    Disable-LabTimerThrottle $Server
     Start-Sleep -Seconds 20
 
     # 채집 담당. 검증용 노드 옆에 서서 채집한다.

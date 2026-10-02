@@ -241,7 +241,7 @@
 
 - 측정 실행에서는 아무도 창을 최소화하지 않았다. 클라이언트 창이나 다른 창이 서버 콘솔 창을 완전히 가린 것으로 추정하지만, 가려진 상태만으로 재현하는 실행은 하지 않았다(`timerdiag3`은 다른 프로세스가 해상도 1ms를 잡고 있어 판정하지 못했다).
 - 영향: `frames`와 초당 값(`out_bytes_per_sec_per_conn`)이 약 0.71배가 된다. 틱마다 하는 일이 달라져 `work_avg_ms`도 흔들릴 수 있다(`dormancy2-r1` 16.205, `refactor-after2-r3` 14.794. `refactor-after2-r1`은 12.850으로 차이가 없었다). 틱 예산을 넘는 구성(`baseline3`)은 기다리지 않으므로 영향이 없다.
-- 대처안은 [ADR-0012](../Decisions/0012-server-timer-resolution.md)(제안됨)에 있다.
+- 대처는 [ADR-0012](../Decisions/0012-server-timer-resolution.md)(승인됨)다. `Scripts/common.ps1`의 `Disable-LabTimerThrottle`이 서버를 띄운 직후 이 스로틀을 끈다. 적용 뒤 `timerfix-min-r1`(서버 창 최소화, 작은 규모)이 `frames` 902, 확정 규모 `timerfix` 세 실행이 1,788 / 1,784 / 1,796이다.
 
 ## 라. 계획 초안의 코드에서 바꾼 것 요약
 

@@ -30,6 +30,30 @@ if (-not (Test-Path $Editor)) {
     throw "UnrealEditor.exe not found: $Editor"
 }
 
+# 프로세스가 요청한 타이머 해상도를 Windows가 무시하지 못하게 한다(ADR-0012).
+# Windows 11은 창이 최소화되거나 완전히 가려진 프로세스의 타이머 해상도 요청(엔진의 timeBeginPeriod(1))을 보장하지 않는다.
+# 그러면 서버의 틱 속도 제한이 15.625ms 단위로만 깨어나 30Hz가 아니라 약 21Hz로 돈다(engine-notes.md 아절).
+Add-Type @"
+using System; using System.Runtime.InteropServices;
+public static class LabProcess {
+    [StructLayout(LayoutKind.Sequential)] public struct PROCESS_POWER_THROTTLING_STATE { public uint Version, ControlMask, StateMask; }
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern bool SetProcessInformation(IntPtr process, int infoClass, ref PROCESS_POWER_THROTTLING_STATE info, uint size);
+}
+"@
+
+function Disable-LabTimerThrottle($Process) {
+    $ProcessPowerThrottling = 4
+    $State = New-Object LabProcess+PROCESS_POWER_THROTTLING_STATE
+    $State.Version = 1
+    # ControlMask에 넣고 StateMask에서 뺀 항목은 "항상 끔"이다. 0x4 = PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION.
+    $State.ControlMask = 0x4
+    $State.StateMask = 0
+    if (-not [LabProcess]::SetProcessInformation($Process.Handle, $ProcessPowerThrottling, [ref]$State, 12)) {
+        throw "SetProcessInformation(ProcessPowerThrottling) failed for pid $($Process.Id) (error $([Runtime.InteropServices.Marshal]::GetLastWin32Error()))."
+    }
+    Write-Host "TIMER: pid $($Process.Id) keeps its requested timer resolution"
+}
+
 # 서버와 클라이언트의 실행 인자 가운데 run-scenario.ps1과 run-manual.ps1이 함께 쓰는 부분.
 # 실행마다 다른 인자는 돌려받은 배열 뒤에 붙인다.
 function Get-LabServerArgs([string]$LogName, [int]$Nodes, [int]$Npcs) {
