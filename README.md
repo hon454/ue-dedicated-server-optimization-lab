@@ -204,29 +204,3 @@ Docs/                      작업 문서
 | [LabHUD](Source/DSOptLab/LabHUD.cpp) | 클라이언트 화면 표시: 화면 글자(라벨, 역할, 그 클라이언트에 있는 노드와 NPC 수, 위치), 내려다보기 화면의 점과 카메라, 자동 스크린샷 |
 | [LabMetricsSubsystem](Source/DSOptLab/LabMetricsSubsystem.cpp) | 서버 측정과 CSV 기록 |
 | [run-scenario.ps1](Scripts/run-scenario.ps1) | 측정 실행, 코어 배정, 실패 검출 |
-
-작업 과정의 문서도 함께 둔다.
-
-| 문서 | 내용 |
-| --- | --- |
-| [설계 문서](Docs/Planning/2026-10-01-short-term-portfolio-design.md) | 확정된 결정과 이유, 측정 규약 |
-| [결정 기록(ADR)](Docs/Decisions/README.md) | 대안을 비교해 내린 결정, 버린 대안, 그 결과 |
-| [구현 계획](Docs/Planning/2026-10-01-short-term-implementation-plan.md) | 태스크별 체크리스트, 수치의 이름과 출처 |
-| [엔진 소스 확인 기록](Docs/Planning/engine-notes.md) | 5.8.3 소스에서 확인한 기본값과 동작 순서(파일과 줄 번호) |
-| [현재 상태](Docs/STATUS.md) | 진행 상황, 확정값, 측정 결과 |
-| 작업 기록: [테스트베드](Docs/Worklog/00-testbed.md), [무법지대 측정](Docs/Worklog/01-baseline.md), [Relevancy](Docs/Worklog/02-relevancy.md), [Dormancy](Docs/Worklog/03-dormancy.md), [Net Update Frequency](Docs/Worklog/04-update-frequency.md) | 끝낸 작업의 경위, 실패한 실행, 보정 실행 수치 |
-| [Insights 읽는 순서](Docs/Guides/insights-reading.md), [단계별 기록](Docs/Guides/insights-walkthrough-calib-f.md) | 트레이스에서 수치를 읽는 절차와, 화면을 하나씩 캡처하며 읽은 예 |
-| [문제 해결](Docs/Guides/troubleshooting.md) | 빌드나 실행이 실패했을 때의 증상별 대처와 근거 위치 |
-| [PC 사양](Docs/Planning/pc-specs.md) | 측정 환경 |
-
-## 다음 주제
-
-이 시리즈가 끝난 뒤에 다룰 주제다. 전체 목록은 [백로그](Docs/Planning/backlog.md)에 있다.
-
-1. **Iris 전환과 실측 비교**: 튜닝한 레거시와 같은 시나리오를 Iris로 실행해 비교한다.
-2. **인벤토리와 FastArray**: 일반 `TArray` 리플리케이션과 FastArray의 전송 바이트 비교, 소유자 전용 전송.
-3. **자원 노드 구역 매니저**: 노드당 액터 하나에서 구역별 매니저와 FastArray로 전환.
-4. **기본 송신 한도에서의 포화와 우선순위**: 엔진 기본 한도로 되돌렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지.
-5. **건축물**: 플레이어가 배치하는 정적 액터의 Dormancy와 초기 전송 비용.
-6. **Replication Graph**: 레거시, Replication Graph, Iris 세 시스템 비교.
-7. **Test 패키지로 재측정**: 기준선과 세 기법을 모두 적용한 구성을 출시 빌드에 가까운 Test 패키지로 다시 재서, 에디터 빌드에서 본 개선이 유지되는지 확인한다.
