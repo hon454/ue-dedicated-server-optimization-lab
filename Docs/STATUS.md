@@ -206,16 +206,15 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 막힌 것
 
-- **엔진 등록 이름이 맞지 않는다(2026-10-02 발견).** `DSOptLab.uproject`의 `EngineAssociation`은 `UE_DSOptLab`인데, 이 PC의 `HKCU\Software\Epic Games\Unreal Engine\Builds`에는 같은 소스 빌드 `G:\Epic Games\UE_Source`가 `UE_ReplicationLab`으로만 등록되어 있다. `Scripts/common.ps1`이 엔진을 찾지 못해 `build.ps1`, `run-scenario.ps1`, `open-insights.ps1`이 모두 멈춘다. `.uproject`와 레지스트리는 고치지 않았다. 사용자가 `DSOptLab.uproject`를 우클릭해 "Switch Unreal Engine version"으로 그 엔진을 다시 고르면 풀린다(그러면 `.uproject`의 `EngineAssociation`이 바뀔 수 있으니 확인한다). P99를 읽을 때는 `UnrealInsights.exe`를 엔진 경로로 직접 실행했다.
+- 없음.
+- **풀림: 에이전트 프로세스에서 엔진 등록이 다르게 보였다(2026-10-02).** 레지스트리 편집기에는 `HKCU\Software\Epic Games\Unreal Engine\Builds`에 `UE_DSOptLab` → `G:\Epic Games\UE_Source`가 등록되어 있었지만(사용자 확인), Claude 앱 안의 에이전트 프로세스에서는 같은 키에 `UE_ReplicationLab`(같은 경로)만 보이고 `UE_DSOptLab`이 없어서 `Scripts/common.ps1`이 엔진을 찾지 못했다. 앱의 레지스트리 가상화로 추정하며 확인하지 않았다. 사용자 승인으로 에이전트 프로세스에서 `UE_DSOptLab`을 추가하고 `UE_ReplicationLab`을 지웠다(사용자: 그 프로젝트는 이제 없다). 그 뒤 `common.ps1`이 `G:\Epic Games\UE_Source`를 찾는다. 다시 나오면 에이전트 프로세스에서 `reg query "HKCU\Software\Epic Games\Unreal Engine\Builds"`로 먼저 본다. 커밋 `0a4a849` 본문의 "등록되어 있지 않다"는 이 확인 전의 잘못된 판단이다.
 - 태스크 10.1이 선호도 재설정 실패로 멈췄던 일(`baseline-r2`, `baseline2-r1`, 이후 `vis-c-r1`, `vis-e-r2`, `ctl-nomat-r1`)은 `-Warmup` 30초 그대로 `baseline3` 세 실행이 모두 성공해 풀렸다. 실패 원인은 모른다. 다시 나오면 라벨을 바꿔 다시 실행한다.
   - `baseline`: `baseline-r1` 성공, `baseline-r2` 실패(측정 시작 23:52:09, 재적용 23:52:40, 클라이언트 0), r3 실행 안 됨. 수치는 쓰지 않는다.
   - `baseline2`: `baseline2-r1` 실패(측정 시작 23:54:54, 재적용 23:55:55, 클라이언트 0). 수치는 쓰지 않는다.
 
 ## 사용자에게 요청한 일
 
-- **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인).
-- **엔진 등록 이름을 맞춘다(태스크 11의 빌드와 실행 전에 필요).** "막힌 것"을 본다.
-- **태스크 9.4.** 에이전트가 8개 창 전체 화면(`Posts/00-testbed/images/all-clients.png`)과 클라이언트가 걷는 10초 영상(`clip.gif`)을 `visual1` 실행에서 찍기 전에 녹화 계획을 채팅으로 보낸다. 승인해 주면 찍어서 본문의 자리 표시를 바꾼다. 넣은 자료와 `timing.png`, `network.png`(에이전트가 찍은 것)를 보고 다른 장면이 좋으면 바꾼다. 테스트베드 포스팅 초안을 읽고 다듬는다.
+- **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인).- **태스크 9.4.** 에이전트가 8개 창 전체 화면(`Posts/00-testbed/images/all-clients.png`)과 클라이언트가 걷는 10초 영상(`clip.gif`)을 `visual1` 실행에서 찍기 전에 녹화 계획을 채팅으로 보낸다. 승인해 주면 찍어서 본문의 자리 표시를 바꾼다. 넣은 자료와 `timing.png`, `network.png`(에이전트가 찍은 것)를 보고 다른 장면이 좋으면 바꾼다. 테스트베드 포스팅 초안을 읽고 다듬는다.
 - **선호도 재설정 실패가 두 번 있었다(`calib-c-r1`, `calib-d-r1`).** 그 뒤 일곱 번의 실행(`calib-e-r1`, `diag-a-r1`\~`diag-e-r1`, `calib-f-r1`)에서는 다시 나오지 않았다. 기준선 3회 측정에서 다시 나오면 `-Warmup`을 늘릴지 정한다(구현 계획 7.3의 표).
 - ADR-0001\~0008의 내용을 읽고 확인한다. 이미 확정된 결정을 옮긴 것이라 상태는 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.
 - 푸시는 사용자가 정한 시점에 한다.
