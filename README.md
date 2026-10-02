@@ -199,9 +199,9 @@ Docs/                      작업 문서
 | [LabResourceNode](Source/DSOptLab/LabResourceNode.cpp) | 자원 노드 |
 | [LabNpc](Source/DSOptLab/LabNpc.cpp) | AI NPC |
 | [LabGameMode](Source/DSOptLab/LabGameMode.cpp) | 월드 생성, 공통 시작 신호, 플레이어 배치 |
-| [LabPlayerController](Source/DSOptLab/LabPlayerController.cpp) | 자동 이동과 채집, 화면 표시, 자동 스크린샷 |
+| [LabPlayerController](Source/DSOptLab/LabPlayerController.cpp) | 준비 보고, 자동 이동과 채집, 채집 RPC |
 | [LabCharacterMovement](Source/DSOptLab/LabCharacterMovement.cpp) | 수동 조작용 달리기(왼쪽 Shift). 저장된 이동의 플래그 한 비트로 서버에 보낸다 |
-| [LabHUD](Source/DSOptLab/LabHUD.cpp) | 클라이언트 화면 글자(라벨, 역할, 그 클라이언트에 있는 노드와 NPC 수, 위치) |
+| [LabHUD](Source/DSOptLab/LabHUD.cpp) | 클라이언트 화면 표시: 화면 글자(라벨, 역할, 그 클라이언트에 있는 노드와 NPC 수, 위치), 내려다보기 화면의 점과 카메라, 자동 스크린샷 |
 | [LabMetricsSubsystem](Source/DSOptLab/LabMetricsSubsystem.cpp) | 서버 측정과 CSV 기록 |
 | [run-scenario.ps1](Scripts/run-scenario.ps1) | 측정 실행, 코어 배정, 실패 검출 |
 

@@ -4,7 +4,7 @@
 
 class UMaterialInterface;
 
-/** 메시 색. 탑뷰 점(LabPlayerController::TickOverlay)과 같은 색상 계열이되 채도를 낮춰 조명 아래에서 쨍하지 않게 한다. */
+/** 메시 색. 탑뷰 점(ALabHUD::UpdateOverlay)과 같은 색상 계열이되 채도를 낮춰 조명 아래에서 쨍하지 않게 한다. */
 namespace LabVisual
 {
 	inline const FLinearColor NodeColor = FLinearColor::FromSRGBColor(FColor(70, 125, 80));

@@ -1,22 +1,15 @@
 #include "LabPlayerController.h"
 
-#include "Camera/CameraActor.h"
 #include "Camera/PlayerCameraManager.h"
-#include "DrawDebugHelpers.h"
-#include "Engine/Engine.h"
 #include "Engine/LocalPlayer.h"
 #include "EnhancedInputSubsystems.h"
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
 #include "InputMappingContext.h"
-#include "Misc/Paths.h"
-#include "LabCharacter.h"
 #include "LabGameMode.h"
-#include "LabNpc.h"
 #include "LabResourceNode.h"
 #include "LabScenarioConfig.h"
 #include "UObject/ConstructorHelpers.h"
-#include "UnrealClient.h"
 
 ALabPlayerController::ALabPlayerController()
 {
@@ -87,14 +80,7 @@ void ALabPlayerController::PlayerTick(float DeltaTime)
 		ServerReportReady(Config.ClientSlot);
 	}
 
-	if (Config.bTopDown)
-	{
-		TickTopDown(*ControlledPawn);
-	}
-
-	TickOverlay(*ControlledPawn);
-
-	// 이동, 채집, 스크린샷은 공통 시작 신호 이후에만 한다.
+	// 이동과 채집은 공통 시작 신호 이후에만 한다.
 	if (!bScenarioStarted)
 	{
 		return;
@@ -114,11 +100,6 @@ void ALabPlayerController::PlayerTick(float DeltaTime)
 	{
 		TickAutoMove(*ControlledPawn);
 	}
-
-	if (Config.bAutoScreenshot)
-	{
-		TickAutoScreenshot(DeltaTime);
-	}
 }
 
 void ALabPlayerController::ServerReportReady_Implementation(int32 InSlot)
@@ -137,8 +118,6 @@ void ALabPlayerController::ClientStartScenario_Implementation(FVector StartLocat
 	Home = StartLocation;
 	WaypointIndex = 0;
 	HarvestAccumulator = 0.f;
-	ScreenshotAccumulator = 0.f;
-	ScreenshotIndex = 0;
 	ScenarioStartTime = GetWorld()->GetTimeSeconds();
 	bScenarioStarted = true;
 }
@@ -163,108 +142,6 @@ void ALabPlayerController::TickAutoMove(APawn& ControlledPawn)
 	}
 
 	ControlledPawn.AddMovementInput(ToWaypoint.GetSafeNormal());
-}
-
-void ALabPlayerController::TickOverlay(const APawn& ControlledPawn)
-{
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
-	UWorld* World = GetWorld();
-
-	// 메시에 가려지지 않도록 메시 위쪽에, 깊이 검사를 받지 않는 그룹으로 그린다.
-	const FVector PointOffset(0.f, 0.f, 400.f);
-
-	// 클라이언트에 존재하는 액터만 센다. 서버가 보내지 않은 액터는 여기에 없다.
-	int32 NumNodes = 0;
-	for (TActorIterator<ALabResourceNode> It(World); It; ++It)
-	{
-		++NumNodes;
-		const bool bDamaged = It->IsDamaged();
-		if (Config.bTopDown)
-		{
-			// 체력이 깎인 노드는 노란색으로 보여 채집이 진행 중임을 알린다.
-			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, bDamaged ? 12.f : 5.f,
-				It->IsDepleted() ? FColor::Black : bDamaged ? FColor::Yellow : FColor::Green, false, -1.f, SDPG_Foreground);
-		}
-	}
-
-	int32 NumNpcs = 0;
-	for (TActorIterator<ALabNpc> It(World); It; ++It)
-	{
-		++NumNpcs;
-		if (Config.bTopDown)
-		{
-			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, 7.f, FColor::Red, false, -1.f, SDPG_Foreground);
-		}
-	}
-
-	// 플레이어는 노드와 NPC보다 크게, 자기 폰은 흰색, 다른 플레이어는 파란색으로 그린다.
-	int32 NumPlayers = 0;
-	for (TActorIterator<ALabCharacter> It(World); It; ++It)
-	{
-		++NumPlayers;
-		if (Config.bTopDown)
-		{
-			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, 9.f,
-				*It == &ControlledPawn ? FColor::White : FColor(40, 140, 255), false, -1.f, SDPG_Foreground);
-		}
-	}
-
-	// 채집 담당은 이동하지 않으므로 채집을 먼저 본다(PlayerTick과 같은 순서).
-	const TCHAR* Duty = Config.bAutoHarvest ? TEXT("harvest") : Config.bAutoMove ? TEXT("move") : TEXT("idle");
-	const TCHAR* View = Config.bTopDown ? TEXT("topdown") : TEXT("tpp");
-	const FString Elapsed = bScenarioStarted
-		? FString::Printf(TEXT("t=%.0fs"), World->GetTimeSeconds() - ScenarioStartTime)
-		: FString(TEXT("t=waiting"));
-	const FVector Location = ControlledPawn.GetActorLocation() / 100.f;
-
-	// 화면에는 ALabHUD가 그린다.
-	OverlayLines = {
-		FString::Printf(TEXT("%s | slot=%d %s %s | %s"), *Config.Label, Config.ClientSlot, Duty, View, *Elapsed),
-		FString::Printf(TEXT("on this client: nodes=%d npcs=%d players=%d | pos x=%.0fm y=%.0fm"), NumNodes, NumNpcs, NumPlayers, Location.X, Location.Y),
-	};
-}
-
-void ALabPlayerController::TickTopDown(const APawn& ControlledPawn)
-{
-	if (!TopDownCamera)
-	{
-		// 클라이언트에서만 뷰 타깃을 바꾼다. 서버의 뷰 타깃은 폰으로 남는다.
-		TopDownCamera = GetWorld()->SpawnActor<ACameraActor>();
-
-		// 서버가 ClientSetViewTarget으로 뷰 타깃을 폰으로 되돌리지 못하게 한다(PlayerController.cpp의 ClientSetViewTarget_Implementation).
-		bAutoManageActiveCameraTarget = false;
-		if (PlayerCameraManager)
-		{
-			PlayerCameraManager->bClientSimulatingViewTarget = true;
-		}
-	}
-
-	if (GetViewTarget() != TopDownCamera)
-	{
-		SetViewTarget(TopDownCamera);
-	}
-
-	// 수평 시야각 90도에서 높이 350m면 좌우 350m, 위아래 약 197m가 보인다.
-	TopDownCamera->SetActorLocationAndRotation(
-		ControlledPawn.GetActorLocation() + FVector(0.f, 0.f, TopDownHeight),
-		FRotator(-90.f, 0.f, 0.f));
-}
-
-void ALabPlayerController::TickAutoScreenshot(float DeltaTime)
-{
-	ScreenshotAccumulator += DeltaTime;
-	if (ScreenshotAccumulator < ScreenshotInterval)
-	{
-		return;
-	}
-	ScreenshotAccumulator = 0.f;
-
-	const FLabScenarioConfig& Config = FLabScenarioConfig::Get();
-	const TCHAR* View = Config.bTopDown ? TEXT("topdown") : TEXT("tpp");
-	const FString Path = FPaths::ProjectSavedDir() / TEXT("Screenshots") / TEXT("Lab")
-		/ FString::Printf(TEXT("%s-%s-%02d.png"), *Config.Label, View, ScreenshotIndex++);
-
-	FScreenshotRequest::RequestScreenshot(Path, true, false);
 }
 
 void ALabPlayerController::ServerHarvest_Implementation()
