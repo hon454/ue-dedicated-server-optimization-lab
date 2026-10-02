@@ -18,7 +18,8 @@ const FLabScenarioConfig& FLabScenarioConfig::Get()
 		FParse::Value(Cmd, TEXT("LabLabel="), C.Label);
 		FParse::Value(Cmd, TEXT("LabSlot="), C.ClientSlot);
 		C.bMeasure = FParse::Param(Cmd, TEXT("LabMeasure"));
-		C.bAutoMove = FParse::Param(Cmd, TEXT("LabAutoMove"));
+		C.bShowcaseNpc = FParse::Param(Cmd, TEXT("LabShowcaseNpc"));
+		C.bAutoMove =FParse::Param(Cmd, TEXT("LabAutoMove"));
 		C.bAutoHarvest = FParse::Param(Cmd, TEXT("LabAutoHarvest"));
 		C.bTopDown = FParse::Param(Cmd, TEXT("LabTopDown"));
 		C.bAutoScreenshot = FParse::Param(Cmd, TEXT("LabAutoScreenshot"));

@@ -9,10 +9,17 @@
     [int]$TimeoutSeconds = 900,
     # 서버를 고정할 논리 프로세서의 비트 마스크. 기본값 252(0xFC)는 2~7이다(ADR-0009). 진단용으로만 바꾼다.
     [long]$ServerMask = 0xFC,
-    [switch]$NoTrace
+    [switch]$NoTrace,
+    # 0번 자리 앞을 왕복하는 영상용 NPC 하나를 더 스폰한다(-LabShowcaseNpc). 수치를 쓰지 않는 visualN 라벨에서만 쓴다.
+    [switch]$ShowcaseNpc
 )
 
 . "$PSScriptRoot\common.ps1"
+
+if ($ShowcaseNpc -and $Label -notmatch '^visual\d+$') {
+    Write-Host "FAIL: -ShowcaseNpc adds an actor to the scenario, so it is only allowed with a visual-only label (visualN)."
+    exit 1
+}
 
 $TraceDir = "$ProjectDir\Saved\Traces"
 $LogDir = "$ProjectDir\Saved\Logs"
@@ -126,6 +133,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
         "-LabNodes=$Nodes", "-LabNpcs=$Npcs",
         "-LabExpectedClients=$Clients", "-LabWarmup=$Warmup", "-LabMeasureSeconds=$Measure"
     )
+    if ($ShowcaseNpc) {
+        $ServerArgs += "-LabShowcaseNpc"
+    }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")
     }

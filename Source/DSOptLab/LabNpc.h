@@ -22,6 +22,9 @@ public:
 	/** 서버 전용. 공통 시작 신호에서 호출한다. 그 전에는 움직이지 않는다. */
 	void StartWandering();
 
+	/** 서버 전용. 배회하지 않고 두 점 사이의 직선을 MoveSpeed로 왕복하게 한다. 시작 신호 전에 호출한다. */
+	void SetPatrol(const FVector& Start, const FVector& End);
+
 private:
 	static constexpr float WanderRadius = 3000.f;
 	static constexpr float MoveSpeed = 300.f;
@@ -34,4 +37,9 @@ private:
 	FVector Home = FVector::ZeroVector;
 	FVector Target = FVector::ZeroVector;
 	FRandomStream Rng;
+
+	bool bPatrol = false;
+	FVector PatrolStart = FVector::ZeroVector;
+	FVector PatrolEnd = FVector::ZeroVector;
+	float PatrolTime = 0.f;
 };

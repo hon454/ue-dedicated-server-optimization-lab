@@ -70,6 +70,20 @@ void ALabGameMode::SpawnWorld()
 	FVector VerificationNodeLocation = GetSlotLocation(0) + FVector(300.f, 0.f, 0.f);
 	VerificationNodeLocation.Z = 150.f;
 	GetWorld()->SpawnActor<ALabResourceNode>(ALabResourceNode::StaticClass(), VerificationNodeLocation, FRotator::ZeroRotator, Params);
+
+	// 영상용 NPC. 0번 자리의 3인칭 화면 앞 10m에서 화면 오른쪽 절반을 가로지르는 10m 직선을 왕복한다.
+	// 캐릭터와 검증용 노드에 가리지 않게 화면 가운데에서 2.5m 띄웠다. 측정 실행에는 없다.
+	// 난수를 쓰지 않으므로 다른 액터의 배치는 그대로다.
+	if (Config.bShowcaseNpc)
+	{
+		FVector PatrolStart = GetSlotLocation(0) + FVector(1000.f, 250.f, 0.f);
+		FVector PatrolEnd = GetSlotLocation(0) + FVector(1000.f, 1250.f, 0.f);
+		PatrolStart.Z = PatrolEnd.Z = 50.f;
+		if (ALabNpc* Npc = GetWorld()->SpawnActor<ALabNpc>(ALabNpc::StaticClass(), PatrolStart, FRotator::ZeroRotator, Params))
+		{
+			Npc->SetPatrol(PatrolStart, PatrolEnd);
+		}
+	}
 }
 
 void ALabGameMode::StartScenario()

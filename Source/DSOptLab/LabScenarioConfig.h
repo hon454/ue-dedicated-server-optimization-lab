@@ -21,6 +21,7 @@ struct FLabScenarioConfig
 	FString Label = TEXT("unlabeled"); // -LabLabel=
 
 	bool bMeasure = false;        // 서버: -LabMeasure
+	bool bShowcaseNpc = false;    // 서버: -LabShowcaseNpc (0번 자리 앞을 왕복하는 영상용 NPC 하나를 더 스폰한다)
 
 	int32 ClientSlot = 0;         // 클라이언트: -LabSlot=
 	bool bAutoMove = false;       // 클라이언트: -LabAutoMove
