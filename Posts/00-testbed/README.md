@@ -16,7 +16,7 @@
 | 연결당 송신 한도 | 350,000바이트/초(엔진 기본값 100,000에서 올림) |
 | 서버 코어 | 논리 프로세서 2\~7 |
 
-이 규모에서 최적화가 없는 서버는 한 프레임에 약 168ms를 쓰고(틱 예산의 5.0배), 그 96%가 네트워크 드라이버의 송신 쪽 처리다(`calib-f-r1`, 아래 "시나리오 규모와 근거"). 같은 규모를 3회 측정한 기준선의 서버 프레임 시간 평균은 198.43ms이다([무법지대 측정](../01-baseline/README.md)).
+이 규모에서 최적화가 없는 서버는 한 프레임에 약 168ms를 쓰고(틱 예산의 5.0배), 그 96%가 네트워크 드라이버의 송신 쪽 처리다(`calib-f-r1`, 아래 "시나리오 규모와 근거"). 같은 규모를 3회 측정한 기준선의 서버 프레임 시간 평균은 198.43ms이다([Always Relevant 기준선](../01-baseline/README.md)).
 
 ## 월드 구성
 
@@ -178,7 +178,7 @@ CSV 값과 Insights 값은 정의가 달라서 같은 이름으로 부르지 않
 | --- | --- |
 | ![Timing Insights](images/timing.png) | ![Network Insights](images/network.png) |
 
-`GameNetDriver` 안에서는 자원 노드가 52.30%(30.05초, 14,242,848회 = 5,001 × 8 × 356), NPC가 9.72%(5.58초), 드라이버 자체가 37.4%(21.51초)이다. 반면 나간 비트는 76.0%가 NPC이고 노드는 60초 동안 576비트뿐이다. 이 수치를 어떻게 읽을지는 [무법지대 측정](../01-baseline/README.md)에서 기준선을 3회 측정한 뒤 다룬다. Insights에서 값을 읽은 과정은 [단계별 기록](../../Docs/Guides/insights-walkthrough-calib-f.md)에 있다.
+`GameNetDriver` 안에서는 자원 노드가 52.30%(30.05초, 14,242,848회 = 5,001 × 8 × 356), NPC가 9.72%(5.58초), 드라이버 자체가 37.4%(21.51초)이다. 반면 나간 비트는 76.0%가 NPC이고 노드는 60초 동안 576비트뿐이다. 이 수치를 어떻게 읽을지는 [Always Relevant 기준선](../01-baseline/README.md)에서 기준선을 3회 측정한 뒤 다룬다. Insights에서 값을 읽은 과정은 [단계별 기록](../../Docs/Guides/insights-walkthrough-calib-f.md)에 있다.
 
 ## 한계
 
@@ -190,8 +190,8 @@ CSV 값과 Insights 값은 정의가 달라서 같은 이름으로 부르지 않
 - 기준선은 30Hz를 지키지 못한다(60초에 356프레임). 초당 송신량은 서버가 빨라지면 늘어날 수 있으므로 `frames`와 함께 읽어야 한다.
 - AI NPC는 움직이는 리플리케이트 액터의 대역이다. 길 찾기나 행동 트리 같은 AI 비용은 측정하지 않는다.
 - 채집 RPC는 자동 실험용이다. 서버가 대상 탐색과 거리 검사, 호출 간격 제한을 하지만 그 밖의 악의적 호출은 막지 않는다.
-- 이 글의 수치는 보정 실행 한 번씩의 값이다. 3회 중앙값은 [무법지대 측정](../01-baseline/README.md)부터 쓴다.
+- 이 글의 수치는 보정 실행 한 번씩의 값이다. 3회 중앙값은 [Always Relevant 기준선](../01-baseline/README.md)부터 쓴다.
 
 ## 다음
 
-[무법지대 측정](../01-baseline/README.md)에서는 이 규모의 기준선을 3회 측정하고, Insights에서 가장 큰 비용을 찾아 Relevancy, Dormancy, Net Update Frequency 세 기법의 순서를 정한다.
+[Always Relevant 기준선](../01-baseline/README.md)에서는 이 규모의 기준선을 3회 측정하고, Insights에서 가장 큰 비용을 찾아 Relevancy, Dormancy, Net Update Frequency 세 기법의 순서를 정한다.

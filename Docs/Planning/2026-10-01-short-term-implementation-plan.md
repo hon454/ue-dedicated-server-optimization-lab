@@ -555,7 +555,7 @@ git tag post-00-testbed
 
 # 기준선과 첫 번째 기법 (태스크 10\~11)
 
-## 태스크 10: 포스팅 1, 무법지대 측정
+## 태스크 10: 포스팅 1, Always Relevant 기준선
 
 **파일:** 생성 `Posts/01-baseline/README.md`
 

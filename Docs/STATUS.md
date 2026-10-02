@@ -20,7 +20,7 @@
 | 포스팅 | 상태 | 태그 |
 | --- | --- | --- |
 | 0. 테스트베드와 측정 방법 | 완료 | `post-00-testbed` |
-| 1. 무법지대 측정 | 완료 | `post-01-baseline` |
+| 1. Always Relevant 기준선 | 완료 | `post-01-baseline` |
 | 2. Relevancy와 Net Cull Distance(관련성) | 완료 | `post-02-relevancy` |
 | 3. 자원 노드 Dormancy(휴면) | 완료 | `post-03-dormancy` |
 | 4. AI NPC Net Update Frequency(업데이트 빈도) | 완료 | `post-04-update-frequency` |

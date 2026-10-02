@@ -16,12 +16,12 @@
 | # | 제목 | 내용 | 상태 |
 | --- | --- | --- | --- |
 | 0 | [테스트베드와 측정 방법](Posts/00-testbed/README.md) | 시나리오 규모와 근거, 트레이스 수집법, 지표의 정의, 측정의 한계 | 완료 |
-| 1 | [무법지대 측정](Posts/01-baseline/README.md) | 최적화가 없는 기준선의 수치, Insights에서 가장 큰 비용을 찾는 과정 | 완료 |
+| 1 | [Always Relevant 기준선](Posts/01-baseline/README.md) | 최적화가 없는 기준선의 수치, Insights에서 가장 큰 비용을 찾는 과정 | 완료 |
 | 2 | [Relevancy와 Net Cull Distance](Posts/02-relevancy/README.md) | 멀리 있는 액터를 보내지 않기. 기준선이 끈 엔진 기본 Net Cull Distance 150m의 복원 | 완료 |
 | 3 | [자원 노드 Dormancy](Posts/03-dormancy/README.md) | 거의 변하지 않는 액터를 프레임마다 확인하지 않기. Dormancy가 줄인 비용과 줄이지 못한 비용 | 완료 |
 | 4 | [AI NPC Net Update Frequency](Posts/04-update-frequency/README.md) | 계속 움직이는 다수 액터의 리플리케이션 빈도 낮추기. 대역폭은 절반이 됐고 CPU는 거의 그대로였던 이유 | 완료 |
 
-세 기법의 순서는 기준선에서 가장 큰 비용을 보고 정했다. 이유는 [무법지대 측정의 "선택"](Posts/01-baseline/README.md#선택)에 있다.
+세 기법의 순서는 기준선에서 가장 큰 비용을 보고 정했다. 이유는 [Always Relevant 기준선의 "선택"](Posts/01-baseline/README.md#선택)에 있다.
 
 ## 진행 방식
 
