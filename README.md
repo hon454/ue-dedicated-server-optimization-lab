@@ -204,6 +204,7 @@ Docs/                      작업 문서
 | [현재 상태](Docs/STATUS.md) | 진행 상황, 확정값, 측정 결과 |
 | 작업 기록: [테스트베드](Docs/Worklog/00-testbed.md), [포스팅 1](Docs/Worklog/01-baseline.md) | 끝낸 작업의 경위, 실패한 실행, 보정 실행 수치 |
 | [Insights 읽는 순서](Docs/Guides/insights-reading.md), [단계별 기록](Docs/Guides/insights-walkthrough-calib-f.md) | 트레이스에서 수치를 읽는 절차와, 화면을 하나씩 캡처하며 읽은 예 |
+| [문제 해결](Docs/Guides/troubleshooting.md) | 빌드나 실행이 실패했을 때의 증상별 대처와 근거 위치 |
 | [PC 사양](Docs/Planning/pc-specs.md) | 측정 환경 |
 
 ## 다음 주제
