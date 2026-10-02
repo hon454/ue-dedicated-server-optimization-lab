@@ -6,6 +6,7 @@
 
 **단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. `d165aea`까지 푸시했고 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 남은 것은 사용자의 14.5(전체 읽기)다. 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있고, 태스크 9.4\~9.5와 14는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 9.4\~9.5, 14"에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
+- 코드 정리 A1\~A7(2026-10-03): 스크립트의 실행 인자 공통화와 검사 추가, 템플릿 흔적 제거, 폰 블루프린트 로드 실패 검사. 서버의 틱 경로는 바꾸지 않았다. 빌드 성공, 작은 규모 실행 `refactor-a-r1`이 종료 코드 0(`frames` 903, `work_avg_ms` 1.509, 확정 규모가 아니라 비교에 쓰지 않는다). 확정 규모의 재측정은 하지 않았다. 하지 않고 남긴 후보는 컨트롤러의 화면 표시 분리, 그리고 서버 측정 경로를 건드려 확인 측정이 필요한 네 가지(시작 조건을 게임 모드로 옮기기, 틱 예산을 넷 드라이버에서 읽기, 영상용 NPC를 하위 클래스로 빼기, 설정 구조체 나누기)다.
 - 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
 
 ## 다음 할 일
@@ -28,13 +29,13 @@
 
 태스크 8에서 확정했다(2026-10-01).
 
-- 빌드: `powershell -ExecutionPolicy Bypass -File Scripts/build.ps1` (2026-10-01 성공 확인. 에디터가 열려 있으면 DLL 잠금으로 실패한다)
+- 빌드: `powershell -ExecutionPolicy Bypass -File Scripts/build.ps1` (`UnrealEditor`가 떠 있으면 스크립트가 빌드를 거부한다. 에디터나 다른 체크아웃의 실행이 끝난 뒤에 한다)
 - 시나리오 실행(확정 규모, `-Label`과 `-Runs` 없이): `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Clients 8 -Nodes 5000 -Npcs 300 -Warmup 30 -Measure 60`. 측정할 때는 `-Label <새 라벨> -Runs 3`을 더한다. 서버 마스크는 스크립트 기본값 252(논리 프로세서 2\~7)이고 트레이스는 켜진다. `calib-f-r1`이 이 조건의 실행이다.
 - 작은 규모 확인용: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 라벨> -Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`
 - 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 에이전트도 문서 편집을 포함해 다른 작업을 하지 않는다(`calib-g-r1` 실행 중의 문서 편집, [Worklog/00-testbed.md](Worklog/00-testbed.md) "태스크 9.1\~9.3"). 서버만 논리 프로세서 2\~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
 - 구성 사이의 비교는 같은 화면 조건에서 연달아 잰 묶음끼리 한다. 코드가 같은 `dormancy2`(원격 데스크톱 화면)와 `dormancy6`(본체 화면)의 `work_avg_ms` 중앙값이 1.066 달랐다([Worklog/04-update-frequency.md](Worklog/04-update-frequency.md) "태스크 11.1\~11.4").
 - Insights: `powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라벨>-rN`. 읽는 순서는 [insights-reading.md](Guides/insights-reading.md)에 있다.
-- 두 클라이언트 영상(1번 내려다보기, 2번 3인칭 이동): 이 PC의 150% 배율에서 두 창은 959,-47과 1919,-47(각 962×588)이라 `capture-video.ps1 -Region "959,0,1922,541" -NoMouse`로 찍는다. `-Region`은 창을 맨 위로 올리지 않으므로, 찍기 전에 두 창(명령줄 `-LabSlot=1`, `-LabSlot=2`)을 `SetWindowPos`로 TOPMOST로 올리고 끝나면 되돌린다(`visual2`, `visual3`에서 이렇게 찍었다). 8개 창 전체 화면은 같은 방법으로 여덟 창을 모두 올리고 `-Region "0,0,3840,1126" -NoMouse -AllowMeasuring -Out <이름>.png`로 한 프레임을 찍는다(창은 4열 2줄, 각 962×588이고 영역이 창으로 모두 덮인다. `visual11`).
+- 두 클라이언트 영상(1번 내려다보기, 2번 3인칭 이동): 이 PC의 150% 배율에서 두 창은 959,-47과 1919,-47(각 962×588)이라 `capture-video.ps1 -Region "959,0,1922,541" -RaiseSlots "1,2" -NoMouse`로 찍는다. `-Region`은 창을 맨 위로 올리지 않으므로 `-RaiseSlots`로 두 창(명령줄 `-LabSlot=1`, `-LabSlot=2`)을 찍는 동안 TOPMOST로 올린다(`visual2`, `visual3`에서는 같은 일을 `SetWindowPos`로 직접 했다. `-RaiseSlots`는 창이 없을 때 거부하는 것만 확인했고 실제 녹화에는 아직 쓰지 않았다). 8개 창 전체 화면은 `-RaiseSlots "0,1,2,3,4,5,6,7" -Region "0,0,3840,1126" -NoMouse -AllowMeasuring -Out <이름>.png`로 한 프레임을 찍는다(창은 4열 2줄, 각 962×588이고 영역이 창으로 모두 덮인다. `visual11`).
 - 지난 태그의 빌드에서 녹화할 때: 태그를 체크아웃해 빌드한 뒤 `git restore --source=main --worktree Scripts/capture-video.ps1`로 지금의 녹화 스크립트만 꺼내 쓴다(태그 시점의 스크립트는 GIF 기본값이 다르다). 끝나면 `git restore Scripts/capture-video.ps1`로 되돌리고 main으로 돌아와 다시 빌드한다(`visual11`).
 - NPC 하나의 움직임을 전후로 찍을 때: `run-scenario.ps1`에 `-ShowcaseNpc`를 더한다(`visualN` 라벨에서만 받는다. 0번 자리 앞 10m를 왕복하는 NPC 하나가 더 생긴다). 0번 창의 클라이언트 영역은 0,0 960×540이라 `capture-video.ps1 -Region "0,0,960,540" -Fps 60 -NoMouse -AllowMeasuring -Out <이름>.mp4`로 찍고, 자르기와 느린 재생은 ffmpeg로 따로 한다(`visual9`, `visual10`. 가공 값은 [candidates.md](../Posts/04-update-frequency/candidates.md) 6절).
 - 수동 확인을 에이전트가 할 때: `run-manual.ps1`은 `Read-Host`로 기다리므로 `Start-Process powershell`로 새 창에 띄우고, 끝나면 `UnrealEditor`와 그 창을 종료한다(에이전트의 `Stop-Process`는 거부된다. troubleshooting.md). 컴퓨터 조작 권한은 `UnrealEditor.exe`의 전체 경로로 요청한다. 관찰자 창을 클릭하면 마우스가 카메라를 돌리므로 클릭한 뒤 커서를 옮겨 카메라를 맞춘다(커서의 창 안 x좌표에 따라 돌고, 조작 도구 좌표로 1px에 약 0.3°, 창 폭만큼만 돌릴 수 있다). 달리기(`shift+w`) 28초가 약 275m다(2026-10-02, 포스팅 3의 정확성 확인).

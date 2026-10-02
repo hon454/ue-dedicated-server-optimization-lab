@@ -1,8 +1,6 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
 
-/** Main log category used across the project */
+/** 모듈 공통 로그 카테고리 */
 DECLARE_LOG_CATEGORY_EXTERN(LogDSOptLab, Log, All);

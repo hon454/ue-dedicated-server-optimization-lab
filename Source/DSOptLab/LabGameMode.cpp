@@ -3,7 +3,10 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
+#include "HAL/PlatformMisc.h"
 #include "Math/RandomStream.h"
+#include "DSOptLab.h"
+#include "LabCharacter.h"
 #include "LabHUD.h"
 #include "LabNpc.h"
 #include "LabPlayerController.h"
@@ -26,6 +29,18 @@ ALabGameMode::ALabGameMode()
 void ALabGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// 블루프린트 폰을 읽지 못하면 엔진 기본 폰으로 조용히 실행되어, 다른 폰으로 잰 수치가 CSV에 남는다.
+	if (!DefaultPawnClass || !DefaultPawnClass->IsChildOf(ALabCharacter::StaticClass()))
+	{
+		UE_LOG(LogDSOptLab, Error, TEXT("DefaultPawnClass is '%s', not a child of ALabCharacter. The player pawn blueprint failed to load."), *GetNameSafe(DefaultPawnClass));
+		if (FLabScenarioConfig::Get().bMeasure)
+		{
+			FPlatformMisc::RequestExitWithStatus(false, 1);
+			return;
+		}
+	}
+
 	SpawnWorld();
 
 	// 측정 실행에서는 측정 서브시스템이 모든 클라이언트를 확인한 뒤 시작 신호를 낸다.

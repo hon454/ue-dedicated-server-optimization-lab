@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -14,39 +12,36 @@ class UInputMappingContext;
 struct FInputActionValue;
 
 /**
- *  A simple player-controllable third person character
- *  Implements a controllable orbiting camera
+ * 3인칭 플레이어 캐릭터. 템플릿의 캐릭터 클래스에 달리기를 더했다.
+ * 메시, 애니메이션, 입력 액션은 이 클래스를 부모로 하는 블루프린트(ALabGameMode가 경로로 읽는다)에서 지정한다.
  */
 UCLASS(abstract)
 class DSOPTLAB_API ALabCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
+	/** 카메라를 캐릭터 뒤에 두는 스프링 암 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+	TObjectPtr<USpringArmComponent> CameraBoom;
 
-	/** Follow camera */
+	/** 스프링 암 끝의 카메라 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
-	
+	TObjectPtr<UCameraComponent> FollowCamera;
+
 protected:
 
-	/** Jump Input Action */
+	/** 블루프린트에서 지정하는 입력 액션 */
 	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 
-	/** Move Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
-	/** Look Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* LookAction;
+	TObjectPtr<UInputAction> LookAction;
 
-	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* MouseLookAction;
+	TObjectPtr<UInputAction> MouseLookAction;
 
 	/** 달리기 입력. 에디터 에셋 없이 SetupPlayerInputComponent에서 만든다. */
 	UPROPERTY(Transient)
@@ -58,37 +53,30 @@ protected:
 
 public:
 
-	/** Constructor */
 	ALabCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
 
-	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-protected:
-
-	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
-
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
 public:
 
-	/** Handles move inputs from either controls or UI interfaces */
+	// 아래 DoMove, DoLook, DoJumpStart, DoJumpEnd는 블루프린트의 그래프(터치 인터페이스 구현)가 부르고 있어서 지우지 않는다.
+
+	/** 컨트롤러의 요(yaw)를 기준으로 앞뒤, 좌우 이동 입력을 넣는다. */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoMove(float Right, float Forward);
 
-	/** Handles look inputs from either controls or UI interfaces */
+	/** 컨트롤러에 요와 피치 입력을 넣는다. */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
-	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpStart();
 
-	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
@@ -102,10 +90,6 @@ public:
 
 public:
 
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };
-
