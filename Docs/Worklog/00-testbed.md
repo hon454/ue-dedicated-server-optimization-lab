@@ -134,3 +134,19 @@ STATUS.md의 "태스크 14에서 한 일"에 있던 기록이다. 포스팅에 �
 
 - 코드 정리(2026-10-03, 커밋 `d4bc1f2`\~`0aa7599`): 스크립트의 실행 인자 공통화와 검사 추가, 템플릿 흔적 제거, 폰 블루프린트를 `Content/Blueprints/BP_LabCharacter`로 이름 변경(Insights의 폰 타이머 이름은 이제 `BP_LabCharacter_C`), 화면 표시를 `ALabHUD`로 분리, 시작 조건을 게임 모드로 옮김, 틱 예산을 넷 드라이버에서 읽음, 영상용 NPC를 `ALabShowcaseNpc`로 분리, 설정 구조체를 공통·서버·클라이언트로 나눔. 실행 인자와 CSV 열은 그대로다. 작은 규모 확인은 `refactor-a-r1`\~`refactor-d-r1`, `visual12-r1`(모두 종료 코드 0, 비교에 쓰지 않는다).
 - 정리 전후 확인 측정(2026-10-03, 확정 규모, 같은 화면 조건에서 연달아 3회씩): 태그 `post-04-update-frequency`의 소스로 잰 `refactor-before`는 `work_avg_ms` 13.004 / 12.789 / 13.136(중앙값 13.004, 변동 폭 0.347), `netflush_avg_ms` 중앙값 9.186, `work_p99_ms` 중앙값 19.756, `out_bytes_per_sec_per_conn` 2,402\~2,403, `frames` 1,787\~1,796. 지금 main으로 잰 `refactor-after2`는 `work_avg_ms` 12.850 / 12.801 / 14.794(중앙값 12.850, 변동 폭 1.993), `netflush_avg_ms` 중앙값 9.040, `work_p99_ms` 중앙값 21.210, `open_actor_channels_per_conn` 20, `saturated_ratio` 0.000. `work_avg_ms`, `netflush_avg_ms`의 중앙값 차이(-0.154, -0.146)는 변동 폭 안이라 구별되지 않는다. `refactor-after2`의 `r1`, `r3`은 `frames`가 1,271, 1,287로 서버가 약 21Hz로 돌았고(초당 값 `out_bytes_per_sec_per_conn`도 1,960, 1,979로 낮다) `r3`은 `work_avg_ms`도 높다. 이 느린 틱은 코드 변경과 무관하다. 서버 콘솔 창이 최소화되거나 가려지면 Windows 11이 타이머 해상도 요청을 무시해 틱 주기가 46.875ms가 된다(engine-notes.md 아절, `timerdiag-*`). `relevancy2-r1`, `dormancy2-r1`도 같은 현상이다. [ADR-0012](../Decisions/0012-server-timer-resolution.md)(승인, 2026-10-03)에 따라 `run-scenario.ps1`과 `run-manual.ps1`이 서버 프로세스의 타이머 스로틀을 끈다. 적용 뒤 서버 창을 최소화한 작은 규모 실행 `timerfix-min-r1`이 `frames` 902였고, 확정 규모 `timerfix` 세 실행은 `frames` 1,788 / 1,784 / 1,796, `work_avg_ms` 12.909 / 13.945 / 13.484(중앙값 13.484, 변동 폭 1.036), `out_bytes_per_sec_per_conn` 2,401~2,404다. 느린 틱은 없어졌고 `work_avg_ms`의 변동 폭은 남아 있다. `refactor-after-r1`은 측정 중 선호도 재설정으로 실패해 수치를 쓰지 않는다.
+
+## 2026-10-03 태스크 14.5: 포스팅 다시 쓰기 (실행 없음)
+
+STATUS.md의 "다음 할 일"에 있던 기록이다.
+
+1. **[사람] 다시 쓴 포스팅과 README를 푸시하고 GitHub에서 확인한다(태스크 14.5의 결과).** 사용자가 다섯 편을 읽고 낸 문제(글이 길고 수치가 나열됨, 개념 설명과 원리가 없음)로 틀을 바꿨다([ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 규칙은 [posting.md](Guides/posting.md)). 다섯 편을 모두 새 틀로 다시 쓰고 폴더마다 `measurements.md`를 만들었다(2026-10-03). 본문은 3,700\~5,700자이고(전에는 10,000\~15,000자) 모든 문장이 80자 이하다. 브랜치 `docs/posting-rewrite`에서 작업해 main에 병합했고 워크트리는 정리했다(2026-10-03). Relevancy 글은 사용자가 승인했다. 나머지 네 편의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이라, 읽고 고칠 곳이 나오면 알려 준다. GitHub에서 Mermaid(흐름도, 상태 도식, 차트)와 SVG 애니메이션 두 개가 그려지는지는 푸시한 뒤에 확인한다. 루트 README도 같은 규칙으로 다시 썼고(2026-10-03 사용자 지시), 누적 수치의 근거는 [Posts/measurements.md](../Posts/measurements.md)로 옮겼다. 시리즈 웹 페이지(GitHub Pages, Source는 "GitHub Actions"로 설정함)를 만들지도 그 뒤에 정한다([backlog.md](backlog.md) "작업 중 떠오른 것"). 이미 붙인 태그는 옮기지 않는다.
+2. 푸시 뒤에 고칠 곳이 나오면 에이전트가 고치고 커밋한다. 푸시는 사용자가 정한 시점에 한다.
+
+STATUS.md의 "사용자에게 요청한 일"에 있던 항목이다. 옛 틀의 "관찰", "선택" 섹션과 본문에 있던 Insights 캡처를 가리키는 요청이라, 글을 새 틀로 다시 쓰면서 닫았다. 캡처는 각 포스팅의 `measurements.md`로 옮겼다.
+
+- **포스팅 4 확인.** [포스팅 4](../Posts/04-update-frequency/README.md)의 "관찰"과 "선택"은 인터뷰 답(대역폭 중심, 포스팅 1의 이유와 전제가 채워졌는지 확인)을 에이전트가 문장으로 옮긴 것이다. 초안과 끊김 영상은 승인됐다(2026-10-02). 남은 것은 Insights 캡처 네 장과 `before-clip.gif`, `after-clip.gif`를 보고 다른 장면이 좋으면 바꾸는 것이다.
+- **포스팅 3 확인.** [포스팅 3](../Posts/03-dormancy/README.md)의 "정확성 확인"에 넣은 전후 영상(`before-clip.gif`, `after-clip.gif`)과 세 항목의 표, 다시 찍은 `after-timing.png`, `after-network.png`를 보고 다른 장면이 좋으면 바꾼다. 요약의 내려다보기 화면은 순번 04(t=75s)다.
+- **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인). "관찰"의 서버 프레임 시간 문장은 ADR-0010에 맞춰 에이전트가 고쳤다(아직 확인하지 않음).
+- **태스크 14.5.** 위 "다음 할 일". 포스팅 0의 `timing.png`, `network.png`도 다른 장면이 좋으면 바꾼다.
+
+푸시와 GitHub 확인(2026-10-03): 사용자 지시로 에이전트가 main을 푸시했다(`87c83f9`까지). GitHub에서 루트 README의 차트(틱 예산 선 포함)와 `relevancy-map.svg`의 애니메이션, 기준선 글의 공통 흐름도(`subgraph` 포함), Dormancy 글의 상태 도식과 흐름도가 그려지는 것을 브라우저로 확인했다. 테스트베드, Relevancy, Net Update Frequency 글의 흐름도와 차트는 같은 종류의 도식이라 따로 열어 보지 않았다. 폭이 좁은 화면에서는 루트 README 차트의 마지막 x축 이름이 조금 잘린다.
