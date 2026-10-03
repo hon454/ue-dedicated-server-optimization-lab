@@ -8,10 +8,12 @@
 #include "GameFramework/Pawn.h"
 #include "Misc/Paths.h"
 #include "LabCharacter.h"
+#include "LabInventoryComponent.h"
 #include "LabNpc.h"
 #include "LabPlayerController.h"
 #include "LabResourceNode.h"
 #include "LabScenarioConfig.h"
+#include "LabStateComponent.h"
 #include "UnrealClient.h"
 
 void ALabHUD::Tick(float DeltaSeconds)
@@ -63,10 +65,17 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 		}
 	}
 
+	// 2막의 확장 요소. 서버가 붙여서 보낸 컴포넌트만 센다. 1막의 실행에서는 모두 0이다.
+	int32 NumStates = 0;
+	int32 NumInventories = 0;
+	int32 NumOwnItems = 0;
+	int32 OwnFirstItemId = 0;
+
 	int32 NumNpcs = 0;
 	for (TActorIterator<ALabNpc> It(World); It; ++It)
 	{
 		++NumNpcs;
+		NumStates += It->FindComponentByClass<ULabStateComponent>() ? 1 : 0;
 		if (Config.bTopDown)
 		{
 			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, 7.f, FColor::Red, false, -1.f, SDPG_Foreground);
@@ -78,6 +87,16 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 	for (TActorIterator<ALabCharacter> It(World); It; ++It)
 	{
 		++NumPlayers;
+		NumStates += It->FindComponentByClass<ULabStateComponent>() ? 1 : 0;
+		if (const ULabInventoryComponent* Inventory = It->FindComponentByClass<ULabInventoryComponent>())
+		{
+			++NumInventories;
+			if (*It == &ControlledPawn)
+			{
+				NumOwnItems = Inventory->GetNumItems();
+				OwnFirstItemId = Inventory->GetFirstItemId();
+			}
+		}
 		if (Config.bTopDown)
 		{
 			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, 9.f,
@@ -97,6 +116,12 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 		FString::Printf(TEXT("%s | slot=%d %s %s | %s"), *FLabScenarioConfig::Get().Label, Config.Slot, Duty, View, *Elapsed),
 		FString::Printf(TEXT("on this client: nodes=%d npcs=%d players=%d | pos x=%.0fm y=%.0fm"), NumNodes, NumNpcs, NumPlayers, Location.X, Location.Y),
 	};
+
+	// 맨 앞 칸의 아이템 번호는 인벤토리의 앞 칸이 지워질 때마다 바뀐다.
+	if (NumStates > 0 || NumInventories > 0)
+	{
+		OverlayLines.Add(FString::Printf(TEXT("states=%d inventories=%d | own items=%d first id=%d"), NumStates, NumInventories, NumOwnItems, OwnFirstItemId));
+	}
 }
 
 void ALabHUD::UpdateTopDown(ALabPlayerController& Controller, const APawn& ControlledPawn)

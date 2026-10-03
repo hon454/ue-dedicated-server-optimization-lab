@@ -2,9 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Math/RandomStream.h"
 #include "LabGameMode.generated.h"
 
 class ALabPlayerController;
+class ULabInventoryComponent;
+class ULabStateComponent;
 
 /** 서버 시작 시 월드를 생성하고, 공통 시작 신호로 NPC와 플레이어를 출발시킨다. */
 UCLASS()
@@ -34,7 +37,25 @@ private:
 	void PlaceAndStart(ALabPlayerController& Player);
 	int32 CountReadyPlayers() const;
 
+	// 2막의 확장 요소(상태 값, 인벤토리). 인자를 주지 않으면 아무것도 만들지 않는다.
+	void AddStateComponent(AActor& Actor);
+	void AddPlayerElements(ALabPlayerController& Player);
+	void StartElementTimers();
+	void ChangeOneState();
+	void ChurnOneInventory();
+
 	bool bScenarioStarted = false;
+
+	/** 상태 값을 붙인 순서. NPC는 스폰한 순서, 플레이어는 자리 번호 순서라서 실행마다 같다. */
+	TArray<TWeakObjectPtr<ULabStateComponent>> StateComponents;
+
+	/** 인벤토리를 붙인 순서(자리 번호 순서). */
+	TArray<TWeakObjectPtr<ULabInventoryComponent>> Inventories;
+
+	FRandomStream StateRng;
+	int32 NextChurnIndex = 0;
+	FTimerHandle StateTimer;
+	FTimerHandle ChurnTimer;
 
 	/** 같은 자리를 여러 플레이어가 쓸 때 겹치지 않게 옆으로 밀기 위한 사용 횟수. */
 	TMap<int32, int32> SlotUseCount;

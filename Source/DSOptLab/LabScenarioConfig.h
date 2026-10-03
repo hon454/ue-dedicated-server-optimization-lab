@@ -42,6 +42,12 @@ struct FLabServerConfig
 	// 2막의 확장 요소. 인자를 주지 않으면 1막의 시나리오다.
 	// 0보다 크면 플레이어를 맵 가운데를 지나는 대각선 위에 이 간격(m)으로 놓고, 자리마다 다른 경로를 돌게 한다.
 	float PlayerSpacingMeters = 0.f;   // -LabPlayerSpacing=
+	// 0보다 크면 NPC와 플레이어 캐릭터에 상태 값(ULabStateComponent)을 붙이고, 액터 하나의 값이 평균 이 간격(초)마다 하나씩 바뀐다.
+	float StateIntervalSeconds = 0.f;  // -LabStateInterval=
+	// 0보다 크면 플레이어 캐릭터에 이 칸 수의 인벤토리(ULabInventoryComponent)를 붙인다.
+	int32 InventoryItems = 0;          // -LabInventoryItems=
+	// 0보다 크면 플레이어마다 이 간격(초)으로 인벤토리의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다.
+	float InventoryChurnSeconds = 0.f; // -LabInventoryChurn=
 
 	/** 수치 CSV의 config 열에 적는 값. 기본값과 다른 인자를 ';'로 잇고, 모두 기본값이면 "default"다. */
 	FString GetConfigName() const;

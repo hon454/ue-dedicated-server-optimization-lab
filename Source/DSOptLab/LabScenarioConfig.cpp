@@ -32,6 +32,9 @@ const FLabServerConfig& FLabServerConfig::Get()
 		C.bNodeDormancy = !FParse::Param(Cmd, TEXT("LabNoNodeDormancy"));
 		FParse::Value(Cmd, TEXT("LabNpcUpdateFrequency="), C.NpcUpdateFrequency);
 		FParse::Value(Cmd, TEXT("LabPlayerSpacing="), C.PlayerSpacingMeters);
+		FParse::Value(Cmd, TEXT("LabStateInterval="), C.StateIntervalSeconds);
+		FParse::Value(Cmd, TEXT("LabInventoryItems="), C.InventoryItems);
+		FParse::Value(Cmd, TEXT("LabInventoryChurn="), C.InventoryChurnSeconds);
 		return C;
 	}();
 	return Config;
@@ -57,6 +60,18 @@ FString FLabServerConfig::GetConfigName() const
 	if (PlayerSpacingMeters != Defaults.PlayerSpacingMeters)
 	{
 		Parts.Add(FString::Printf(TEXT("PlayerSpacing=%g"), PlayerSpacingMeters));
+	}
+	if (StateIntervalSeconds != Defaults.StateIntervalSeconds)
+	{
+		Parts.Add(FString::Printf(TEXT("StateInterval=%g"), StateIntervalSeconds));
+	}
+	if (InventoryItems != Defaults.InventoryItems)
+	{
+		Parts.Add(FString::Printf(TEXT("InventoryItems=%d"), InventoryItems));
+	}
+	if (InventoryChurnSeconds != Defaults.InventoryChurnSeconds)
+	{
+		Parts.Add(FString::Printf(TEXT("InventoryChurn=%g"), InventoryChurnSeconds));
 	}
 	return Parts.IsEmpty() ? TEXT("default") : FString::Join(Parts, TEXT(";"));
 }

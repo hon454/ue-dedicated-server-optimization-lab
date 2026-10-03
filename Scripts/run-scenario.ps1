@@ -22,7 +22,13 @@
     # 2막의 확장 요소. 플레이어 자리의 간격(m). 0이면 인자를 넘기지 않아 1막의 배치(반지름 500m 원)와 경로다.
     # 0보다 크면 자리를 대각선 위에 이 간격으로 놓고, 자리마다 다른 방향으로 한 변 70m 정사각형을 돈다.
     # 밀집은 3, 분산은 300이다(Docs/Planning/2026-10-03-act-2-design.md 3.1).
-    [int]$PlayerSpacing = 0
+    [int]$PlayerSpacing = 0,
+    # NPC와 플레이어 캐릭터에 상태 값 여덟 개를 붙인다. 액터 하나의 값이 평균 이 간격(초)마다 하나씩 바뀐다. 0이면 붙이지 않는다.
+    [double]$StateInterval = 0,
+    # 플레이어 캐릭터에 이 칸 수의 인벤토리를 붙인다. 0이면 붙이지 않는다.
+    [int]$InventoryItems = 0,
+    # 플레이어마다 이 간격(초)으로 인벤토리의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다. 0이면 하지 않는다.
+    [double]$InventoryChurn = 0
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -160,6 +166,15 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($PlayerSpacing -gt 0) {
         $ServerArgs += "-LabPlayerSpacing=$PlayerSpacing"
+    }
+    if ($StateInterval -gt 0) {
+        $ServerArgs += "-LabStateInterval=$StateInterval"
+    }
+    if ($InventoryItems -gt 0) {
+        $ServerArgs += "-LabInventoryItems=$InventoryItems"
+    }
+    if ($InventoryChurn -gt 0) {
+        $ServerArgs += "-LabInventoryChurn=$InventoryChurn"
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")

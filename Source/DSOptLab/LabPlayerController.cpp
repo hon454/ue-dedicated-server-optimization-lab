@@ -7,6 +7,7 @@
 #include "GameFramework/Pawn.h"
 #include "InputMappingContext.h"
 #include "LabGameMode.h"
+#include "LabInventoryComponent.h"
 #include "LabResourceNode.h"
 #include "LabScenarioConfig.h"
 #include "UObject/ConstructorHelpers.h"
@@ -197,5 +198,11 @@ void ALabPlayerController::ServerHarvest_Implementation()
 	if (Nearest)
 	{
 		Nearest->Harvest();
+
+		// 인벤토리가 있으면(-LabInventoryItems=) 채집한 것을 한 칸에 더한다.
+		if (ULabInventoryComponent* Inventory = ControlledPawn->FindComponentByClass<ULabInventoryComponent>())
+		{
+			Inventory->AddHarvest();
+		}
 	}
 }

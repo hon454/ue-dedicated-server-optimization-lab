@@ -8,10 +8,13 @@
 #include "DSOptLab.h"
 #include "LabCharacter.h"
 #include "LabHUD.h"
+#include "LabInventoryComponent.h"
 #include "LabNpc.h"
 #include "LabPlayerController.h"
 #include "LabResourceNode.h"
 #include "LabScenarioConfig.h"
+#include "LabStateComponent.h"
+#include "TimerManager.h"
 #include "UObject/ConstructorHelpers.h"
 
 ALabGameMode::ALabGameMode()
@@ -90,7 +93,11 @@ void ALabGameMode::SpawnWorld()
 	for (int32 Index = 0; Index < Config.NumNpcs; ++Index)
 	{
 		const FVector Location(Rng.FRandRange(-Extent, Extent), Rng.FRandRange(-Extent, Extent), 50.f);
-		GetWorld()->SpawnActor<ALabNpc>(ALabNpc::StaticClass(), Location, FRotator::ZeroRotator, Params);
+		ALabNpc* Npc = GetWorld()->SpawnActor<ALabNpc>(ALabNpc::StaticClass(), Location, FRotator::ZeroRotator, Params);
+		if (Npc && Config.StateIntervalSeconds > 0.f)
+		{
+			AddStateComponent(*Npc);
+		}
 	}
 
 	// 검증용 노드. 0번 자리에서 3m 떨어진 곳에 항상 있다. 채집 담당이 이 노드를 고갈시킨다.
@@ -126,16 +133,97 @@ void ALabGameMode::StartScenario()
 		It->StartWandering();
 	}
 
+	TArray<ALabPlayerController*> PlacedPlayers;
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		ALabPlayerController* Player = Cast<ALabPlayerController>(It->Get());
 		if (Player && Player->IsReady())
 		{
 			PlaceAndStart(*Player);
+			PlacedPlayers.Add(Player);
 		}
 	}
 
+	// 접속한 순서는 실행마다 다를 수 있으므로 자리 번호 순서로 붙인다.
+	PlacedPlayers.StableSort([](const ALabPlayerController& A, const ALabPlayerController& B) { return A.GetSlot() < B.GetSlot(); });
+	for (ALabPlayerController* Player : PlacedPlayers)
+	{
+		AddPlayerElements(*Player);
+	}
+	StartElementTimers();
+
 	OnScenarioStarted.Broadcast();
+}
+
+void ALabGameMode::AddStateComponent(AActor& Actor)
+{
+	ULabStateComponent* State = NewObject<ULabStateComponent>(&Actor);
+	State->RegisterComponent();
+	StateComponents.Add(State);
+}
+
+void ALabGameMode::AddPlayerElements(ALabPlayerController& Player)
+{
+	const FLabServerConfig& Config = FLabServerConfig::Get();
+	APawn* Pawn = Player.GetPawn();
+	if (!Pawn)
+	{
+		return;
+	}
+
+	if (Config.StateIntervalSeconds > 0.f && !Pawn->FindComponentByClass<ULabStateComponent>())
+	{
+		AddStateComponent(*Pawn);
+	}
+
+	if (Config.InventoryItems > 0 && !Pawn->FindComponentByClass<ULabInventoryComponent>())
+	{
+		ULabInventoryComponent* Inventory = NewObject<ULabInventoryComponent>(Pawn);
+		Inventory->RegisterComponent();
+		// 자리마다 다른 시드라서 인벤토리의 내용이 서로 다르고, 실행마다 같다.
+		Inventory->Fill(Config.InventoryItems, Config.Seed + 1000 + Player.GetSlot());
+		Inventories.Add(Inventory);
+	}
+}
+
+void ALabGameMode::StartElementTimers()
+{
+	const FLabServerConfig& Config = FLabServerConfig::Get();
+
+	// 타이머 하나가 전체를 돌아가며 바꾼다. 주기를 대상의 수로 나눠서, 대상 하나로 보면 인자로 준 간격이 된다.
+	// 프레임이 주기보다 길면 타이머 매니저가 밀린 횟수만큼 한 프레임에 부르므로(TimerManager.cpp의 CallCount)
+	// 서버가 느린 구성에서도 초당 바뀌는 횟수가 같다. 시작 신호 뒤에 들어온 플레이어는 주기에 반영하지 않는다.
+	if (Config.StateIntervalSeconds > 0.f && StateComponents.Num() > 0)
+	{
+		StateRng.Initialize(Config.Seed + 1);
+		GetWorldTimerManager().SetTimer(StateTimer, this, &ALabGameMode::ChangeOneState,
+			Config.StateIntervalSeconds / StateComponents.Num(), true);
+	}
+
+	if (Config.InventoryChurnSeconds > 0.f && Inventories.Num() > 0)
+	{
+		GetWorldTimerManager().SetTimer(ChurnTimer, this, &ALabGameMode::ChurnOneInventory,
+			Config.InventoryChurnSeconds / Inventories.Num(), true);
+	}
+}
+
+void ALabGameMode::ChangeOneState()
+{
+	// 난수는 대상이 사라졌어도 같은 횟수만큼 뽑아, 남은 대상의 순서가 달라지지 않게 한다.
+	const int32 Index = StateRng.RandHelper(StateComponents.Num());
+	if (ULabStateComponent* State = StateComponents[Index].Get())
+	{
+		State->ChangeOne(StateRng);
+	}
+}
+
+void ALabGameMode::ChurnOneInventory()
+{
+	if (ULabInventoryComponent* Inventory = Inventories[NextChurnIndex % Inventories.Num()].Get())
+	{
+		Inventory->Churn();
+	}
+	++NextChurnIndex;
 }
 
 int32 ALabGameMode::CountReadyPlayers() const
@@ -157,6 +245,7 @@ void ALabGameMode::HandlePlayerReady(ALabPlayerController& Player)
 	if (bScenarioStarted)
 	{
 		PlaceAndStart(Player);
+		AddPlayerElements(Player);
 	}
 	else if (CountReadyPlayers() >= FLabServerConfig::Get().ExpectedClients)
 	{
