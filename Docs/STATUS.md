@@ -15,7 +15,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 21(포스팅 5: 테스트베드 확장과 새 기준선).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 3. 21.1은 끝났다(2026-10-04, 기준선 `act2-baseline1` 3회, 아래 "측정 결과"와 "기준선 조건"). 분산 배치의 비교는 새로 재지 않고 20.4a의 `layout-dense`, `layout-apart` 묶음을 포스팅 5에 쓴다(사용자 결정, 2026-10-04. 같은 빌드로 번갈아 쟀고, Always Relevant 기준선은 배치와 상관없이 모든 연결이 모든 액터를 받아 분산 기준선은 배치가 아니라 월드의 액터 수를 비교하게 된다). 21.2는 Timing Insights 값과 자동 스크린샷 후보까지 [candidates.md](../Posts/05-expanded-testbed/candidates.md)에 썼다(창 없이 내보내기로 읽었다). 남은 것은 Networking Insights의 비트 수와 Insights 캡처다(창과 컴퓨터 조작 권한이 필요하다, candidates.md 6절과 9절). 다음은 21.3(포스팅의 틀에서 뺄 섹션을 사용자와 먼저 정한다), 21.4(태그)다. 그 뒤는 구현 계획의 단계 순이고([ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다), 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
+2. **태스크 21(포스팅 5: 테스트베드 확장과 새 기준선).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 3. 21.1은 끝났다(2026-10-04, 기준선 `act2-baseline1` 3회, 아래 "측정 결과"와 "기준선 조건"). 분산 배치의 비교는 새로 재지 않고 20.4a의 `layout-dense`, `layout-apart` 묶음을 포스팅 5에 쓴다(사용자 결정, 2026-10-04. 같은 빌드로 번갈아 쟀고, Always Relevant 기준선은 배치와 상관없이 모든 연결이 모든 액터를 받아 분산 기준선은 배치가 아니라 월드의 액터 수를 비교하게 된다). 21.2도 끝났다: Timing과 Networking Insights 값, Insights 캡처 두 장, 자동 스크린샷 후보가 [candidates.md](../Posts/05-expanded-testbed/candidates.md)에 있다. 21.3의 틀은 정했다(요약, 무엇을 더했는가, 새 기준선, 밀집과 분산, 배운 것과 한계. [posting.md](Guides/posting.md) "틀", 2026-10-04 사용자 결정). 다음은 21.3의 초안(새 기준선 섹션은 사용자의 판단을 옮겨 쓰고 승인받는다, 시각 자료는 사용자가 고른다)과 `measurements.md`, 그 뒤 21.4(태그)다. 그 뒤는 구현 계획의 단계 순이고([ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다), 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
 
 ## 포스팅 진행
 
@@ -83,7 +83,7 @@
 | 송신 한도에 포화되지 않음(포화되면 한도를 올린다. 2026-10-01 결정) | 예(한도를 350,000으로 올린 뒤) | 엔진 기본 한도에서는 `saturated_ratio` 1.000(`calib-a-r1`). 350,000에서 0.000(`calib-f-r1`), 측정 구간에 `saturated_replications`의 앞 숫자가 211에서 늘지 않음 |
 | 2막: 초기 전송 완료 | 예 | 서버 로그: `open_actor_channels_per_conn`이 측정 시작 19초, 16초, 20초 전(`r1`, `r2`, `r3`)에 5,871에 도달해 더 늘지 않음 |
 | 2막: 지속적인 예산 초과 | 예 | 세 실행 모두 `over_budget_frames` = `frames`(279, 278, 272). `work_avg_ms` 중앙값 215.801은 틱 예산 33.3ms의 6.47배 |
-| 2막: 가장 큰 비용이 네트워크 | CSV로는 예. Insights는 21.2에서 읽는다 | `netflush_avg_ms` ÷ `work_avg_ms` = 206.944 ÷ 215.801 = 95.9%(중앙값). 보정의 `calib2-d3-r1` 트레이스에서 `GameNetDriver`가 `WorldTick`의 96.1%. 판단은 사용자가 한다 |
+| 2막: 가장 큰 비용이 네트워크 | 예(사용자 판단, 2026-10-04) | 세 실행의 Insights 측정 구간에서 `GameNetDriver`가 `WorldTick`의 95.74\~95.85%. CSV로는 206.944 ÷ 215.801 = 95.9%(중앙값). [candidates.md](../Posts/05-expanded-testbed/candidates.md) 2절 |
 | 2막: 송신 한도에 포화되지 않음 | 예 | 세 실행 모두 `saturated_ratio` 0.000. 측정 구간에 `saturated_replications`의 앞 숫자가 259, 258, 261에서 늘지 않음. 30Hz 환산 송신량은 36,994 × 30 ÷ (278 ÷ 60) = 239,529바이트/초로 한도 350,000의 68%(`r2`) |
 
 ## 측정 결과

@@ -3,7 +3,7 @@
 2막 구현 계획 태스크 21.2의 자료다. 에이전트가 2막 기준선 `act2-baseline1`의 트레이스를 창 없이 Unreal Insights 내보내기 명령으로 읽었다([insights-reading.md](../../Docs/Guides/insights-reading.md) "에이전트가 직접 열 때 알아 둘 것"). 이 포스팅은 기법을 고르지 않는다. "관찰"은 사용자가 판단하고(구현 계획 태스크 21.3), 에이전트는 그 판단을 옮겨 초안을 쓴다.
 
 - 대상 실행: `act2-baseline1-r1`\~`r3`(2026-10-04 00:47\~00:55, 본체 화면, `0f689c2` 소스의 빌드). 확정 명령(클라이언트 8, 자원 노드 5,000, 맵 전체의 NPC 300, 준비 30초, 측정 60초, 서버 마스크 252, 송신 한도 350,000, 트레이스 켬)에 2막의 확정값 `-PlayerSpacing 3 -NpcsNearPlayers 50 -StateInterval 5 -InventoryItems 200 -InventoryChurn 4 -Buildings 500 -BuildInterval 1`과 기준선 인자 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`을 더했다. CSV 수치와 기준선의 네 조건은 [STATUS.md](../../Docs/STATUS.md)의 "측정 결과"와 "기준선 조건"에 있다. `work_avg_ms`의 중앙값 실행은 `r2`(215.801)다.
-- 1\~4절은 내보낸 값과 그 값으로 계산한 값이다. 계산에는 식을 적었다. 7절 "에이전트 의견"만 해석이다.
+- 1\~4절은 내보낸 값과 그 값으로 계산한 값이고, 6절은 Networking Insights 창에서 읽은 값이다. 계산에는 식을 적었다. 7절 "에이전트 의견"만 해석이다.
 - 프레임당 값은 Incl ÷ `WorldTick` Count다. "한 번"은 Incl ÷ Count(연결 하나가 액터 하나를 한 프레임에 처리하는 것)다.
 
 ## 1. 측정 구간
@@ -86,7 +86,26 @@
 
 ## 6. 연결 하나의 패킷 (Networking Insights)
 
-**아직 읽지 않았다.** 비트 수는 Networking Insights 창을 열어야 하고, 컴퓨터 조작 권한(`G:\Epic Games\UE_Source\Engine\Binaries\Win64\UnrealInsights.exe`)이 필요하다. 읽을 것은 `act2-baseline1-r2`의 `Game Instance 0 [Server]`, `Connection 0`, `Outgoing`에서 측정 구간(92.2855\~152.3626초)의 `Actor`, `LabResourceNode`, `LabNpc`, `LabBuilding`, `BP_LabCharacter_C`, `LabInventoryComponent`, `LabStateComponent`, `ReplicatedMovement`, `PacketHeaderAndInfo`의 Count와 Incl이다. 세 기법을 적용한 구성의 같은 표는 Worklog "태스크 20.4: `layout-dense1-r1`의 Networking Insights 값"에 있다.
+사용자가 컴퓨터 조작 권한을 허용해 `act2-baseline1-r2`를 창(3000×2080)에서 읽었다(2026-10-04). `Game Instance 0 [Server]`, `Connection 0`(0번 자리, 채집 담당), `Outgoing`이다. 패킷 막대 툴팁의 Engine Frame Number로 측정 구간의 첫 프레임 1,164(Timestamp 1분 32.53초)와 마지막 프레임 1,441(2분 32.38초)이 든 막대를 찾아 클릭과 Shift-클릭으로 골랐다. 고른 범위는 2,300패킷, 59.855초다. 화면 한 픽셀에 패킷 네 개가 들어가 경계가 한 프레임까지 어긋날 수 있다.
+
+| Net Stats 줄 | Count | Incl(비트) | I.Avg | `Actor`에서의 비율 | 초당 바이트 | 초당 횟수 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `Actor` | 100,132 | 17,066,950 | 170 | 100% | 35,642 | 1,672.9 |
+| `LabNpc` | 96,954 | 10,708,961 | 110 | 62.7% | 22,364 | 1,619.8 |
+| `LabInventoryComponent` | 127 | 2,182,034 | 17,181 | 12.8% | 4,557 | 2.1 |
+| `LabStateComponent` | 4,206 | 362,812 | 86 | 2.1% | 758 | 70.3 |
+| `BP_LabCharacter_C` | 2,216 | 320,433 | 144 | 1.9% | 669 | 37.0 |
+| `LabBuilding` | 120 | 4,920 | 41 | 0.03% | 10 | 2.0 |
+| `LabResourceNode` | 9 | 576 | 64 | 0.003% | 1 | 0.2 |
+| `BunchHeader` | 100,132 | 3,436,812 | 34 | 20.1% | 7,177 | |
+| `ReplicatedMovement` | 98,893 | 9,116,809 | 92 | 53.4% | 19,039 | |
+| `PacketHeaderAndInfo` | 2,300 | 189,347 | 82 | (`Actor` 밖) | 395 | |
+
+- 초당 바이트는 Incl ÷ 8 ÷ 59.855, 초당 횟수는 Count ÷ 59.855다. 연결당 송신량은 (17,066,950 + 189,347) ÷ 8 ÷ 59.855 = 36,038바이트/초로 CSV `out_bytes_per_sec_per_conn` 36,994(여덟 연결의 평균)보다 2.6% 작다.
+- **NPC가 대역폭의 대부분이다.** `LabNpc`는 초당 1,619.8번이다. NPC 350개가 매 프레임(278 ÷ 60 = 초당 4.63프레임) 한 번씩 보내진 수(350 × 4.63 = 1,622)와 같다. `ReplicatedMovement` 53.4%는 대부분 NPC의 이동이다.
+- **자원 노드와 건축물은 CPU는 쓰지만 대역폭은 거의 쓰지 않는다.** `LabResourceNode`는 60초에 9번, `LabBuilding`은 120번이다. 값이 바뀌지 않으면 비교만 하고 보내지 않는다. 3절에서 두 클래스는 `GameNetDriver`의 49.8%다(45.1 + 4.7).
+- 인벤토리 여덟 개가 4초마다 바뀌어 초당 2.1번 전송되고 12.8%다(127번, 평균 17,181비트). 세 기법을 적용한 구성의 `layout-dense1-r1`(128번, 17,189비트)과 같은 크기다.
+- 1막 기준선과 같은 모양이다: CPU는 자원 노드, 대역폭은 NPC([기준선 글](../01-baseline/README.md) "문제").
 
 ## 7. 에이전트 의견
 
@@ -97,20 +116,21 @@
 
 ## 8. 확인하지 않은 것
 
-- Networking Insights의 비트 수(6절).
 - 분산 배치에서 서버의 추가 비용이 어디에서 나오는지(5절).
 - 보정의 `calib2-d3-r1`(184.837)보다 `act2-baseline1`이 30.964 높은 이유. 약 1.5시간 떨어졌고 건축물 배치와 노드 하나를 고친 빌드다. `LabResourceNode` 한 번이 2.02µs에서 2.33µs로 1.15배라(같은 처리 횟수 40,008), 77분 사이에 모든 타이머가 약 1.2배 달라진 일(`calib2-e2-r1`)과 같은 종류로 보이지만 연달아 재서 가르지 않았다.
 
 ## 9. 시각 자료 후보
 
-자동 스크린샷에서 골랐다. 포스팅에 넣을 것은 사용자가 고른다. 아직 `images/`에 복사하지 않았다.
+위 네 장은 자동 스크린샷(`Saved/Screenshots/Lab/`)에서 골랐고 아직 `images/`에 복사하지 않았다. 아래 두 장은 Insights 캡처이고 `images/`에 있다. 포스팅에 넣을 것은 사용자가 고른다.
 
-| 후보 | 파일(`Saved/Screenshots/Lab/`) | 보여 주는 것 |
+| 후보 | 파일 | 보여 주는 것 |
 | --- | --- | --- |
 | 기준선 내려다보기 | `act2-baseline1-r2-topdown-03.png` | t=60초. 밀집 배치의 무리 하나(건축물 노란 점, NPC 빨간 점, 플레이어 파란 점)와 맵 전체의 자원 노드(초록 점). 화면 글자 `nodes=5001 npcs=350 players=8 buildings=500 states=358 inventories=8`로 Always Relevant를 보여 준다 |
 | 기준선 3인칭 | `act2-baseline1-r2-tpp-03.png` | 0번 자리(채집 담당)의 3인칭. 건축물(주황 상자)과 다른 플레이어가 보이고 가리는 것이 없다 |
 | 세 기법 적용, 밀집 | `layout-dense4-r1-topdown-03.png` | 기준선 내려다보기와 나란히 놓으면 같은 장면에서 `nodes=5001`이 `nodes=176`이 된다 |
 | 세 기법 적용, 분산 | `layout-apart8-r1-topdown-03.png` | 밀집과 나란히 놓으면 `players=8`이 `players=1`이 된다. 다른 플레이어의 파란 점이 없다 |
+| Insights Timers와 Callees | `images/insights-r2-timers.png` | Log View에서 `Lab_MeasureStart`\~`Lab_MeasureEnd`(1분 32.712558초\~2분 32.800668초)를 고르고 `WorldTick`을 선택한 화면. Callees에 `GameNetDriver` 95.79%(`% Root`), 그 아래 `LabResourceNode` 45.13%, `LabNpc` 14.08%, `LabBuilding` 4.73%, `LabCharacter` 0.94%(`% Parent`)가 보인다. 북마크로 고른 구간도 `WorldTick` 278번, `LabResourceNode` 11,122,224번으로 1절과 같다 |
+| Insights Net Stats | `images/insights-r2-net-stats.png` | 6절의 범위(2,300패킷, 59.855초)를 고른 `Connection 0`, `Outgoing`. `LabNpc`가 `Actor` 바로 아래에 있고 `LabResourceNode`가 9번이다 |
 
-- Insights 캡처(Timers 패널, `GameNetDriver` 아래의 Callees, Networking의 Net Stats)는 창을 열어야 해서 찍지 않았다. 1막 기준선 글의 `insights-r1-timers.png`, `insights-r1-net-stats.png`에 해당하는 것이다.
+- Insights 캡처 두 장은 `capture-insights.ps1`로 창 내용만 찍었다. 포스팅에 넣을 때는 인용하는 값에 `annotate-image.ps1`로 상자를 그린다.
 - 영상은 찍지 않았다. 찍는다면 다음 라벨은 `visual13`이고, 찍기 전에 허가를 받는다.
