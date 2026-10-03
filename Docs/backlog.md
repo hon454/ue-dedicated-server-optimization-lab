@@ -1,28 +1,44 @@
 # 장기 백로그
 
-단기 범위([설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md))가 끝난 뒤에 다룬다. 작업 중 떠오른 아이디어는 여기에만 적고, 진행 중인 포스팅에 넣지 않는다.
+1막(포스팅 0\~4)이 끝난 뒤의 주제다. 작업 중 떠오른 아이디어는 여기에만 적고, 진행 중인 포스팅에 넣지 않는다.
+
+2막은 테스트베드를 한 번 확장해 새 기준선을 잡고 시작한다([ADR-0014](Decisions/0014-act-2-testbed-expansion.md), [2막 설계](Planning/2026-10-03-act-2-design.md), [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md)). 다음 포스팅은 직전 포스팅의 "한계와 다음"이 가리킨 것에서 출발한다.
 
 ## 우선순위 순
 
-1. **Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
-2. **인벤토리와 FastArray**: 일반 `TArray` 리플리케이션과 FastArray의 전송 바이트 비교. 소유자 전용 전송.
-3. **자원 노드 구역 매니저**: 노드당 액터 하나에서 구역별 매니저 + FastArray로 전환. 노드별 관련성을 잃는 트레이드오프.
-4. **기본 송신 한도에서의 포화와 우선순위**: 단기에서는 측정 조건으로 연결당 송신 한도를 올렸다. 엔진 기본 한도로 되돌렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지 다룬다.
-5. **건축물**: 플레이어가 배치하는 정적 액터의 휴면과 초기 전송 비용.
-6. **Replication Graph**: 레거시, Replication Graph, Iris 세 시스템 비교.
-7. **Test 패키지로 재측정**: 기준선과 세 기법을 모두 적용한 구성을 Test 구성의 패키지(서버, 클라이언트)로 다시 재서, 에디터 빌드에서 본 개선이 출시 빌드에 가까운 조건에서도 유지되는지 확인한다. Shipping은 트레이스가 컴파일되지 않아 Insights로 볼 수 없으므로(엔진 소스: `TraceLog/Public/Trace/Config.h:12-17`, `NetTraceConfig.h:10-16`) Test가 잴 수 있는 가장 Shipping에 가까운 구성이다. 실행을 두 종류로 나눈다.
+포스팅 5, 6은 확정이고, 7부터는 잠정 순서다. 포스팅 6의 측정을 본 뒤 사용자가 확정한다(구현 계획 태스크 23). 포스팅마다 겨냥하는 것, 쓰는 요소, 확인하지 않은 것은 2막 설계 6절의 표에 있다.
+
+1. **포스팅 5: 테스트베드 확장과 새 기준선.** 플레이어가 모이는 배치, 상태 값, 인벤토리, 건축물을 넣고 규모를 보정한다.
+2. **포스팅 6: 세 기법 다시 적용(약식).** 새 기준선에 Relevancy, Dormancy, Net Update Frequency를 차례로 켠다.
+3. **NPC 이동의 클라이언트 보간**: 포스팅 4가 남긴 끊김. 아래 "작업 중 떠오른 것"의 "NPC 이동의 클라이언트 보간", "끊김을 수치로 재기".
+4. **지연과 패킷 손실에서의 동기화 품질**(진단).
+5. **`GameNetDriver` 자체 시간 나누기**(진단): 아래 "작업 중 떠오른 것"의 같은 이름 항목.
+6. **액터를 Consider List에서 빼기**: 후보는 구역 매니저 + FastArray(노드당 액터 하나에서 구역별 매니저로 전환. 노드별 관련성을 잃는 트레이드오프), Replication Graph의 공간 격자. 아래 "노드를 고려 목록에서 빼기", "휴면 노드가 클라이언트에 남는 문제".
+7. **Push Model**: 상태 값의 "바뀐 것이 있는지 확인하는 비용". 에디터 타깃은 이미 컴파일돼 있고(`TargetRules.cs:1524`), `Net.IsPushModelEnabled`의 기본값은 false다(`PushModel.cpp:434`). Push Model이 아닌 프로퍼티는 항상 바뀐 것으로 취급된다(`RepLayout.cpp:1506`).
+8. **인벤토리와 FastArray**: 일반 `TArray` 리플리케이션과 FastArray의 전송 바이트 비교. 소유자 전용 전송.
+9. **송신 한도 포화와 `NetPriority`**: 한도에 걸렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지. 1막의 최종 구성은 `out_bytes_per_sec_per_conn` 2,400으로 엔진 기본 한도 100,000바이트/초의 2.4%라 포화 조건이 없었다.
+10. **Replication Graph**: 같은 문제를 그래프 노드로 푸는 방식.
+11. **Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
+
+## 2막 밖
+
+2막에서 다루지 않는다(2막 설계 7절).
+
+- **Test 패키지로 재측정**: 기준선과 세 기법을 모두 적용한 구성을 Test 구성의 패키지(서버, 클라이언트)로 다시 재서, 에디터 빌드에서 본 개선이 출시 빌드에 가까운 조건에서도 유지되는지 확인한다. Shipping은 트레이스가 컴파일되지 않아 Insights로 볼 수 없으므로(엔진 소스: `TraceLog/Public/Trace/Config.h:12-17`, `NetTraceConfig.h:10-16`) Test가 잴 수 있는 가장 Shipping에 가까운 구성이다. 실행을 두 종류로 나눈다.
    - **수치 실행**: CSV 수치와 `GameNetDriver` 타이머는 이 실행에서 얻는다. `GameNetDriver` 타이머는 Test에서도 남는다(`NetDriver.cpp:1174`의 `TRACE_CPUPROFILER_EVENT_SCOPE_TEXT`).
    - **분해 실행**: `-statnamedevents`를 더한 별도 실행(`LaunchEngineLoop.cpp:1759`). Test에서는 `STATS`가 꺼져서 리플리케이션 시간을 클래스별로 나눠 보여 주는 타이머(`LabResourceNode`, `LabNpc`)가 이 인자 없이는 남지 않는다(`DataChannel.cpp:3624`의 `SCOPE_CYCLE_UOBJECT`, `UObjectBaseUtility.h:1073-1098`, `Build.h:311`). 이 인자는 이벤트를 더 기록하므로 이 실행의 수치를 수치 실행과 비교하지 않고, 비율을 보는 데만 쓴다.
    - 서버 타깃(`DSOptLabServer.Target.cs`)을 새로 만들어야 하고, 엔진을 소스로 빌드하므로 서버 타깃과 클라이언트 타깃이 각각 엔진 전체를 컴파일한다.
 
+- **서버 틱 최적화**: 애니메이션, 물리, AI 틱. NPC는 2막에서도 움직이는 리플리케이트 액터의 대역이다.
+- **다양한 OS와 플랫폼에서의 프로파일링**(공고 우대사항).
+
 ## 순서 미정
 
-- 푸시 모델
-- 지연과 패킷 손실 시뮬레이션에서의 동기화 품질
-- 서버 틱 최적화: 애니메이션, 물리, AI 틱
-- 캐릭터 무브먼트 리플리케이션 비용
-- 접속 시 초기 전송 폭주 완화
-- 다양한 OS와 플랫폼에서의 프로파일링 (공고 우대사항)
+2막의 요소로 다룰 수 있지만 포스팅으로 잡지 않은 것이다.
+
+- 캐릭터 무브먼트 리플리케이션 비용(플레이어가 모이는 배치)
+- 접속 시 초기 전송 폭주 완화(건축물)
+- 건축물의 Dormancy: 플레이어가 배치하는 정적 액터를 깨우는 경로와 초기 전송 비용
 
 ## Iris 전환 때 볼 소스 위치
 

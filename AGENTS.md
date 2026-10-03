@@ -1,6 +1,6 @@
 # UE Dedicated Server 포트폴리오
 
-언리얼 엔진 5.8.3 Dedicated Server 최적화 과정을 기법 하나당 포스팅 하나로 보여주는 포트폴리오다. 테스트베드 포스팅과 포스팅 1\~4를 완성하는 단기 목표는 끝났고(2026-10-02), 다음 주제는 [backlog.md](Docs/backlog.md)의 우선순위 순이다.
+언리얼 엔진 5.8.3 Dedicated Server 최적화 과정을 기법 하나당 포스팅 하나로 보여주는 포트폴리오다. 포스팅 0\~4가 1막이고 끝났다(2026-10-02). 포스팅 5부터가 2막이다. 2막은 테스트베드를 한 번 확장해 새 기준선을 잡고, 1막의 세 기법을 약식으로 다시 적용한 뒤 새 기법을 하나씩 다룬다([2막 설계](Docs/Planning/2026-10-03-act-2-design.md), [2막 구현 계획](Docs/Planning/2026-10-03-act-2-implementation-plan.md)). 그 뒤의 순서는 [backlog.md](Docs/backlog.md)의 우선순위 순이다.
 
 ## 세션을 시작하면
 
@@ -29,7 +29,8 @@
 | 다음 주제의 우선순위, 작업 중 떠오른 기법 | [backlog.md](Docs/backlog.md) |
 | 측정 PC 사양 | [pc-specs.md](Docs/Reference/pc-specs.md) |
 | 대상 채용공고 | [job-posting-ue5-dedicated-server.md](Docs/Reference/job-posting-ue5-dedicated-server.md) |
-| 끝난 단기 설계 문서와 구현 계획(태스크 번호가 가리키는 곳) | 태그 `post-04-update-frequency`의 [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md), [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md). 2026-10-03에 레포에서 지웠다 |
+| 2막의 목적, 확장 요소, 포스팅 계획과 태스크 15부터의 순서 | [2막 설계](Docs/Planning/2026-10-03-act-2-design.md), [2막 구현 계획](Docs/Planning/2026-10-03-act-2-implementation-plan.md) |
+| 끝난 단기(1막) 설계 문서와 구현 계획(태스크 1\~14가 가리키는 곳) | 태그 `post-04-update-frequency`의 [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md), [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md). 2026-10-03에 레포에서 지웠다 |
 | 공개 소개, 코드 파일별 역할 | [README.md](README.md) |
 | 포스팅 본문과 이미지, 후보 기법 자료(Insights에서 읽은 값, 엔진 소스 위치, 에이전트 의견) | `Posts/NN-이름/README.md`, `Posts/NN-이름/images/`, `Posts/NN-이름/candidates.md` |
 | 실행 산출물 | 수치 CSV `Saved/LabMetrics/summary.csv`, 트레이스 `Saved/Traces/<라벨>-rN.utrace`, 스크린샷 `Saved/Screenshots/Lab/`, 로그 `Saved/Logs/` |
@@ -48,7 +49,7 @@
 - **확정된 결정을 다시 열지 않는다.** [ADR 목록](Docs/Decisions/README.md)의 "ADR 이전의 결정"과 승인된 ADR의 결정을 바꾸자고 제안하지 않는다. 사용자는 계획 단계로 되돌아가는 일을 반복해 왔다. 예외는 결정의 근거가 사실과 맞지 않음을 확인한 경우 하나다. 근거는 엔진 소스(파일과 줄)나 실행 결과(라벨)여야 한다. 이때는 대체 ADR을 "제안됨"으로 쓰고, 그 결정에 기대는 측정을 멈추고, 사용자에게 알린다. 더 나은 방법이 있다는 판단은 예외가 아니다. 그런 생각은 [backlog.md](Docs/backlog.md)에 적는다.
 - **질문에는 답과 수정안만 낸다.** 사용자가 "\~하는 게 낫지 않아?", "\~필요하지 않을까?"처럼 질문형으로 물으면, 의견과 수정안(바꿀 파일과 문장)을 채팅에 보여 주고 편집과 커밋은 하지 않는다. "고쳐", "반영해" 같은 지시를 받거나 수정안이 승인된 뒤에 구현한다. 근거를 찾으려고 파일을 읽거나 검색하는 것은 해도 된다. 사용자는 질문으로 방향을 먼저 맞춰 본 뒤에 결정한다.
 - **선택지를 낼 때는 추천안을 함께 낸다.** 어느 선택지를 추천하는지 먼저 밝히고, 이유를 이해하기 쉬운 한두 문장으로 쓴다. 이유는 이 프로젝트의 사실(측정값, 엔진 소스, 확정된 결정, 작업량)에 기댄다. 다른 선택지를 고르면 무엇을 얻고 무엇을 잃는지도 적는다. 선택은 사용자가 한다.
-- **포스팅 하나에 기법 하나.** 여러 기법을 함께 넣으면 어느 것이 효과를 냈는지 알 수 없다. 단기에는 관련성, 자원 노드 휴면, NPC 업데이트 빈도 세 기법을 구현했다. 다음 기법은 [backlog.md](Docs/backlog.md)에서 사용자가 고르고, 작업 중 떠오른 다른 기법은 진행 중인 포스팅에 넣지 않고 backlog.md의 "작업 중 떠오른 것"에 적는다.
+- **포스팅 하나에 기법 하나.** 여러 기법을 함께 넣으면 어느 것이 효과를 냈는지 알 수 없다. 1막에서는 관련성, 자원 노드 휴면, NPC 업데이트 빈도 세 기법을 구현했다. 기법 없이 측정만 하는 포스팅(환경을 설명하는 포스팅, 이미 다룬 기법을 새 기준선에 다시 적용하는 포스팅, 진단 포스팅)을 둘 수 있다. 다음 기법은 [backlog.md](Docs/backlog.md)에서 사용자가 고르고, 작업 중 떠오른 다른 기법은 진행 중인 포스팅에 넣지 않고 backlog.md의 "작업 중 떠오른 것"에 적는다.
 - **패키징하지 않고 null RHI를 쓰지 않는다.** 에디터 빌드 실행 파일을 쿠킹 없이 실행한다([ADR-0002](Docs/Decisions/0002-editor-build-without-packaging.md)).
 - **에디터 작업을 만들지 않는다.** 에이전트는 에디터를 다룰 수 없어서, 에디터 작업이 끼면 사람을 기다려야 하고 결과를 스스로 검증하지 못한다. 액터는 C++로 작성하고, 자원 노드와 AI NPC는 실행 시 코드로 생성한다. 블루프린트와 맵 편집이 필요한 설계를 피한다.
 - **수치를 정해진 이름으로만 부른다.** CSV 값과 Insights 값은 정의가 달라서, 이름을 섞으면 다른 수치를 같은 것처럼 비교하게 된다([ADR-0004](Docs/Decisions/0004-insights-and-csv-metrics.md)). [measurement.md](Docs/Guides/measurement.md)의 "수치의 이름과 출처" 표를 따른다. CSV 값을 Insights 지표 이름으로 부르지 않고, 열린 액터 채널 수를 액터 수라고 부르지 않는다.
@@ -61,7 +62,7 @@
 - **문서에서 `~`는 `\~`로 쓴다.** GFM은 한 문단에 `~`가 둘 이상이면 그 사이를 취소선으로 렌더링한다(`2\~7, 8\~31`). 코드 스팬 안에서는 이스케이프하지 않는다. `~~` 취소선은 쓰지 않는다.
 - **포스팅과 루트 README의 용어와 부르는 법(2026-10-02 사용자 결정).** 엔진의 기법 이름은 번역하지 않고 원문으로 쓴다: Relevancy, Dormancy, Net Update Frequency, Net Cull Distance. 엔진 소스에 이름이 있는 단계, 자료구조, 기능도 원문으로 쓴다: Consider List(`ServerReplicateActors_BuildConsiderList`), Push Model, Adaptive Net Update Frequency. 동사로 쓰는 "리플리케이션 대상으로 고려한다"와, 직렬화, 송신, 우선순위 정렬, 거리 검사, 활성 목록처럼 한국어로 자연스러운 용어는 그대로 둔다. 상태는 "Dormant 상태"로 쓴다. 기법 이름을 행동처럼 쓰지 않는다("Relevancy를 먼저 한다"가 아니라 "Relevancy 최적화를 먼저 적용한다"). 리플리케이션, 대역폭, 액터 채널 같은 일반 용어와 "수치의 이름과 출처"의 지표 이름은 그대로 둔다. 다른 글은 "포스팅 1"이 아니라 제목 링크로 부른다(`[Always Relevant 기준선](../01-baseline/README.md)`). 포스팅 파일 이름은 `README.md`로 둔다(GitHub가 폴더를 열면 바로 그려 준다). `Docs/`의 작업 문서는 지금 용어(관련성, 휴면, 업데이트 빈도, 포스팅 N)를 그대로 쓴다. 자원 노드는 Consider List, 활성 목록, 액터 채널, 거리 검사처럼 엔진 내부 처리를 말하는 문장에서 "노드"로 줄이지 않는다. 화면의 점이나 화면 글자의 개수처럼 자원 노드만 가리키는 것이 분명한 곳에서는 줄여도 된다. Replication Graph의 노드는 "그래프 노드"로 부른다.
 - **포스팅과 루트 README는 한국어 한다체(-다)로 쓴다.** 문단과 목록의 문장은 한다체("확인했다")다. 표의 칸은 명사나 "-음"으로 끝나는 개조식("확인", "더 늘지 않음")을 써도 되고, 문단에는 개조식을 쓰지 않는다. 틀은 [posting.md](Docs/Guides/posting.md)를 따른다. 태그 `post-01-baseline`\~`post-04-update-frequency` 시점의 글은 합니다체로 남아 있다(2026-10-02에 한 커밋으로 바꿨다).
-- **문서에 일정 표현을 쓰지 않는다.** README, 포스팅, `Docs/` 어디에도 "N일차"나 "N일 안에" 같은 표현을 쓰지 않는다. 단계는 단기 구현 계획의 큰 제목(테스트베드 구축, 규모 확정과 테스트베드 포스팅, 기준선과 첫 번째 기법, 나머지 두 기법, 마무리)과 태스크 번호로 부른다. 태스크 번호는 태그 `post-04-update-frequency`의 구현 계획을 가리킨다. 레포가 공개다.
+- **문서에 일정 표현을 쓰지 않는다.** README, 포스팅, `Docs/` 어디에도 "N일차"나 "N일 안에" 같은 표현을 쓰지 않는다. 단계는 단기 구현 계획의 큰 제목(테스트베드 구축, 규모 확정과 테스트베드 포스팅, 기준선과 첫 번째 기법, 나머지 두 기법, 마무리)과 태스크 번호로 부른다. 태스크 1\~14는 태그 `post-04-update-frequency`의 구현 계획을 가리킨다. 태스크 15부터는 [2막 구현 계획](Docs/Planning/2026-10-03-act-2-implementation-plan.md)을 가리키고, 단계는 그 문서의 큰 제목(기법 전환 인자, 테스트베드 확장, 새 기준선, 세 기법 다시 적용, 2막 포스팅 주기)으로 부른다. 레포가 공개다.
 
 ## 결정 기록(ADR)
 
@@ -87,7 +88,7 @@
 
 - **Insights 분석의 판단과 포스팅의 "관찰", "선택" 섹션 작성.** 판단은 사용자가 하고 두 섹션도 사용자가 직접 쓴다. 에이전트는 Insights를 직접 열어 [insights-reading.md](Docs/Guides/insights-reading.md)의 순서로 값을 읽고, CSV와 대조한 표와 후보 기법 목록(각 기법의 구현 비용과 관련 엔진 소스 위치)을 준비한다. 판단에 도움이 되는 의견도 낸다(2026-10-01 사용자 결정). 의견은 화면에서 읽은 사실과 구분해 "에이전트 의견"으로 적고, 근거가 된 수치와 확인하지 않은 것을 함께 적는다. 기법과 순서를 정하는 것은 사용자다.
 - 포스팅에 넣을 시각 자료의 최종 선택. 클라이언트 영상과 전체 화면(`Scripts/capture-video.ps1`, 찍기 전에 허가를 받는다), Insights 스크린샷(`Scripts/capture-insights.ps1`)은 에이전트가 찍어 후보로 주고, 포스팅에 넣을 것은 사용자가 고르거나 직접 찍는다. 특정 장면을 위해 관찰자를 조작해야 하면 그 조작만 사용자에게 요청한다.
-- 기준선 확정(단기 구현 계획 태스크 8.6). 결과를 표로 보고하고 사용자가 확정한다. 기준선이 송신 한도에 포화되면 프로젝트 설정에서 한도를 올리는 것은 이미 정해진 방침이라 묻지 않고 진행한다([ADR-0007](Docs/Decisions/0007-raise-send-limit-once.md), 태스크 8.4a). 그 밖의 설정이나 시나리오 규모는 임의로 바꾸지 않는다.
+- 기준선 확정(단기 구현 계획 태스크 8.6, 2막 구현 계획 태스크 20.5). 결과를 표로 보고하고 사용자가 확정한다. 기준선이 송신 한도에 포화되면 프로젝트 설정에서 한도를 올리는 것은 이미 정해진 방침이라 묻지 않고 진행한다([ADR-0007](Docs/Decisions/0007-raise-send-limit-once.md), 태스크 8.4a). 그 밖의 설정이나 시나리오 규모는 임의로 바꾸지 않는다.
 - ADR 승인.
 - 에디터에서만 가능한 작업.
 - GitHub 푸시.
