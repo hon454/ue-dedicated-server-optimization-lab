@@ -33,6 +33,9 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 | 라벨 | 구성 | 요소의 값 | frames | work_avg_ms | work_p99_ms | over_budget_frames | netflush_avg_ms | out_bytes_per_sec_per_conn | open_actor_channels_per_conn | saturated_ratio | 확인한 것 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `calib2-a-r1` | 세 기법 적용, 밀집 3m | 주변 NPC 50, 상태 값 5초, 인벤토리 200칸에 4초, 건축물 500개에 1초 | 1794 | 14.682 | 24.624 | 1 | 10.678 | 16325 | 77 | 0.000 | 종료 코드 0(22:30). 서버 로그 `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`. 준비 구간의 `open_actor_channels_per_conn`이 측정 시작 31초 전(13:29:22 UTC)에 78이고 측정 구간에 76\~78. 화면 글자는 t=60초에 `npcs=57 players=8 buildings=500 states=65 inventories=8`, 자기 인벤토리 200칸(1번, 0번 자리). 0번 자리의 3인칭 화면은 건축물에 가렸다(`calib2-a-r1-tpp-03.png`) |
+| `calib2-b-r1` | Dormancy까지 적용(NPC 100Hz), 밀집 3m | 같다. 건축물을 경로에서 6m 띄운 배치(`180a75d`)부터다 | 1795 | 20.011 | 28.090 | 1 | 15.580 | 31338 | 77 | 0.000 | 종료 코드 0(23:09). 측정 시작 25초 전부터 채널 77\~78. 화면 글자 t=60초 `npcs=58 players=8 buildings=500 states=66` |
+| `calib2-c-r1` | Relevancy만 적용, 밀집 3m | 같다 | 1641 | 35.717 | 53.377 | 968 | 31.261 | 31188 | 695 | 0.000 | 종료 코드 0(23:12). 측정 시작 25초 전부터 채널 693\~697. 화면 글자 `nodes=112 npcs=56 players=8 buildings=500`. 3인칭 화면이 가리지 않는다(`calib2-c-r1-tpp-03.png`) |
+| `calib2-d3-r1` | 기준선(Always Relevant, Dormancy 없음, NPC 100Hz), 밀집 3m | 같다 | 325 | 184.837 | 225.137 | 325 | 177.836 | 42269 | 5871 | 0.000 | 종료 코드 0(23:20). 측정 시작 21초 전(14:19:17 UTC)에 채널 5,871에 도달해 더 늘지 않음. `saturated_replications`의 앞 숫자가 측정 구간에 250에서 늘지 않음. 화면 글자 `nodes=5001 npcs=350 players=8 buildings=500 states=358 inventories=8` |
 
 ## 2026-10-03 태스크 20.4: `calib2-a-r1`의 Timing Insights 값 (세 기법을 적용한 구성, 출발값)
 
@@ -58,3 +61,19 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 - `LabStateComponent`의 합은 프레임당 0.264ms(0.187 + 0.077)다. 오늘 잰 `work_avg_ms`의 변동 폭 0.5\~0.7ms보다 작다. 출발값의 예상(많아도 0.55ms, 설계 5.1)대로 Push Model의 재료로는 모자란다.
 - `LabNpc`는 예상 1.61ms보다 작은 0.890ms다. 처리 횟수가 프레임당 114.6번으로 예상 148번(55.5 × 8 ÷ 3)보다 적고, 한 번의 시간도 1막의 10.91µs(`update-frequency3-r3`)보다 짧다. 이유는 확인하지 않았다.
 - 비트 수(Networking Insights)는 창을 열어야 해서 아직 읽지 않았다.
+
+## 2026-10-03 태스크 20.2\~20.3: 네 구성의 보정 실행과 기준선의 네 조건 (`calib2-a`\~`calib2-d3`)
+
+- 실패한 실행: 기준선 `calib2-d-r1`(23:14, 측정 시작 5초 뒤)과 `calib2-d2-r1`(23:17, 8초 뒤)이 `FAIL: processor affinity was re-applied`로 끝나 수치를 쓰지 않는다. 세 번째 `calib2-d3-r1`이 성공했다. 작은 규모의 `tsmall-calib-r1`, `tsmall-clear-r1`도 같은 실패였다(동작 확인용이라 화면만 썼다).
+- 구성 사이의 차이(한 번씩 잰 값이고 `calib2-a-r1`은 40분 전에 건축물을 고치기 전의 배치로 쟀다. 방향만 본다): 기준선 184.837 → Relevancy 35.717(-149.120) → Dormancy 20.011(-15.706) → Net Update Frequency 14.682(-5.329). 오늘 잰 `work_avg_ms`의 변동 폭은 0.5\~0.7ms다.
+- Relevancy만 적용한 구성은 틱 예산을 넘는다(`over_budget_frames` 968 ÷ `frames` 1,641 = 59%). 출발값의 예상은 건축물 10.4ms였고(설계 5.1), Dormancy가 줄인 15.7ms에는 자원 노드의 몫(1막에서 약 2ms)이 함께 들어 있다.
+- 송신량: Net Update Frequency가 31,338에서 16,325로 줄였다(-47.9%). 기준선의 30Hz 환산 송신량은 42,269 × 30 ÷ (325 ÷ 60) = 234,105바이트/초로 지금 한도 350,000의 67%다.
+
+기준선의 네 조건(`calib2-d3-r1`, 출발값):
+
+| 조건 | 결과 | 근거 |
+| --- | --- | --- |
+| 초기 전송 완료 | 예 | 측정 시작(14:19:38 UTC) 21초 전의 줄(14:19:17)에서 `open_actor_channels_per_conn`이 5,871이고 더 늘지 않음 |
+| 지속적인 예산 초과 | 예 | `over_budget_frames` 325 = `frames` 325. `work_avg_ms` 184.837은 틱 예산 33.3ms의 5.5배 |
+| 가장 큰 비용이 네트워크 | CSV로는 예. Insights는 아직 읽지 않았다 | `netflush_avg_ms` 177.836 ÷ `work_avg_ms` 184.837 = 96.2%. 판단은 사용자가 한다 |
+| 송신 한도에 포화되지 않음 | 예 | `saturated_ratio` 0.000. 측정 구간에 `saturated_replications`의 앞 숫자가 250에서 늘지 않음 |
