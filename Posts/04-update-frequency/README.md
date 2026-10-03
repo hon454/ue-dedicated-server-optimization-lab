@@ -122,7 +122,7 @@ Insights에서 두 북마크 사이를 읽은 값이다.
 | 중앙값 | 1,797 | 12.894 | 19.080 | 8.969 | 2,400 | 20 | 0.000 |
 | 변동 폭 | 3 | 0.444 | 1.029 | 0.335 | 2 | 0 | 0.000 |
 
-[자원 노드 Dormancy](../03-dormancy/README.md)의 수치(`dormancy2`)는 이 글의 Dormancy와 코드가 같은데 `work_avg_ms` 중앙값이 14.409로 `dormancy6`의 13.343보다 1.066ms 크다(Insights의 서버 프레임 시간 평균으로는 14.69ms와 13.60ms). 이번 기법의 변화(0.449ms)보다 크고 변동 폭도 커서(`work_avg_ms` 2.032), 이 글의 비교에는 연달아 잰 `dormancy6`을 썼다. 달랐던 조건으로 아는 것은 화면(`dormancy2`는 원격 데스크톱, 이 글의 두 묶음은 본체 모니터)이고, 그것이 원인인지는 확인하지 않았다.
+[자원 노드 Dormancy](../03-dormancy/README.md)의 수치(`dormancy2`)는 이 글의 Dormancy와 코드가 같은데 `work_avg_ms` 중앙값이 14.409로 `dormancy6`의 13.343보다 1.066ms 크다(Insights의 서버 프레임 시간 평균으로는 14.69ms와 13.60ms). 이번 기법의 변화(0.449ms)보다 크고 변동 폭도 커서(`work_avg_ms` 2.032), 이 글의 비교에는 연달아 잰 `dormancy6`을 썼다. 두 묶음의 차이가 어디서 왔는지는 확인하지 않았다.
 
 ```mermaid
 xychart-beta
