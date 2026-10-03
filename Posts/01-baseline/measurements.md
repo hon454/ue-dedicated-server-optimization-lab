@@ -45,7 +45,7 @@
 - 서버 프레임 시간은 프레임 시간에서 틱 속도 제한 대기(`FEngineLoop_UpdateTimeAndHandleMaxTickRate`)를 뺀 시간이다([ADR-0010](../../Docs/Decisions/0010-frame-time-without-tick-wait.md)). 기준선은 틱 예산을 늘 넘어서 이 대기가 프레임당 0.01\~0.02ms뿐이다.
 - P99는 측정 구간에 걸친 GameThread `Frame` 이벤트(`r1` 303개)마다 대기를 뺀 길이를 `TimingInsights.ExportTimingEvents`로 내보내, 정렬한 뒤 ceil(N × 0.99)번째 값을 읽은 것이다. 99백분위 경계값이며 느린 1%의 평균이 아니다.
 - 변동 폭은 중앙값의 12.8%다(`work_avg_ms` 기준). 세 실행에서 하는 일의 양(타이머 호출 횟수)과 구성 비율(`LabResourceNode` 52.0\~52.6%, `GameNetDriver` Exclusive 37.0\~37.1%)은 같고, 느린 실행은 모든 하위 타이머가 1.12\~1.18배 느렸다([후보 기법 자료](candidates.md) 4절). 같은 일을 CPU가 더 느리게 처리한 것으로 보이며 원인은 확인하지 않았다.
-- 같은 조건의 다른 성공 실행(`calib-f-r1` 168.309, `verify-baseline-r1` 161.649, CSV `work_avg_ms`)은 `baseline3`보다 낮았다. 원인은 모른다([STATUS.md](../../Docs/STATUS.md) "측정 결과").
+- 같은 조건의 다른 성공 실행(`calib-f-r1` 168.309, `verify-baseline-r1` 161.649, CSV `work_avg_ms`)은 `baseline3`보다 낮았다. 원인은 모른다([Worklog/05-expanded-testbed.md](../../Docs/Worklog/05-expanded-testbed.md) "태스크 21.1 준비: STATUS.md 정리").
 
 ## 4. 서버가 남긴 CSV
 
