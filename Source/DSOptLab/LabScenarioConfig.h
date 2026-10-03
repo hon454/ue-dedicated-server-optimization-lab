@@ -33,6 +33,15 @@ struct FLabServerConfig
 	bool bMeasure = false;        // -LabMeasure
 	bool bShowcaseNpc = false;    // -LabShowcaseNpc (0번 자리 앞을 왕복하는 영상용 NPC 하나를 더 스폰한다)
 
+	// 1막의 세 기법을 켜고 끈다. 인자를 주지 않으면 세 기법이 모두 적용된 구성이다.
+	// 액터의 생성자가 읽는다. 생성자는 클라이언트에서도 돌지만 세 값은 서버에서만 뜻이 있다.
+	bool bAlwaysRelevant = false;      // -LabAlwaysRelevant (자원 노드와 NPC를 거리와 상관없이 모든 연결에 보낸다)
+	bool bNodeDormancy = true;         // -LabNoNodeDormancy로 끈다
+	float NpcUpdateFrequency = 10.f;   // -LabNpcUpdateFrequency= (엔진 기본값은 100)
+
+	/** 수치 CSV의 config 열에 적는 값. 기본값과 다른 인자를 ';'로 잇고, 모두 기본값이면 "default"다. */
+	FString GetConfigName() const;
+
 	static const FLabServerConfig& Get();
 };
 

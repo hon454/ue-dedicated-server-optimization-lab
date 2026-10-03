@@ -33,7 +33,7 @@
 | 끝난 단기(1막) 설계 문서와 구현 계획(태스크 1\~14가 가리키는 곳) | 태그 `post-04-update-frequency`의 [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md), [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md). 2026-10-03에 레포에서 지웠다 |
 | 공개 소개, 코드 파일별 역할 | [README.md](README.md) |
 | 포스팅 본문과 이미지, 후보 기법 자료(Insights에서 읽은 값, 엔진 소스 위치, 에이전트 의견) | `Posts/NN-이름/README.md`, `Posts/NN-이름/images/`, `Posts/NN-이름/candidates.md` |
-| 실행 산출물 | 수치 CSV `Saved/LabMetrics/summary.csv`, 트레이스 `Saved/Traces/<라벨>-rN.utrace`, 스크린샷 `Saved/Screenshots/Lab/`, 로그 `Saved/Logs/` |
+| 실행 산출물 | 수치 CSV `Saved/LabMetrics/summary.csv`(`config` 열을 더하기 전인 1막의 행은 `summary-act1.csv`), 트레이스 `Saved/Traces/<라벨>-rN.utrace`, 스크린샷 `Saved/Screenshots/Lab/`, 로그 `Saved/Logs/` |
 
 새 문서를 만들거나 옮기면 이 표를 함께 고친다.
 

@@ -277,8 +277,8 @@ bool ULabMetricsSubsystem::WriteSummary(const FConnectionSample& Sample, double 
 		}
 	}
 
-	const FString Header = TEXT("label,timestamp,clients,nodes,npcs,frames,work_avg_ms,work_p99_ms,over_budget_frames,netflush_avg_ms,netflush_p99_ms,out_bytes_per_sec_per_conn,open_actor_channels_per_conn,saturated_ratio,net_speed");
-	const FString Row = FString::Printf(TEXT("%s,%s,%d,%d,%d,%d,%.3f,%.3f,%d,%.3f,%.3f,%.0f,%.0f,%.3f,%d"),
+	const FString Header = TEXT("label,timestamp,clients,nodes,npcs,frames,work_avg_ms,work_p99_ms,over_budget_frames,netflush_avg_ms,netflush_p99_ms,out_bytes_per_sec_per_conn,open_actor_channels_per_conn,saturated_ratio,net_speed,config");
+	const FString Row = FString::Printf(TEXT("%s,%s,%d,%d,%d,%d,%.3f,%.3f,%d,%.3f,%.3f,%.0f,%.0f,%.3f,%d,%s"),
 		*FLabScenarioConfig::Get().Label,
 		*FDateTime::Now().ToString(TEXT("%Y-%m-%d %H:%M:%S")),
 		Sample.NumConnections,
@@ -293,7 +293,8 @@ bool ULabMetricsSubsystem::WriteSummary(const FConnectionSample& Sample, double 
 		BytesPerSecPerConn,
 		OpenChannelsPerConnectionSum / Frames,
 		SaturatedRatio,
-		Sample.NetSpeed);
+		Sample.NetSpeed,
+		*Config.GetConfigName());
 
 	const FString Directory = FPaths::ProjectSavedDir() / TEXT("LabMetrics");
 	IFileManager::Get().MakeDirectory(*Directory, true);

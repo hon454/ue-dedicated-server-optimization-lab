@@ -61,6 +61,8 @@
 | 클라이언트에 존재하는 액터 수 | 클라이언트 화면 위 글자의 노드 수와 NPC 수 | 스크린샷 | 포스팅 |
 | `saturated_ratio` | 측정 구간에 모든 연결에서 송신 한도 때문에 중간에 끊긴 리플리케이션 횟수 ÷ 리플리케이션 시도 횟수. 엔진이 `ServerReplicateActors`에서 연결마다 남기는 기록(`UNetConnection::GetSaturationAnalytics`)의 차다([ADR-0006](../Decisions/0006-saturation-from-engine-analytics.md)). 그 전의 `smoke` 행은 프레임 끝의 `IsNetReady()`로 잰 값이다. 포화 판정 기준은 0.01 이상이다 | CSV | `Docs/STATUS.md`, 해석의 전제 |
 
+수치 CSV의 `config` 열은 그 행을 잰 구성이다. 서버 인자 가운데 기본값과 다른 것을 `;`로 이은 문자열이고(예: `AlwaysRelevant;NoNodeDormancy;NpcUpdateFrequency=100`), 인자를 주지 않은 실행은 `default`다. 서버 로그의 `lab_config=` 줄에 같은 값이 남는다. 이 열을 더하기 전(2026-10-03, 2막 구현 계획 태스크 15)의 행은 `Saved/LabMetrics/summary-act1.csv`에 있고, 그 행의 구성은 라벨과 그때의 빌드로 정해진다.
+
 `Docs/STATUS.md`의 측정 결과 표에는 CSV 값을 CSV 열 이름 그대로 적는다. 포스팅과 README의 표에는 Insights에서 읽은 값을 쓴다. 서버는 측정 구간의 시작과 끝에 `Lab_MeasureStart`, `Lab_MeasureEnd` 북마크를 트레이스에 남기므로, Insights에서 이 두 북마크 사이를 본다. 읽는 순서는 [insights-reading.md](insights-reading.md)에 있다.
 
 ## 지표 표

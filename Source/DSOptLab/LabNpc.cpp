@@ -2,6 +2,7 @@
 
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "LabScenarioConfig.h"
 #include "LabVisual.h"
 #include "Materials/MaterialInterface.h"
 #include "UObject/ConstructorHelpers.h"
@@ -13,8 +14,14 @@ ALabNpc::ALabNpc()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	bReplicates = true;
 	SetReplicatingMovement(true);
-	// 초당 10회만 리플리케이션 대상으로 고려한다.
-	SetNetUpdateFrequency(10.f);
+
+	const FLabServerConfig& Config = FLabServerConfig::Get();
+
+	// 켜면 거리와 무관하게 모든 연결에 보낸다(1막의 기준선).
+	bAlwaysRelevant = Config.bAlwaysRelevant;
+
+	// 기본값에서는 초당 10회만 리플리케이션 대상으로 고려한다.
+	SetNetUpdateFrequency(Config.NpcUpdateFrequency);
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(Mesh);

@@ -7,15 +7,15 @@
 **단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. `d165aea`까지 푸시했고 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 남은 것은 사용자의 14.5(전체 읽기)다. 세 기법을 모두 적용했다. 빌드된 바이너리는 main의 소스(`SetNetUpdateFrequency(10.f)` 적용, 시연용 NPC 코드 포함)와 같다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있고, 태스크 9.4\~9.5와 14는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 9.4\~9.5, 14"에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
 - 코드 정리와 [ADR-0012](Decisions/0012-server-timer-resolution.md) 적용 뒤 확정 규모 `timerfix` 3회(2026-10-03): `frames` 1,784\~1,796, `work_avg_ms` 12.909 / 13.945 / 13.484(중앙값 13.484, 변동 폭 1.036), `out_bytes_per_sec_per_conn` 2,401\~2,404, 느린 틱 없음. 지금 main 빌드의 기준 묶음이다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "코드 정리와 서버 타이머 해상도 수정"에 있다.
+- **2막 태스크 15 완료(2026-10-03).** 1막의 세 기법을 서버 인자로 켜고 끈다(`-LabAlwaysRelevant`, `-LabNoNodeDormancy`, `-LabNpcUpdateFrequency=`. 인자가 없으면 세 기법이 모두 적용된 지금 구성). 수치 CSV에 `config` 열을 더했고, 그 전의 행은 `Saved/LabMetrics/summary-act1.csv`로 옮겼다. 작은 규모에서 네 구성이 종료 코드 0으로 끝났다(`tsmall-baseline`, `tsmall-relevancy`, `tsmall-dormancy`, `tsmall-default`의 `open_actor_channels_per_conn` 118, 10, 7, 7). 확정 규모 확인(태스크 16)은 아직이다.
 - 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
 
 ## 다음 할 일
 
 1. **[사람] 태스크 14.5.** 포스팅 0\~4와 README를 처음부터 끝까지 읽는다. 고칠 곳이 나오면 에이전트가 고친다. 이미 붙인 태그는 옮기지 않는다.
 2. 14.5에서 고친 것이 생기면 커밋한 뒤, 푸시는 사용자가 정한 시점에 한다.
-3. **[사람] [ADR-0014](Decisions/0014-act-2-testbed-expansion.md) 승인.** 2막의 테스트베드 확장이다. 내용은 [2막 설계](Planning/2026-10-03-act-2-design.md)에 풀어 썼다.
-4. **태스크 15\~16(기법 전환 인자).** ADR-0014 승인과 상관없이 시작할 수 있다. [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 1.
-5. 그 뒤는 2막 구현 계획의 단계 순이다(테스트베드 확장은 ADR-0014 승인 뒤). 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
+3. **태스크 16(인자가 1막의 구성을 재현하는지 확인).** 확정 규모 측정이라 시작하기 전에 사용자에게 알리고 답을 받는다(16.0). [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 1.
+4. 그 뒤는 2막 구현 계획의 단계 순이다(태스크 17부터 테스트베드 확장. [ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다). 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
 
 ## 포스팅 진행
 
@@ -44,7 +44,8 @@
 - 문서용 Insights 캡처: `powershell -ExecutionPolicy Bypass -File Scripts/capture-insights.ps1 -Label <라벨>-rN -Out <경로>.png`. 화면 복사 대신 창 내용만 찍는다.
 - Insights 이미지에 번호 붙은 상자 그리기: `powershell -ExecutionPolicy Bypass -File Scripts/annotate-image.ps1 -In <원본>.png -Out <포스팅용 이름>.png -Boxes "x,y,w,h;x,y,w,h"`. 좌표는 원본 픽셀 기준, 상자는 최대 3개, 원본은 그대로 둔다.
 - 빌드나 실행이 실패하면 [troubleshooting.md](Guides/troubleshooting.md)에서 증상을 찾는다.
-- 수치 CSV 위치: `Saved/LabMetrics/summary.csv`
+- 수치 CSV 위치: `Saved/LabMetrics/summary.csv`(`config` 열이 있다. 2026-10-03 태스크 15 전의 행은 `summary-act1.csv`)
+- 구성별 실행: 확정 명령에 기준선은 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`, Relevancy는 `-NoNodeDormancy -NpcUpdateFrequency 100`, Dormancy는 `-NpcUpdateFrequency 100`을 더한다. 더하지 않으면 세 기법이 모두 적용된 구성이다(`config` 열 `default`)
 - 리플리케이션 시간으로 쓰는 Insights 타이머: `GameNetDriver`(프레임당 Incl = 선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 확정했고 이후 바꾸지 않는다.
 
 ## 확정할 값
@@ -141,9 +142,6 @@ NPC 업데이트 빈도 `update-frequency3`(2026-10-02, 중앙값 실행 `r1`)�
 
 ## 사용자에게 요청한 일
 
-- **ADR-0014 승인.** 위 "다음 할 일" 3번. 요소 네 개를 한 번에 넣는 것과 포스팅 5, 6을 나누는 것은 에이전트 추천을 그대로 적은 것이라, 다르게 하려면 승인 전에 알려 준다.
-- **포스팅 4의 문장.** [포스팅 4](../Posts/04-update-frequency/README.md) "한계와 다음"의 "이 시리즈의 마지막 기법"과 그 뒤의 주제 나열을 2막에 맞춰 "1막의 마지막 기법"으로 고칠지 정한다(태스크 14.5의 수정 요청에 넣어도 된다).
-- **ADR-0013 확인.** [ADR-0013](Decisions/0013-lift-legacy-only-rule.md)은 "레거시 리플리케이션만 쓴다는 규칙을 버린다"는 사용자 결정(2026-10-03)을 에이전트가 옮긴 것이라 상태를 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.
 - **포스팅 4 확인.** [포스팅 4](../Posts/04-update-frequency/README.md)의 "관찰"과 "선택"은 인터뷰 답(대역폭 중심, 포스팅 1의 이유와 전제가 채워졌는지 확인)을 에이전트가 문장으로 옮긴 것이다. 초안과 끊김 영상은 승인됐다(2026-10-02). 남은 것은 Insights 캡처 네 장과 `before-clip.gif`, `after-clip.gif`를 보고 다른 장면이 좋으면 바꾸는 것이다.
 - **포스팅 3 확인.** [포스팅 3](../Posts/03-dormancy/README.md)의 "정확성 확인"에 넣은 전후 영상(`before-clip.gif`, `after-clip.gif`)과 세 항목의 표, 다시 찍은 `after-timing.png`, `after-network.png`를 보고 다른 장면이 좋으면 바꾼다. 요약의 내려다보기 화면은 순번 04(t=75s)다.
 - **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인). "관찰"의 서버 프레임 시간 문장은 ADR-0010에 맞춰 에이전트가 고쳤다(아직 확인하지 않음).

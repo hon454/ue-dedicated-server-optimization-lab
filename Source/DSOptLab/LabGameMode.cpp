@@ -62,6 +62,8 @@ void ALabGameMode::SpawnWorld()
 	const FLabServerConfig& Config = FLabServerConfig::Get();
 	const float Extent = FLabScenarioConfig::WorldHalfExtent;
 
+	UE_LOG(LogDSOptLab, Display, TEXT("lab_config=%s"), *Config.GetConfigName());
+
 	// 고정 시드라서 실행마다 같은 배치가 나온다.
 	FRandomStream Rng(Config.Seed);
 

@@ -11,7 +11,14 @@
     [long]$ServerMask = 0xFC,
     [switch]$NoTrace,
     # 0번 자리 앞을 왕복하는 영상용 NPC 하나를 더 스폰한다(-LabShowcaseNpc). 수치를 쓰지 않는 visualN 라벨에서만 쓴다.
-    [switch]$ShowcaseNpc
+    [switch]$ShowcaseNpc,
+    # 1막의 세 기법을 켜고 끈다. 주지 않으면 세 기법이 모두 적용된 구성이다(수치 CSV의 config 열이 default).
+    # 기준선은 -AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100, Relevancy는 -NoNodeDormancy -NpcUpdateFrequency 100,
+    # Dormancy는 -NpcUpdateFrequency 100이다.
+    [switch]$AlwaysRelevant,
+    [switch]$NoNodeDormancy,
+    # NPC의 NetUpdateFrequency. 0이면 인자를 넘기지 않아 코드의 기본값(10)을 쓴다. 엔진 기본값은 100이다.
+    [int]$NpcUpdateFrequency = 0
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -26,14 +33,16 @@ $LogDir = "$ProjectDir\Saved\Logs"
 $Summary = "$ProjectDir\Saved\LabMetrics\summary.csv"
 New-Item -ItemType Directory -Force -Path $TraceDir | Out-Null
 
-function Get-RowCount([string]$Prefix) {
-    if (-not (Test-Path $Summary)) { return 0 }
-    return @(Get-Content $Summary | Where-Object { $_.StartsWith($Prefix) }).Count
+function Get-RowCount([string]$Prefix, [string]$File = $Summary) {
+    if (-not (Test-Path $File)) { return 0 }
+    return @(Get-Content $File | Where-Object { $_.StartsWith($Prefix) }).Count
 }
 
 # 같은 라벨을 다시 쓰면 CSV 행과 트레이스, 스크린샷의 대응이 어긋난다.
-if ((Get-RowCount "$Label-r") -gt 0) {
-    Write-Host "FAIL: label '$Label' already has rows in summary.csv. Use a new label."
+# 1막의 행은 config 열을 더하기 전의 파일(summary-act1.csv)에 있다.
+$SummaryAct1 = "$ProjectDir\Saved\LabMetrics\summary-act1.csv"
+if ((Get-RowCount "$Label-r") -gt 0 -or (Get-RowCount "$Label-r" $SummaryAct1) -gt 0) {
+    Write-Host "FAIL: label '$Label' already has rows in summary.csv or summary-act1.csv. Use a new label."
     exit 1
 }
 
@@ -135,6 +144,15 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     )
     if ($ShowcaseNpc) {
         $ServerArgs += "-LabShowcaseNpc"
+    }
+    if ($AlwaysRelevant) {
+        $ServerArgs += "-LabAlwaysRelevant"
+    }
+    if ($NoNodeDormancy) {
+        $ServerArgs += "-LabNoNodeDormancy"
+    }
+    if ($NpcUpdateFrequency -gt 0) {
+        $ServerArgs += "-LabNpcUpdateFrequency=$NpcUpdateFrequency"
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")
