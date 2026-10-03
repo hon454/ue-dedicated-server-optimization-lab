@@ -11,8 +11,8 @@
 
 ## 다음 할 일
 
-1. **태스크 14.5에서 나온 포스팅 다시 쓰기(브랜치 `docs/posting-rewrite`, 워크트리 `.claude/worktrees/posting-rewrite`).** 사용자가 다섯 편을 읽고 낸 문제(글이 길고 수치가 나열됨, 개념 설명과 원리가 없음)로 틀을 바꿨다([ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 규칙은 [posting.md](Guides/posting.md)). 다섯 편을 모두 새 틀로 다시 쓰고 폴더마다 `measurements.md`를 만들었다(2026-10-03). 본문은 3,700\~5,700자이고(전에는 10,000\~15,000자) 모든 문장이 80자 이하다. Relevancy 글은 사용자가 승인했다. **[사람]** 나머지 네 편(테스트베드, 기준선, Dormancy, Net Update Frequency)을 읽고 승인한다. 기준선 글의 "선택"과 각 글의 "문제", "원리"는 에이전트 초안이다. 그 뒤에 main에 병합하고 워크트리를 정리한다. GitHub에서 Mermaid(흐름도, 상태 도식, 차트)와 SVG 애니메이션 두 개가 그려지는지는 푸시한 뒤에 확인한다. 루트 README도 같은 규칙으로 다시 썼고(2026-10-03 사용자 지시), 누적 수치의 근거는 [Posts/measurements.md](../Posts/measurements.md)로 옮겼다. 시리즈 웹 페이지(GitHub Pages, Source는 "GitHub Actions"로 설정함)를 만들지도 그 뒤에 정한다([backlog.md](backlog.md) "작업 중 떠오른 것"). 이미 붙인 태그는 옮기지 않는다.
-2. 14.5에서 고친 것이 생기면 커밋한 뒤, 푸시는 사용자가 정한 시점에 한다.
+1. **[사람] 다시 쓴 포스팅과 README를 푸시하고 GitHub에서 확인한다(태스크 14.5의 결과).** 사용자가 다섯 편을 읽고 낸 문제(글이 길고 수치가 나열됨, 개념 설명과 원리가 없음)로 틀을 바꿨다([ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 규칙은 [posting.md](Guides/posting.md)). 다섯 편을 모두 새 틀로 다시 쓰고 폴더마다 `measurements.md`를 만들었다(2026-10-03). 본문은 3,700\~5,700자이고(전에는 10,000\~15,000자) 모든 문장이 80자 이하다. 브랜치 `docs/posting-rewrite`에서 작업해 main에 병합했고 워크트리는 정리했다(2026-10-03). Relevancy 글은 사용자가 승인했다. 나머지 네 편의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이라, 읽고 고칠 곳이 나오면 알려 준다. GitHub에서 Mermaid(흐름도, 상태 도식, 차트)와 SVG 애니메이션 두 개가 그려지는지는 푸시한 뒤에 확인한다. 루트 README도 같은 규칙으로 다시 썼고(2026-10-03 사용자 지시), 누적 수치의 근거는 [Posts/measurements.md](../Posts/measurements.md)로 옮겼다. 시리즈 웹 페이지(GitHub Pages, Source는 "GitHub Actions"로 설정함)를 만들지도 그 뒤에 정한다([backlog.md](backlog.md) "작업 중 떠오른 것"). 이미 붙인 태그는 옮기지 않는다.
+2. 푸시 뒤에 고칠 곳이 나오면 에이전트가 고치고 커밋한다. 푸시는 사용자가 정한 시점에 한다.
 3. **[사람] [ADR-0014](Decisions/0014-act-2-testbed-expansion.md) 승인.** 2막의 테스트베드 확장이다. 내용은 [2막 설계](Planning/2026-10-03-act-2-design.md)에 풀어 썼다.
 4. **태스크 15\~16(기법 전환 인자).** ADR-0014 승인과 상관없이 시작할 수 있다. [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 1.
 5. 그 뒤는 2막 구현 계획의 단계 순이다(테스트베드 확장은 ADR-0014 승인 뒤). 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
