@@ -27,9 +27,19 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerReportReady(int32 InSlot);
 
-	/** 서버의 공통 시작 신호. 서버가 옮겨 놓은 시작 위치를 함께 받는다. */
+	/** 자동 이동 경로인 정사각형의 한 변(cm). 1막의 값과, 플레이어가 모이는 배치(-LabPlayerSpacing=)의 값. */
+	static constexpr float WaypointSide = 10000.f;
+	static constexpr float SpacedWaypointSide = 7000.f;
+
+	/** 정사각형의 꼭짓점 번호(0~3)를 첫 꼭짓점에서 잰 위치로 바꾼다. 번호가 커지는 쪽이 1막의 도는 방향이다. */
+	static FVector GetWaypointCorner(int32 Corner, float Side);
+
+	/**
+	 * 서버의 공통 시작 신호. 서버가 옮겨 놓은 시작 위치와 돌 경로를 함께 받는다.
+	 * 경로는 InRouteOrigin을 0번 꼭짓점으로 하는 정사각형이다. FirstWaypoint번 꼭짓점으로 먼저 가고, bReverse면 1막과 반대 방향으로 돈다.
+	 */
 	UFUNCTION(Client, Reliable)
-	void ClientStartScenario(FVector StartLocation);
+	void ClientStartScenario(FVector StartLocation, FVector InRouteOrigin, float Side, int32 FirstWaypoint, bool bReverse);
 
 	/** 폰 주변에서 가장 가까운 노드를 채집한다. */
 	UFUNCTION(Server, Reliable)
@@ -46,8 +56,8 @@ private:
 	static constexpr float HarvestRange = 500.f;
 	static constexpr float HarvestInterval = 2.f;
 	static constexpr float MinServerHarvestInterval = 1.f;
-	static constexpr float WaypointSide = 10000.f;
 	static constexpr float WaypointReachDistance = 200.f;
+	static constexpr float RouteEnterDistance = 500.f;
 
 	void TickAutoMove(APawn& ControlledPawn);
 
@@ -63,7 +73,11 @@ private:
 	bool bReportedReady = false;
 	bool bScenarioStarted = false;
 	double ScenarioStartTime = 0.0;
-	FVector Home = FVector::ZeroVector;
+	FVector RouteStart = FVector::ZeroVector;
+	bool bRouteEntered = false;
+	FVector RouteOrigin = FVector::ZeroVector;
+	float RouteSide = WaypointSide;
+	bool bRouteReverse = false;
 	int32 WaypointIndex = 0;
 	float HarvestAccumulator = 0.f;
 };

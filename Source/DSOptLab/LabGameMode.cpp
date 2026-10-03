@@ -52,6 +52,16 @@ void ALabGameMode::BeginPlay()
 
 FVector ALabGameMode::GetSlotLocation(int32 Slot)
 {
+	const FLabServerConfig& Config = FLabServerConfig::Get();
+	if (Config.PlayerSpacingMeters > 0.f)
+	{
+		// 맵 가운데를 지나는 대각선 위에 같은 간격으로 놓는다. 자리마다 x와 y가 모두 달라서
+		// 정사각형 경로의 변이 서로 겹치지 않는다(이웃한 변 사이는 간격 ÷ √2).
+		const float Step = Config.PlayerSpacingMeters * 100.f / UE_SQRT_2;
+		const float Offset = (static_cast<float>(Slot) - 0.5f * static_cast<float>(Config.ExpectedClients - 1)) * Step;
+		return FVector(Offset, Offset, 200.f);
+	}
+
 	const float Angle = 2.f * PI * static_cast<float>(Slot) / static_cast<float>(FLabScenarioConfig::NumPlayerSlots);
 	const float Radius = FLabScenarioConfig::PlayerRingRadius;
 	return FVector(FMath::Cos(Angle) * Radius, FMath::Sin(Angle) * Radius, 200.f);
@@ -163,10 +173,40 @@ void ALabGameMode::PlaceAndStart(ALabPlayerController& Player)
 		return;
 	}
 
-	int32& UseCount = SlotUseCount.FindOrAdd(Player.GetSlot());
-	const FVector Location = GetSlotLocation(Player.GetSlot()) + FVector(0.f, 200.f * UseCount, 0.f);
+	const int32 Slot = Player.GetSlot();
+
+	// 1막에서는 모든 자리가 정사각형의 0번 꼭짓점에서 같은 방향으로 출발한다.
+	float Side = ALabPlayerController::WaypointSide;
+	FVector StartOffset = FVector::ZeroVector;
+	int32 FirstWaypoint = 1;
+	bool bReverse = false;
+
+	// 간격을 준 배치에서는 자리 번호로 출발 위치와 방향을 정한다. 난수를 쓰지 않아 실행마다 같다.
+	// 짝수 자리는 꼭짓점에서 1막의 방향으로, 홀수 자리는 변의 가운데에서 반대 방향으로 출발한다.
+	// 반대 방향으로 도는 두 경로가 만나는 점에 두 캐릭터가 동시에 닿는 것은, 두 출발 위치를 둘레를 따라 잰 거리의 합이
+	// 변의 두 배(둘레로 나눈 나머지)일 때뿐이다. 이 배정에서는 합이 변의 정수배가 아니라서 부딪히지 않는다.
+	if (FLabServerConfig::Get().PlayerSpacingMeters > 0.f)
+	{
+		Side = ALabPlayerController::SpacedWaypointSide;
+		const int32 Quarter = (Slot / 2) % 4;
+		bReverse = Slot % 2 == 1;
+		if (bReverse)
+		{
+			StartOffset = 0.5f * (ALabPlayerController::GetWaypointCorner(Quarter, Side) + ALabPlayerController::GetWaypointCorner(Quarter + 1, Side));
+			FirstWaypoint = Quarter;
+		}
+		else
+		{
+			StartOffset = ALabPlayerController::GetWaypointCorner(Quarter, Side);
+			FirstWaypoint = (Quarter + 1) % 4;
+		}
+	}
+
+	int32& UseCount = SlotUseCount.FindOrAdd(Slot);
+	const FVector RouteOrigin = GetSlotLocation(Slot) + FVector(0.f, 200.f * UseCount, 0.f);
+	const FVector Location = RouteOrigin + StartOffset;
 	++UseCount;
 
 	Pawn->SetActorLocation(Location, false, nullptr, ETeleportType::TeleportPhysics);
-	Player.ClientStartScenario(Location);
+	Player.ClientStartScenario(Location, RouteOrigin, Side, FirstWaypoint, bReverse);
 }

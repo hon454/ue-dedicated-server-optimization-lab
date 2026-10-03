@@ -9,14 +9,15 @@
 - 코드 정리와 [ADR-0012](Decisions/0012-server-timer-resolution.md) 적용 뒤 확정 규모 `timerfix` 3회(2026-10-03): `frames` 1,784\~1,796, `work_avg_ms` 12.909 / 13.945 / 13.484(중앙값 13.484, 변동 폭 1.036), `out_bytes_per_sec_per_conn` 2,401\~2,404, 느린 틱 없음. 지금 main 빌드의 기준 묶음이다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "코드 정리와 서버 타이머 해상도 수정"에 있다.
 - **2막 태스크 15 완료(2026-10-03).** 1막의 세 기법을 서버 인자로 켜고 끈다(`-LabAlwaysRelevant`, `-LabNoNodeDormancy`, `-LabNpcUpdateFrequency=`. 인자가 없으면 세 기법이 모두 적용된 지금 구성). 수치 CSV에 `config` 열을 더했고, 그 전의 행은 `Saved/LabMetrics/summary-act1.csv`로 옮겼다. 작은 규모에서 네 구성이 종료 코드 0으로 끝났다(`tsmall-baseline`, `tsmall-relevancy`, `tsmall-dormancy`, `tsmall-default`의 `open_actor_channels_per_conn` 118, 10, 7, 7).
 - **2막 태스크 16 완료(2026-10-03). 인자가 1막의 구성을 재현한다.** 인자 없는 확정 규모 `toggle1` 3회: `frames` 1,786\~1,796, `work_avg_ms` 13.757 / 13.565 / 13.581(중앙값 13.581, 변동 폭 0.192), `netflush_avg_ms` 중앙값 9.646(변동 폭 0.205), `out_bytes_per_sec_per_conn` 2,399\~2,402, `config` 열 `default`. `timerfix`와의 중앙값 차이는 `work_avg_ms` 0.097, `netflush_avg_ms` 0.087(9.646 - 9.559)로 `timerfix`의 변동 폭 1.036, 0.800 안이라 구별되지 않는다. 구성별 1회 실행의 `open_actor_channels_per_conn`은 `toggle-dormancy-r1` 20, `toggle-relevancy-r1` 118, `toggle-baseline2-r1` 5,314로 1막(`dormancy6`, `relevancy2`, `baseline3`)과 같다. 이 세 실행의 시간 수치는 비교에 쓰지 않는다. `toggle-baseline-r1`은 측정 시작 2초 뒤에 선호도가 재설정되어 실패했고 수치를 쓰지 않는다. 지금 빌드의 기준 묶음은 `toggle1`이다.
+- **2막 태스크 17 완료(2026-10-03). 플레이어 자리 간격 인자.** 서버 인자 `-LabPlayerSpacing=<m>`(`run-scenario.ps1`의 `-PlayerSpacing`)을 주면 자리를 맵 가운데의 대각선 위에 그 간격으로 놓고, 자리마다 다른 출발 위치와 방향으로 한 변 70m 정사각형을 돈다. 밀집은 3, 분산은 300이고, 인자가 없으면 1막의 배치와 경로다. 값과 계산은 [2막 설계](Planning/2026-10-03-act-2-design.md) 3.1에 있다. 작은 규모 확인(모두 종료 코드 0): `tsmall-gather8b-r1`(클라이언트 8, 간격 3)은 두 클라이언트의 화면 글자가 t=15, 30, 45초에 `players=8`, `tsmall-apart3-r1`(클라이언트 2, 간격 300)은 `players=1`, `tsmall-noarg3-r1`(인자 없음)은 t=45초의 위치가 바꾸기 전(`tsmall-default2-r1`)과 같은 x=535m, y=290m. 확정 규모에서 인자 없는 실행이 `toggle1`과 구별되지 않는지는 태스크 19.2에서 잰다. `tsmall-gather`, `tsmall-gather2`, `tsmall-gather8`은 고치기 전의 경로이고 `tsmall-apart-r1`은 실패한 실행이다([troubleshooting.md](Guides/troubleshooting.md)의 "`nodes=5001 npcs=300`" 줄).
 - **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
-- 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
+- 내려다보기 화면의 파란 점(다른 플레이어)은 1막의 배치(인자 없는 실행)에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점"). `-PlayerSpacing 3`에서는 보인다.
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 17(플레이어가 모이는 배치).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 2. 설계 3.1의 "정할 것"(자리 간격, 경로를 바꾸는 범위)을 선택지와 추천안으로 사용자에게 먼저 묻는다.
-3. 그 뒤는 2막 구현 계획의 단계 순이다(태스크 18, 19로 테스트베드 확장을 잇는다. [ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다). 태스크 17에 자리마다 다른 자동 이동 경로가, 태스크 20에 밀집과 분산 배치의 비교(20.4a)가 들어 있다(2026-10-03 사용자 결정, 2막 설계 3.1과 5절). 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
+2. **태스크 18(상태 값과 인벤토리).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 2. 설계 3.2, 3.3의 "정할 것"(프로퍼티의 수와 바뀌는 빈도, 인벤토리를 둘 액터)을 선택지와 추천안으로 사용자에게 먼저 묻는다.
+3. 그 뒤는 2막 구현 계획의 단계 순이다(태스크 19로 테스트베드 확장을 끝낸다. [ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다). 태스크 20에 밀집과 분산 배치의 비교(20.4a)가 들어 있다(2026-10-03 사용자 결정, 2막 설계 5절). 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
 
 ## 포스팅 진행
 
@@ -46,7 +47,7 @@
 - Insights 이미지에 번호 붙은 상자 그리기: `powershell -ExecutionPolicy Bypass -File Scripts/annotate-image.ps1 -In <원본>.png -Out <포스팅용 이름>.png -Boxes "x,y,w,h;x,y,w,h"`. 좌표는 원본 픽셀 기준, 상자는 최대 3개, 원본은 그대로 둔다.
 - 빌드나 실행이 실패하면 [troubleshooting.md](Guides/troubleshooting.md)에서 증상을 찾는다.
 - 수치 CSV 위치: `Saved/LabMetrics/summary.csv`(`config` 열이 있다. 2026-10-03 태스크 15 전의 행은 `summary-act1.csv`)
-- 구성별 실행: 확정 명령에 기준선은 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`, Relevancy는 `-NoNodeDormancy -NpcUpdateFrequency 100`, Dormancy는 `-NpcUpdateFrequency 100`을 더한다(확정 규모에서 `toggle-baseline2`, `toggle-relevancy`, `toggle-dormancy`로 확인). 더하지 않으면 세 기법이 모두 적용된 구성이다(`config` 열 `default`)
+- 구성별 실행: 확정 명령에 기준선은 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`, Relevancy는 `-NoNodeDormancy -NpcUpdateFrequency 100`, Dormancy는 `-NpcUpdateFrequency 100`을 더한다(확정 규모에서 `toggle-baseline2`, `toggle-relevancy`, `toggle-dormancy`로 확인). 2막의 플레이어 배치는 밀집 `-PlayerSpacing 3`, 분산 `-PlayerSpacing 300`을 더한다. 더하지 않으면 세 기법이 모두 적용된 구성이다(`config` 열 `default`)
 - 리플리케이션 시간으로 쓰는 Insights 타이머: `GameNetDriver`(프레임당 Incl = 선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 확정했고 이후 바꾸지 않는다.
 
 ## 확정할 값

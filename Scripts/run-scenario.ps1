@@ -18,7 +18,11 @@
     [switch]$AlwaysRelevant,
     [switch]$NoNodeDormancy,
     # NPC의 NetUpdateFrequency. 0이면 인자를 넘기지 않아 코드의 기본값(10)을 쓴다. 엔진 기본값은 100이다.
-    [int]$NpcUpdateFrequency = 0
+    [int]$NpcUpdateFrequency = 0,
+    # 2막의 확장 요소. 플레이어 자리의 간격(m). 0이면 인자를 넘기지 않아 1막의 배치(반지름 500m 원)와 경로다.
+    # 0보다 크면 자리를 대각선 위에 이 간격으로 놓고, 자리마다 다른 방향으로 한 변 70m 정사각형을 돈다.
+    # 밀집은 3, 분산은 300이다(Docs/Planning/2026-10-03-act-2-design.md 3.1).
+    [int]$PlayerSpacing = 0
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -153,6 +157,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($NpcUpdateFrequency -gt 0) {
         $ServerArgs += "-LabNpcUpdateFrequency=$NpcUpdateFrequency"
+    }
+    if ($PlayerSpacing -gt 0) {
+        $ServerArgs += "-LabPlayerSpacing=$PlayerSpacing"
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")

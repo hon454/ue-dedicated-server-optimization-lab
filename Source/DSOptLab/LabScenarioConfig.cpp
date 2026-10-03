@@ -31,6 +31,7 @@ const FLabServerConfig& FLabServerConfig::Get()
 		C.bAlwaysRelevant = FParse::Param(Cmd, TEXT("LabAlwaysRelevant"));
 		C.bNodeDormancy = !FParse::Param(Cmd, TEXT("LabNoNodeDormancy"));
 		FParse::Value(Cmd, TEXT("LabNpcUpdateFrequency="), C.NpcUpdateFrequency);
+		FParse::Value(Cmd, TEXT("LabPlayerSpacing="), C.PlayerSpacingMeters);
 		return C;
 	}();
 	return Config;
@@ -52,6 +53,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (NpcUpdateFrequency != Defaults.NpcUpdateFrequency)
 	{
 		Parts.Add(FString::Printf(TEXT("NpcUpdateFrequency=%g"), NpcUpdateFrequency));
+	}
+	if (PlayerSpacingMeters != Defaults.PlayerSpacingMeters)
+	{
+		Parts.Add(FString::Printf(TEXT("PlayerSpacing=%g"), PlayerSpacingMeters));
 	}
 	return Parts.IsEmpty() ? TEXT("default") : FString::Join(Parts, TEXT(";"));
 }

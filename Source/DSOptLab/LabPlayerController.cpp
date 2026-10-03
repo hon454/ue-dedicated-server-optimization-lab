@@ -112,11 +112,26 @@ void ALabPlayerController::ServerReportReady_Implementation(int32 InSlot)
 	}
 }
 
-void ALabPlayerController::ClientStartScenario_Implementation(FVector StartLocation)
+FVector ALabPlayerController::GetWaypointCorner(int32 Corner, float Side)
+{
+	static const FVector Corners[4] = {
+		FVector::ZeroVector,
+		FVector(1.f, 0.f, 0.f),
+		FVector(1.f, 1.f, 0.f),
+		FVector(0.f, 1.f, 0.f),
+	};
+	return Corners[Corner & 3] * Side;
+}
+
+void ALabPlayerController::ClientStartScenario_Implementation(FVector StartLocation, FVector InRouteOrigin, float Side, int32 FirstWaypoint, bool bReverse)
 {
 	// 폰의 현재 위치는 아직 서버의 이동을 반영하지 않았을 수 있으므로 서버가 준 위치를 기준으로 삼는다.
-	Home = StartLocation;
-	WaypointIndex = 0;
+	RouteStart = StartLocation;
+	bRouteEntered = false;
+	RouteOrigin = InRouteOrigin;
+	RouteSide = Side;
+	bRouteReverse = bReverse;
+	WaypointIndex = FirstWaypoint & 3;
 	HarvestAccumulator = 0.f;
 	ScenarioStartTime = GetWorld()->GetTimeSeconds();
 	bScenarioStarted = true;
@@ -124,20 +139,20 @@ void ALabPlayerController::ClientStartScenario_Implementation(FVector StartLocat
 
 void ALabPlayerController::TickAutoMove(APawn& ControlledPawn)
 {
-	// 시작 위치를 한 꼭짓점으로 하는 한 변 100m 정사각형을 돈다.
-	const FVector Offsets[4] = {
-		FVector(WaypointSide, 0.f, 0.f),
-		FVector(WaypointSide, WaypointSide, 0.f),
-		FVector(0.f, WaypointSide, 0.f),
-		FVector::ZeroVector,
-	};
-
-	FVector ToWaypoint = Home + Offsets[WaypointIndex] - ControlledPawn.GetActorLocation();
+	// 서버가 정해 준 정사각형을 돈다. 1막에서는 시작 위치가 0번 꼭짓점이고 한 변이 100m다.
+	FVector ToWaypoint = RouteOrigin + GetWaypointCorner(WaypointIndex, RouteSide) - ControlledPawn.GetActorLocation();
 	ToWaypoint.Z = 0.f;
 
-	if (ToWaypoint.Size() < WaypointReachDistance)
+	// 서버가 옮겨 놓은 시작 위치가 이 클라이언트의 폰에 반영되기 전에는 꼭짓점에 닿았다고 보지 않는다.
+	// 폰이 스폰된 자리가 첫 목표와 가까우면 옮겨지기 전에 닿은 것으로 쳐서 변 하나를 건너뛴다(tsmall-gather-r1).
+	if (!bRouteEntered)
 	{
-		WaypointIndex = (WaypointIndex + 1) % 4;
+		bRouteEntered = FVector::DistSquared2D(ControlledPawn.GetActorLocation(), RouteStart) < FMath::Square(RouteEnterDistance);
+	}
+
+	if (bRouteEntered && ToWaypoint.Size() < WaypointReachDistance)
+	{
+		WaypointIndex = (WaypointIndex + (bRouteReverse ? 3 : 1)) & 3;
 		return;
 	}
 
