@@ -4,7 +4,7 @@
 
 | ADR | 결정 | 상태 |
 | --- | --- | --- |
-| [0001](0001-legacy-replication.md) | 레거시 리플리케이션으로 시작하고 Iris와 Replication Graph는 미룬다 | 승인됨 |
+| [0001](0001-legacy-replication.md) | 레거시 리플리케이션으로 시작하고 Iris와 Replication Graph는 미룬다 | 대체됨 → 0013 |
 | [0002](0002-editor-build-without-packaging.md) | 패키징과 null RHI 없이 에디터 빌드로 측정한다 | 승인됨 |
 | [0003](0003-lawless-baseline.md) | 기준선에서 엔진 기본 관련성 판정을 끈다("무법지대") | 승인됨 |
 | [0004](0004-insights-and-csv-metrics.md) | 수치를 Insights와 CSV 두 갈래로 나눈다 | 승인됨 |
@@ -16,6 +16,7 @@
 | [0010](0010-frame-time-without-tick-wait.md) | 서버 프레임 시간에서 틱 속도 제한 대기를 뺀다 | 승인됨 |
 | [0011](0011-no-iris-preview-section.md) | 포스팅에서 "Iris에서는" 섹션을 뺀다(0001의 "결과" 한 줄을 바꾼다) | 승인됨 |
 | [0012](0012-server-timer-resolution.md) | 서버 프로세스가 타이머 해상도 요청을 무시당하지 않게 한다(틱이 약 21Hz로 도는 실행을 없앤다) | 승인됨 |
+| [0013](0013-lift-legacy-only-rule.md) | 레거시 리플리케이션만 쓴다는 제약을 푼다(0001을 대체한다) | 승인됨 |
 
 ## ADR 이전의 결정
 

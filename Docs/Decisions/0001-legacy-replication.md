@@ -1,6 +1,6 @@
 # ADR-0001: 레거시 리플리케이션으로 시작하고 Iris와 Replication Graph는 미룬다
 
-- 상태: 승인됨
+- 상태: 대체됨 → [ADR-0013](0013-lift-legacy-only-rule.md)
 - 날짜: 2026-10-01
 - 출처: [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md) 3절, [engine-notes.md](../Reference/engine-notes.md) 나절 "실제로 쓰는 리플리케이션 시스템"
 
