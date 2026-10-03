@@ -8,7 +8,7 @@
 - **기법**: Relevancy, 액터 Dormancy, Net Update Frequency.
 - **측정 도구**: Unreal Insights와 서버가 남기는 수치 CSV.
 
-기법을 하나씩 켜면서 서버의 일이 줄어드는 모습을 보는 페이지가 있다: [서버는 한 프레임에 무엇을 보내는가](https://hon454.github.io/ue-dedicated-server-optimization-lab/).
+기법을 하나씩 켜면서 서버의 일이 줄어드는 모습을 보는 페이지가 있다: [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/).
 
 ## 결과 한눈에 보기
 

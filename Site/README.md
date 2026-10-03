@@ -1,14 +1,14 @@
-# 시리즈 웹 페이지: 서버는 한 프레임에 무엇을 보내는가
+# 시리즈 웹 페이지: UE Dedicated Server, 단계별로 최적화해 보기
 
 [index.html](index.html)은 의존성이 없는 한 파일이다. main에 푸시하면 [배포 워크플로](../.github/workflows/pages.yml)가 이 폴더를 GitHub Pages에 올린다. 주소는 `https://hon454.github.io/ue-dedicated-server-optimization-lab/`다.
 
-페이지는 네 단계(기준선, Relevancy, Dormancy, Net Update Frequency)를 고르면 브라우저에서 도는 모형이 서버 프레임 하나의 횟수를 세어 보여 준다. 측정한 조합만 고를 수 있게 했다.
+페이지는 네 단계(0단계 기준선, 1단계 Relevancy, 2단계 Dormancy, 3단계 Net Update Frequency)를 차례로 고르면 브라우저에서 도는 모형이 서버 프레임 하나의 횟수를 세어 보여 준다. 측정한 조합만 고를 수 있게 했다.
 
 ## 수치의 출처
 
 | 페이지의 값 | 종류 | 출처 |
 | --- | --- | --- |
-| "실제 서버에서 측정한 값"의 다섯 지표 | 측정값 | [Posts/measurements.md](../Posts/measurements.md) 1절의 구성별 중앙값. 클라이언트에 존재하는 자원 노드는 각 포스팅의 측정 기록(1번 클라이언트, t=45s) |
+| 단계마다의 서버 프레임 시간 평균과 "실제 서버에서 측정한 값"의 네 지표 | 측정값 | 각 포스팅의 측정 기록. 단계마다 그 글이 비교한 두 묶음을 쓴다: 1단계 `baseline3` → `relevancy2`, 2단계 `relevancy2` → `dormancy2`, 3단계 `dormancy6` → `update-frequency3`. 다른 날 잰 묶음끼리는 비교하지 않는다. 구별되지 않은 변화(2단계의 연결당 송신 대역폭, 3단계의 서버 프레임 시간 평균)는 그렇게 적는다. 클라이언트에 존재하는 자원 노드는 1번 클라이언트의 t=45s 화면 글자다 |
 | "측정: 프레임당 N쌍" | 측정값 | `LabResourceNode`와 `LabNpc` 타이머의 Count ÷ `WorldTick` Count. 기준선 42,408(5,301 × 8), Relevancy 647\~821((75.4 + 5.5) × 8\~(95.6 + 7.0) × 8), Dormancy 약 44(5.50 × 8), Net Update Frequency 약 14(1.78 × 8). 각 포스팅의 측정 기록 |
 | 서버 프레임 간격 198ms(기준선) | 측정값 | 기준선의 서버 프레임 시간 평균 198.43ms. 나머지 단계는 틱 예산 안이라 33.3ms(30Hz)로 둔다 |
 | 맵 2km, 배치 영역 ±950m, 클라이언트 8, 자원 노드 5,001, NPC 300 | 소스의 값 | `Source/DSOptLab/LabScenarioConfig.h` |

@@ -8,7 +8,7 @@
 
 - 코드 정리와 [ADR-0012](Decisions/0012-server-timer-resolution.md) 적용 뒤 확정 규모 `timerfix` 3회(2026-10-03): `frames` 1,784\~1,796, `work_avg_ms` 12.909 / 13.945 / 13.484(중앙값 13.484, 변동 폭 1.036), `out_bytes_per_sec_per_conn` 2,401\~2,404, 느린 틱 없음. 지금 main 빌드의 기준 묶음이다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "코드 정리와 서버 타이머 해상도 수정"에 있다.
 - **2막 태스크 15 완료(2026-10-03).** 1막의 세 기법을 서버 인자로 켜고 끈다(`-LabAlwaysRelevant`, `-LabNoNodeDormancy`, `-LabNpcUpdateFrequency=`. 인자가 없으면 세 기법이 모두 적용된 지금 구성). 수치 CSV에 `config` 열을 더했고, 그 전의 행은 `Saved/LabMetrics/summary-act1.csv`로 옮겼다. 작은 규모에서 네 구성이 종료 코드 0으로 끝났다(`tsmall-baseline`, `tsmall-relevancy`, `tsmall-dormancy`, `tsmall-default`의 `open_actor_channels_per_conn` 118, 10, 7, 7). 확정 규모 확인(태스크 16)은 아직이다.
-- **시리즈 웹 페이지를 공개했다(2026-10-03).** [서버는 한 프레임에 무엇을 보내는가](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
+- **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
 - 내려다보기 화면의 파란 점(다른 플레이어)은 현재 시나리오에서 보이지 않는다. 플레이어 자리 간격 약 195m가 컬 거리 150m보다 크다(00-testbed.md "내려다보기 화면의 플레이어 점").
 
 ## 다음 할 일
