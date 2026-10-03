@@ -15,7 +15,7 @@
 세 기법을 적용한 서버는 서버 프레임 시간 평균이 198ms에서 13.2ms로 줄었다. 30Hz 서버가 한 프레임에 쓸 수 있는 시간은 33.3ms이고, 이 시간을 틱 예산이라고 부른다. 서버는 틱 예산의 6배를 쓰다가 절반 이하를 쓰게 됐다.
 
 ```mermaid
-xychart-beta
+xychart-beta horizontal
     title "서버 프레임 시간 평균 (ms), 선은 틱 예산 33.3ms"
     x-axis ["기준선", "Relevancy", "Dormancy", "Net Update Frequency"]
     y-axis "ms" 0 --> 220

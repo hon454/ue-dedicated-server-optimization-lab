@@ -97,7 +97,7 @@
 | ④ 프로퍼티 비교와 직렬화 | `UActorChannel::ReplicateActor`. Insights의 클래스 이름 타이머가 이 함수다(`DataChannel.cpp:3622-3625`) |
 | 패킷 송신 | 송신 버퍼가 차면 그 자리에서, 나머지는 프레임 끝의 `Connection->Tick`(`NetDriver.cpp:1304-1307`) |
 
-- 줄인 것: 채널이 이미 열린 액터의 Relevancy는 ④ 직전에 다시 확인하고, 일정 시간 Relevancy를 잃은 채널을 닫는다(`NetDriver.cpp:5877-5889`). 모든 연결에서 Dormant 상태가 된 액터는 활성 목록에서 빠진다(`NetworkObjectList.cpp:348-376`).
+- 줄인 것: 흐름도에는 우선순위 정렬(③과 ④ 사이)과 건너뛰는 가지를 그리지 않았다. 세로로 길어 한 화면에 들어오지 않아서 두 줄로 줄였다(2026-10-03). 채널이 이미 열린 액터의 Relevancy는 ④ 직전에 다시 확인하고, 일정 시간 Relevancy를 잃은 채널을 닫는다(`NetDriver.cpp:5877-5889`). 모든 연결에서 Dormant 상태가 된 액터는 활성 목록에서 빠진다(`NetworkObjectList.cpp:348-376`).
 - 본문의 "네트워크 드라이버 자체 시간"은 `GameNetDriver`의 Exclusive다. Consider List 만들기, 연결마다의 우선순위 정렬(②와 ③ 포함), 프레임 끝의 송신이 섞여 있다. 이들을 재는 `STAT_NetConsiderActorsTime` 같은 stat은 기본 트레이스(`-trace=default,net`)에 남지 않는다. 프레임 하나를 확대해 어림한 내용은 [후보 기법 자료](candidates.md) 2절에 있다.
 
 ## 8. "선택"의 근거
