@@ -46,14 +46,17 @@ flowchart TB
         A["활성 목록<br/>리플리케이트하는 모든 액터"] --> B{{"① 고려할 시각인가?<br/>Net Update Frequency"}}
         B -- "예" --> C["Consider List"]
     end
-    subgraph PerClient["클라이언트마다 반복"]
+    subgraph Check["클라이언트마다 반복: 검사"]
         direction LR
         D{{"② 관련 있는가?<br/>Relevancy"}} -- "예" --> E{{"③ Dormant 상태인가?<br/>Dormancy"}}
-        E -- "아니오" --> G["④ 프로퍼티 비교와<br/>직렬화"]
-        G --> H["패킷 송신"]
+    end
+    subgraph Work["클라이언트마다 반복: 처리"]
+        direction LR
+        G["④ 프로퍼티 비교와<br/>직렬화"] --> H["패킷 송신"]
         H ~~~ Pad["여백여백여백"]
     end
-    Once --> PerClient
+    Once --> Check
+    Check -- "아니오" --> Work
     classDef check fill:#fff3bf,stroke:#f08c00,color:#000
     class B,D,E check
     classDef pad fill:none,stroke:none,color:transparent

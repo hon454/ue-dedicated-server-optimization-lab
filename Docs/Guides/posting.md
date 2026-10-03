@@ -76,7 +76,7 @@
 - Mermaid로 그릴 수 없는 것(지도, 시간에 따른 변화)은 SVG 파일로 만든다. 움직임이 설명에 필요하면 SMIL 애니메이션을 넣는다. 만드는 스크립트를 `Scripts/make-<이름>.ps1`로 남긴다(`Scripts/make-relevancy-map.ps1`, `Scripts/make-dormancy-trail.ps1`). 겹치는 영역은 `clipPath`로, 지나온 자취는 `mask`와 `stroke-dashoffset`으로 그리면 점마다 애니메이션을 넣지 않아도 된다. 움직이는지는 Edge 헤드리스(`--headless=new --virtual-time-budget=<ms> --screenshot=<파일>`)로 두 시점을 찍어 확인한다. 시간에 따른 순서만 보이면 되는 것은 마크다운 표로 그려도 된다(Net Update Frequency 글의 프레임 표). 실제 값으로 그린 것과 예시로 그린 것을 캡션에 적는다.
 - 차트는 본문에 하나만 넣는다. 틱 예산처럼 비교할 기준이 있으면 선으로 함께 그린다. 축 이름이 길면 `xychart-beta horizontal`로 눕힌다. 세로 차트에서는 GitHub의 폭에서 마지막 축 이름이 잘린다(루트 README의 "Net Update Frequency").
 - GitHub는 Mermaid 도식의 오른쪽 아래에 확대 단추(약 100px 사각형)를 겹쳐 그린다. 폭이 좁은 화면에서는 가로 흐름도의 마지막 칸이 가려진다. 마지막 칸 뒤에 보이지 않는 여백 칸을 둔다: `마지막 ~~~ Pad["여백여백여백"]`, `classDef pad fill:none,stroke:none,color:transparent`, `class Pad pad`. 칸 이름은 투명한 글자 여섯 자다. 공백으로 쓰면 GitHub가 칸을 좁게 그려 마지막 칸이 가려진다. 새 흐름도는 푸시하기 전에 GitHub의 파일 편집 화면에서 Preview 탭으로 확인한다(창 폭 약 800px, 저장하지 않는다). 상태 도식은 세로 배치로 둔다.
-- 흐름도가 한 화면보다 길어지면 `subgraph`마다 `direction LR`을 주어 줄 단위로 나누고, 검사는 마름모 대신 육각형(`{{ }}`)으로 그린다. 기준선 글의 공통 흐름도는 세로 배치에서 약 1,370px이었고 두 줄로 바꿔 약 240px이 됐다(680px 폭에서 Mermaid 11로 그린 값).
+- 흐름도가 한 화면보다 길어지면 `subgraph`마다 `direction LR`을 주어 줄 단위로 나누고, 검사는 마름모 대신 육각형(`{{ }}`)으로 그린다. 기준선 글의 공통 흐름도는 세로 배치에서 약 1,370px이었고 세 줄로 바꿔 약 470px이 됐다(680px 폭). 한 줄에는 칸을 셋까지 둔다. 넷 이상이면 GitHub가 도식을 폭에 맞춰 줄여서 글자가 본문보다 훨씬 작아진다(기준선 글의 두 줄 배치, 테스트베드 글의 한 줄 배치가 그랬다). 줄 사이의 화살표는 칸이 아니라 `subgraph`끼리 잇는다. 칸을 바깥과 이으면 Mermaid가 그 `subgraph`의 `direction`을 무시한다.
 - Insights 캡처는 측정 기록에 넣는다. 본문에는 캡처에서 읽은 값을 작은 표로 옮긴다.
 - 전후 영상은 달라진 쪽 하나만 넣어도 된다. 나머지는 측정 기록에 파일 이름을 적는다.
 
