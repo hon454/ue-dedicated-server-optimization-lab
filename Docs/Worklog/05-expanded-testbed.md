@@ -83,3 +83,28 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 - 사용자가 0번 클라이언트가 검증용 노드가 고갈된 동안 다른 노드를 채집한다고 알렸다. 무작위 노드가 0번 자리에서 6m(채집 거리 5m + 1m) 안이면 6m로 밀어 놓고 서버 로그에 남기게 고쳤다.
 - 처음 확인은 클라이언트 2개로 돌려 세 배치 모두 `lab_nodes_moved_from_harvest_spot=0`이었다. 간격 배치의 0번 자리는 클라이언트 수로 정해지므로(`GetSlotLocation`) 8개 배치의 확인이 아니었다. 1막의 배치는 클라이언트 수와 상관없어 `tsmall-node-noarg-r1`의 0개는 유효하다.
 - 클라이언트 8개(자원 노드 5,000, NPC 300, 준비 20초, 측정 30초, 트레이스 끔): 밀집 `tsmall-node-gather8-r1`은 `lab_node_moved index=1719 distance_cm=291`로 1개, 분산 `tsmall-node-apart8-r1`은 0개다. 모두 종료 코드 0이다.
+
+## 2026-10-03 태스크 20: 상태 값의 프로퍼티를 64개로 늘려 본 실행 (`calib2-e`, `calib2-e2`)
+
+Push Model의 재료(상태 값의 확인 비용)가 변동 폭보다 작아서, 프로퍼티 비교의 몫이 얼마인지 보려고 한 실행이다(사용자 승인). `ULabStateComponent`에 바뀌지 않는 `int32` 56개(고정 배열)를 더한 빌드로 세 기법을 적용한 구성을 쟀다. 재고 나서 코드는 8개로 되돌렸고 커밋하지 않았다.
+
+- `calib2-e-r1`(23:44)은 `FAIL: processor affinity was re-applied`(측정 시작 9초 뒤)로 끝나 수치를 쓰지 않는다. `calib2-e2-r1`(23:47, 종료 코드 0): `work_avg_ms` 17.145, `netflush_avg_ms` 12.701, `out_bytes_per_sec_per_conn` 16,647, `open_actor_channels_per_conn` 77.
+- `calib2-e2-r1`의 Timing Insights(측정 구간 90.8826\~150.8920초, `WorldTick` Count 1,786): `LabStateComponent` 293,599번, 프레임당 0.327ms, 한 번 1.99µs. 프로퍼티 8개의 `calib2-a-r1`은 294,108번, 0.264ms, 1.61µs였다.
+- 이 실행은 모든 타이머가 `calib2-a-r1`의 약 1.2배였다. 처리 횟수가 같은 타이머들이 `GameNetDriver` Excl 8.761 → 10.486ms(1.20배), `LabCharacter` Excl 0.351 → 0.416ms(1.19배), `GameplayDebuggerCategoryReplicator` 0.056 → 0.067ms(1.20배), `LabPlayerController` 0.040 → 0.050ms다. `LabStateComponent`의 1.24배(1.61 → 1.99µs)는 거의 이 느려짐이고, 프로퍼티 56개가 더한 것은 한 번에 약 0.06µs(1.99 - 1.61 × 1.20)다. 프로퍼티 비교의 몫이 작고 한 번 처리하는 고정 비용이 대부분이다.
+- `work_avg_ms`가 14.682에서 17.145로 늘어난 것도 같은 느려짐으로 본다(에이전트 의견). 두 실행은 77분 떨어져 있고 그 사이에 건축물 배치와 노드 하나의 위치를 고쳤다. 연달아 재서 가르지는 않았다.
+- 결론(미리 정한 기준): 프로퍼티를 늘려도 상태 값의 비용이 2ms 근처로 가지 않으므로 지금 값(8개)으로 둔다. Push Model 글은 이 규모에서 구별되지 않는다는 결과가 될 수 있다.
+
+## 2026-10-03 태스크 20.3: 기준선 `calib2-d3-r1`의 Timing Insights 값
+
+`calib2-a-r1`과 같은 방법으로 읽었다(측정 구간 93.2293\~153.3988초, `WorldTick` Count 325 = CSV `frames`).
+
+| 타이머 | 프레임당 처리 횟수 | 프레임당 Incl | 한 번 | 비고 |
+| --- | --- | --- | --- | --- |
+| `WorldTick` | | 184.64ms | | CSV `work_avg_ms` 184.837 |
+| `GameNetDriver` | | 177.47ms | | `WorldTick`의 96.1%. Excl 61.93ms. CSV `netflush_avg_ms` 177.836 |
+| `LabResourceNode` | 40,008 | 80.78ms | 2.02µs | 5,001 × 8 |
+| `LabNpc` | 2,800 | 24.05ms | 8.59µs | 350 × 8. 그 아래 `LabStateComponent` 포함 |
+| `LabBuilding` | 4,000 | 8.42ms | 2.10µs | 500 × 8. 예상 9.85ms |
+| `LabCharacter` | 64 | 1.59ms | 24.89µs | 8 × 8 |
+| `LabStateComponent` 합 | | 4.93ms | | 기준선에서는 NPC 350개가 프레임마다 처리된다 |
+| `LabInventoryComponent` | | 0.51ms | | |
