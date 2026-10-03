@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520" role="img" aria-label="클라이언트 하나가 가진 자원 노드. Relevancy만 적용하면 원 밖으로 나간 자원 노드가 사라지고, Dormancy를 적용하면 지나온 길의 자원 노드가 남는다.">
+<style>
+text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#e6edf3}
+.title{font-size:17px;font-weight:700}
+.sub{font-size:13px;fill:#9aa7b5}
+.legend{font-size:13px;fill:#c9d4df}
+.map{fill:#151b24;stroke:#2b3442}
+.dots{fill:none;stroke-linecap:round}
+.off{stroke:#465061;stroke-width:3}
+.node{stroke:#3fb950;stroke-width:4.5}
+.npc{stroke:#ff6b61;stroke-width:6.5}
+.range{fill:none;stroke:#e6edf3;stroke-width:1.2;stroke-opacity:.85}
+.route{fill:none;stroke:#e6edf3;stroke-width:1;stroke-opacity:.35;stroke-dasharray:4 4}
+.player{fill:#ffffff;stroke:#0f141b;stroke-width:1}
+</style>
+<defs>
+<path id="nodes" d="M233.7 123.4h0M216 166h0M53.6 256.7h0M0 253.1h0M166.3 147.7h0M291.5 73.3h0M239.4 16.3h0M21.4 313.5h0M97.4 88.3h0M342.5 239.4h0M76.2 165.3h0M5.5 376.7h0M301.9 172.3h0M177.9 167.1h0M355 65.8h0M207.2 346.6h0M75 386.6h0M313 179.1h0M323.1 390.4h0M313.7 334.5h0M144.6 129.3h0M38.6 172.7h0M252.4 74h0M325.7 79.9h0M273.1 98h0M362.5 389h0M34.8 25.4h0M399.3 68.5h0M117.9 239.3h0M264.2 281.2h0M78.9 232.9h0M298.1 100.5h0M340.5 344.9h0M398.3 252.7h0M103.3 242.2h0M390.4 107h0M174.6 8h0M94.8 346.9h0M126.7 232.8h0M124.3 227.8h0M246.6 98h0M294 257h0M103.3 218.2h0M311.8 49.7h0M387.4 244.5h0M61.2 83.7h0M126.2 32.5h0M255.7 311.8h0M231.2 338.1h0M232.2 307.4h0M75.8 73h0M376.5 30.9h0M107.6 255.5h0M214.4 26.9h0M330.6 52.4h0M341.8 285.1h0M115 36.3h0M34.6 380.9h0M338.8 41.1h0M397.2 122.4h0M33.2 348.6h0M265.4 258.8h0M181 306.7h0M380.8 142.1h0M152.3 183h0M115.8 188.6h0M0.6 216.9h0M152 173.7h0M121.4 263.2h0M149.4 247.8h0M3.8 284.9h0M119.1 335h0M302.7 176.1h0M368.7 89.9h0M397.9 274.8h0M372.9 190h0M340.8 109.8h0M274.3 127.2h0M207.6 117.7h0M249.8 200.9h0M274.7 72.3h0M274.6 147.6h0M336.6 153.1h0M284.5 298.2h0M284.3 260.9h0M259.5 75.6h0M291.8 149.4h0M118.6 148.3h0M229.5 330.4h0M356.1 5h0M338 290.9h0M144.2 277.5h0M210.1 325.7h0M247.8 290.8h0M342.6 24.8h0M366.1 3.7h0M13.4 348.4h0M373.1 331.5h0M10.3 371.5h0M398.4 149.6h0M291.5 70.6h0M205.6 137h0M15.3 297.3h0M298.3 191.4h0M391.2 126h0M297.7 277.2h0M161.6 244.8h0M263 383.8h0M328.1 397h0M337.5 10.9h0M305.3 393.7h0M355.5 259.5h0M294.8 255.7h0M62.2 343.3h0M176.3 187.1h0M137.9 257.9h0M332 206.5h0M113.4 267.4h0M85.3 7.2h0M262.2 312.8h0M27.5 56.4h0M299.6 216.6h0M127.1 88.9h0M242.1 168.6h0M85.5 389.3h0M3.5 13.3h0M34.1 387.5h0M244.3 297.8h0M115 346.1h0M242.2 159.6h0M235.1 354.9h0M15.1 204.1h0M388 39.8h0M345.2 355.1h0M131.4 395.6h0M298.5 320.8h0M134.8 24.7h0M383.4 248.9h0M94.1 138.9h0M132.5 206h0M13.6 293.7h0M257.9 187h0M183.6 124.6h0M223.9 344.5h0M362.2 215.6h0M152.4 139.3h0M165 102.6h0M77.7 72.5h0M41.3 95.5h0M228.6 87.3h0M143.7 287.1h0M37.2 89.9h0M90.9 82.6h0M278.5 9.3h0M4.2 395.3h0M203.7 376.1h0M213.6 36.2h0M146 341.4h0M97.1 228.2h0M20.5 263.4h0M215.9 0.7h0M392.8 315.7h0M243.2 159.2h0M155.8 32.2h0M347.1 310.8h0M207.7 398.6h0M310.4 45.2h0M62.3 126.5h0M256.5 168h0M96.1 101h0M246.2 214.6h0M340.3 366.9h0M11.9 176.3h0M325.7 128.8h0M356.6 136.3h0M375.5 213.1h0M75 365.2h0M271.3 143h0M294.2 121.4h0M246.6 331.7h0M326.8 246.2h0M62.3 93.3h0M187.7 205.1h0M65.7 168.4h0M374 19.5h0M84.9 329.1h0M132.1 319.5h0M17.2 1.4h0M60.4 25.9h0M303.8 66.9h0M233.6 27h0M75.7 210.8h0M335.3 394.5h0M323.7 345.2h0M173.9 319.2h0M232.3 135.1h0M321.4 164.4h0M174.2 400h0M152.3 247h0M179.2 206.9h0M110.6 157.3h0M154.9 337.1h0M51.4 46.4h0M81.1 155.5h0M348 270h0M82.7 268.3h0M217.6 179.7h0M98.1 299.8h0M170.6 251.5h0M158 193.1h0M281.4 120.5h0M394.5 54.7h0M187.2 349.8h0M7.7 367.6h0M145.3 17.2h0M249.1 213.4h0M246.7 97h0M356.4 76.3h0M272.1 138.5h0M159.4 288.9h0M313.5 168.2h0M397.2 303.9h0M236.6 364h0M317.5 141.7h0M66.3 274.4h0M229.4 300.8h0M89 386.1h0M325.5 390h0M162.7 100.2h0M150 101.6h0M38.7 113.4h0M10.2 330.8h0M20.9 269.3h0M21.7 120.6h0M223.3 21.8h0M27.7 32h0M92.1 269.1h0M279.6 113.2h0M123.3 90.6h0M218.1 223.2h0M32.3 266.1h0M301.3 270.9h0M187.8 348.3h0M124.4 260.5h0M171.5 366.4h0M313.6 172h0M388.6 57.8h0M250.3 200.1h0M158 66.5h0M283 367.3h0M342.3 196.8h0M318.3 44.5h0M246.8 197.4h0M208.7 219.9h0M106.5 212.3h0M266.7 72.1h0M282 326.7h0M69.3 172.6h0M212.1 139.3h0M143 72.6h0M144.9 161.1h0M349.1 257h0M108.3 255.7h0M43.5 34.3h0M18.8 79.5h0M355.2 56.8h0M207.6 250.8h0M280.9 235.5h0M347.7 256.8h0M24.1 390.3h0M139.6 304.5h0M154 359.3h0M99.6 241.4h0M289.9 61.8h0M388.6 77.6h0M388 18.7h0M323.5 210.5h0M222.4 181.2h0M247.7 61.4h0M336.3 391.1h0M154 174.4h0M201.1 27h0M257.1 209.9h0M264.6 31.2h0M45.8 233.8h0M224.9 355.3h0M115.2 152.6h0M332.9 240.4h0M7.1 389.9h0M157.3 266.8h0M365.7 381.6h0M45.7 341.2h0M91.5 336.5h0M133.4 397.1h0M28.4 99.7h0M387.8 286.4h0M320.6 33h0M236.4 365.2h0M103.4 127.1h0M102.2 289.8h0M376.9 258.7h0M16 154.8h0M252.7 32.7h0M303.5 170.8h0M277.5 382h0M174.1 257.9h0M304.1 69.4h0M25.3 172.3h0M128.7 259.9h0M335.4 320.6h0M76.5 267.5h0M2.8 346.1h0M246 338.6h0M34.7 82.2h0M316.3 367.7h0M137.1 280h0M287.7 267.5h0M290 107.1h0M365.6 290.9h0M88.5 58.8h0M33 362.5h0M119.6 46.4h0M325.6 129.9h0M382.3 251.1h0M7.7 64h0M236.6 243.4h0M191.6 181.6h0M213.3 109.4h0M255.9 69.8h0M308.8 314.2h0M398 221.3h0M254.6 309.8h0M244.9 294.1h0M370.2 36.5h0M179.5 318.3h0M206.7 237.7h0M171.5 276.6h0M287.6 114h0M147.9 356.4h0M20.5 116.1h0M356.3 183.6h0M74.5 252.2h0M131.2 293.7h0M88.4 106h0M54.3 180.6h0M251.2 295.8h0"/>
+<path id="npcs" d="M382.1 174.3h0M60.8 211.7h0M108 209.8h0M201.5 31.6h0M159.7 345.8h0M71.7 89.4h0M257.4 398.8h0M71.9 315h0M294 99.3h0M361.5 299.5h0M49.3 192.7h0M357.9 214.5h0M146.8 2.3h0M178.7 351.2h0M205.7 264.1h0M382.2 398.9h0M67.1 310.9h0M255.6 397.2h0M215.8 75.9h0M6 338.2h0M154.9 389h0"/>
+<clipPath id="inRange">
+<circle cx="160" cy="160" r="120"><animate attributeName="cx" values="160;240;240;160;160;160" keyTimes="0;.2083;.4167;.625;.8333;1" dur="12s" repeatCount="indefinite"/><animate attributeName="cy" values="160;160;240;240;160;160" keyTimes="0;.2083;.4167;.625;.8333;1" dur="12s" repeatCount="indefinite"/></circle>
+</clipPath>
+<mask id="visited" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="400">
+<circle cx="160" cy="160" r="120" fill="#fff"/>
+<path d="M160 160 H240 V240 H160 Z" fill="none" stroke="#fff" stroke-width="240" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="320" stroke-dashoffset="320"><animate attributeName="stroke-dashoffset" values="320;0;0" keyTimes="0;.8333;1" dur="12s" repeatCount="indefinite"/></path>
+</mask>
+<clipPath id="panel"><rect width="400" height="400"/></clipPath>
+</defs>
+<rect width="900" height="520" rx="10" fill="#0f141b"/>
+
+<text x="30" y="34" class="title">Relevancy만 적용</text>
+<text x="30" y="54" class="sub">원 밖으로 나간 자원 노드는 클라이언트에서 사라진다</text>
+<g transform="translate(30 68)" clip-path="url(#panel)">
+<rect width="400" height="400" class="map"/>
+<use href="#nodes" class="dots off"/>
+<use href="#npcs" class="dots off"/>
+<g clip-path="url(#inRange)">
+<use href="#nodes" class="dots node"/>
+<use href="#npcs" class="dots npc"/>
+</g>
+<path d="M160 160 H240 V240 H160 Z" class="route"/>
+<g transform="translate(160 160)"><animateTransform attributeName="transform" type="translate" values="160 160;240 160;240 240;160 240;160 160;160 160" keyTimes="0;.2083;.4167;.625;.8333;1" dur="12s" repeatCount="indefinite"/><circle r="120" class="range"/><circle r="4" class="player"/></g>
+</g>
+
+<text x="470" y="34" class="title">Dormancy 적용</text>
+<text x="470" y="54" class="sub">지나온 길의 자원 노드가 클라이언트에 남는다</text>
+<g transform="translate(470 68)" clip-path="url(#panel)">
+<rect width="400" height="400" class="map"/>
+<use href="#nodes" class="dots off"/>
+<use href="#npcs" class="dots off"/>
+<g mask="url(#visited)">
+<use href="#nodes" class="dots node"/>
+</g>
+<g clip-path="url(#inRange)">
+<use href="#npcs" class="dots npc"/>
+</g>
+<path d="M160 160 H240 V240 H160 Z" class="route"/>
+<g transform="translate(160 160)"><animateTransform attributeName="transform" type="translate" values="160 160;240 160;240 240;160 240;160 160;160 160" keyTimes="0;.2083;.4167;.625;.8333;1" dur="12s" repeatCount="indefinite"/><circle r="120" class="range"/><circle r="4" class="player"/></g>
+</g>
+
+<g transform="translate(30 497)" class="legend">
+<circle cx="5" cy="-4" r="4" fill="#3fb950"/><text x="16" y="0" class="legend">클라이언트에 있는 자원 노드</text>
+<circle cx="205" cy="-4" r="4" fill="#ff6b61"/><text x="216" y="0" class="legend">클라이언트에 있는 NPC</text>
+<circle cx="380" cy="-4" r="4" fill="#465061"/><text x="391" y="0" class="legend">서버에만 있는 액터</text>
+<text x="540" y="0" class="legend">원은 150m, 8배속. 점의 위치는 예시다</text>
+</g>
+</svg>
