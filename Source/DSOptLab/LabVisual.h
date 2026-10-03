@@ -9,6 +9,7 @@ namespace LabVisual
 {
 	inline const FLinearColor NodeColor = FLinearColor::FromSRGBColor(FColor(70, 125, 80));
 	inline const FLinearColor NpcColor = FLinearColor::FromSRGBColor(FColor(180, 80, 70));
+	inline const FLinearColor BuildingColor = FLinearColor::FromSRGBColor(FColor(190, 140, 60));
 
 	/**
 	 * 색마다 하나만 만들어 모든 액터가 공유하는 머테리얼. 액터마다 만들지 않아야 드로우 콜 병합이 유지된다.

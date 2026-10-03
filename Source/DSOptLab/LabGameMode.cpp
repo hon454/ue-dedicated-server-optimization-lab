@@ -6,6 +6,7 @@
 #include "HAL/PlatformMisc.h"
 #include "Math/RandomStream.h"
 #include "DSOptLab.h"
+#include "LabBuilding.h"
 #include "LabCharacter.h"
 #include "LabHUD.h"
 #include "LabInventoryComponent.h"
@@ -118,6 +119,91 @@ void ALabGameMode::SpawnWorld()
 			Npc->SetPatrol(PatrolStart, PatrolEnd);
 		}
 	}
+
+	if (Config.BuildingsPerCluster > 0)
+	{
+		SpawnBuildings();
+	}
+}
+
+void ALabGameMode::SpawnBuildings()
+{
+	const FLabServerConfig& Config = FLabServerConfig::Get();
+
+	// 자원 노드와 NPC의 난수와 따로 써서, 건축물을 켜도 그 배치가 달라지지 않는다.
+	BuildingRng.Initialize(Config.Seed + 2);
+
+	// 자리마다 경로(정사각형)의 중심을 구하고, 가까운 자리끼리 한 무리로 묶는다.
+	// 밀집 배치에서는 여덟 자리가 한 무리가 되고, 분산 배치에서는 자리마다 무리가 하나씩 생긴다.
+	// 어느 배치에서나 연결 하나가 받는 건축물의 수가 같게 하려는 것이다.
+	const float Side = Config.PlayerSpacingMeters > 0.f ? ALabPlayerController::SpacedWaypointSide : ALabPlayerController::WaypointSide;
+	TArray<FVector> CenterSums;
+	for (int32 Slot = 0; Slot < Config.ExpectedClients; ++Slot)
+	{
+		FVector RouteCenter = GetSlotLocation(Slot) + FVector(0.5f * Side, 0.5f * Side, 0.f);
+		RouteCenter.Z = 0.f;
+
+		const int32 Found = BuildingClusters.IndexOfByPredicate([&RouteCenter](const FBuildingCluster& Cluster)
+		{
+			return FVector::DistSquared2D(Cluster.FirstRouteCenter, RouteCenter) < FMath::Square(BuildingClusterMergeDistance);
+		});
+		if (Found != INDEX_NONE)
+		{
+			CenterSums[Found] += RouteCenter;
+			++BuildingClusters[Found].NumSlots;
+		}
+		else
+		{
+			FBuildingCluster& Cluster = BuildingClusters.AddDefaulted_GetRef();
+			Cluster.FirstRouteCenter = RouteCenter;
+			Cluster.NumSlots = 1;
+			CenterSums.Add(RouteCenter);
+		}
+	}
+
+	for (int32 Index = 0; Index < BuildingClusters.Num(); ++Index)
+	{
+		FBuildingCluster& Cluster = BuildingClusters[Index];
+		Cluster.Center = CenterSums[Index] / static_cast<float>(Cluster.NumSlots);
+		for (int32 Count = 0; Count < Config.BuildingsPerCluster; ++Count)
+		{
+			SpawnBuilding(Cluster);
+		}
+	}
+
+	UE_LOG(LogDSOptLab, Display, TEXT("lab_buildings clusters=%d per_cluster=%d"), BuildingClusters.Num(), Config.BuildingsPerCluster);
+}
+
+void ALabGameMode::SpawnBuilding(FBuildingCluster& Cluster)
+{
+	// 원 안에 고르게 놓는다. 한 변 200cm 정육면체의 중심이 100cm에 오게 해 바닥에 세운다.
+	const float Distance = BuildingClusterRadius * FMath::Sqrt(BuildingRng.FRand());
+	const float Angle = 2.f * PI * BuildingRng.FRand();
+	const FVector Location = Cluster.Center + FVector(FMath::Cos(Angle) * Distance, FMath::Sin(Angle) * Distance, 100.f);
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	if (ALabBuilding* Building = GetWorld()->SpawnActor<ALabBuilding>(ALabBuilding::StaticClass(), Location, FRotator::ZeroRotator, Params))
+	{
+		Cluster.Buildings.Add(Building);
+	}
+}
+
+void ALabGameMode::RebuildOne()
+{
+	// 무리를 돌아가며 가장 오래된 것을 허물고 새로 하나를 짓는다. 건축물의 수는 그대로다.
+	FBuildingCluster& Cluster = BuildingClusters[NextRebuildCluster % BuildingClusters.Num()];
+	++NextRebuildCluster;
+
+	if (!Cluster.Buildings.IsEmpty())
+	{
+		if (ALabBuilding* Oldest = Cluster.Buildings[0].Get())
+		{
+			Oldest->Destroy();
+		}
+		Cluster.Buildings.RemoveAt(0);
+	}
+	SpawnBuilding(Cluster);
 }
 
 void ALabGameMode::StartScenario()
@@ -204,6 +290,12 @@ void ALabGameMode::StartElementTimers()
 	{
 		GetWorldTimerManager().SetTimer(ChurnTimer, this, &ALabGameMode::ChurnOneInventory,
 			Config.InventoryChurnSeconds / Inventories.Num(), true);
+	}
+
+	if (Config.BuildIntervalSeconds > 0.f && BuildingClusters.Num() > 0)
+	{
+		GetWorldTimerManager().SetTimer(RebuildTimer, this, &ALabGameMode::RebuildOne,
+			Config.BuildIntervalSeconds / BuildingClusters.Num(), true);
 	}
 }
 

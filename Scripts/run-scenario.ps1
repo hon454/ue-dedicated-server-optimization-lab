@@ -28,7 +28,11 @@
     # 플레이어 캐릭터에 이 칸 수의 인벤토리를 붙인다. 0이면 붙이지 않는다.
     [int]$InventoryItems = 0,
     # 플레이어마다 이 간격(초)으로 인벤토리의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다. 0이면 하지 않는다.
-    [double]$InventoryChurn = 0
+    [double]$InventoryChurn = 0,
+    # 플레이어가 있는 곳마다 건축물을 이 수만큼 모아 놓는다(밀집 배치에서는 한 무리). 0이면 놓지 않는다.
+    [int]$Buildings = 0,
+    # 무리마다 이 간격(초)으로 가장 오래된 건축물 하나를 허물고 새로 하나를 짓는다. 0이면 하지 않는다.
+    [double]$BuildInterval = 0
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -175,6 +179,12 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($InventoryChurn -gt 0) {
         $ServerArgs += "-LabInventoryChurn=$InventoryChurn"
+    }
+    if ($Buildings -gt 0) {
+        $ServerArgs += "-LabBuildings=$Buildings"
+    }
+    if ($BuildInterval -gt 0) {
+        $ServerArgs += "-LabBuildInterval=$BuildInterval"
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")

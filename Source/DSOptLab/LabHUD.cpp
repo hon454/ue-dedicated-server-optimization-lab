@@ -7,6 +7,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
 #include "Misc/Paths.h"
+#include "LabBuilding.h"
 #include "LabCharacter.h"
 #include "LabInventoryComponent.h"
 #include "LabNpc.h"
@@ -71,6 +72,16 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 	int32 NumOwnItems = 0;
 	int32 OwnFirstItemId = 0;
 
+	int32 NumBuildings = 0;
+	for (TActorIterator<ALabBuilding> It(World); It; ++It)
+	{
+		++NumBuildings;
+		if (Config.bTopDown)
+		{
+			DrawDebugPoint(World, It->GetActorLocation() + PointOffset, 5.f, FColor(255, 170, 0), false, -1.f, SDPG_Foreground);
+		}
+	}
+
 	int32 NumNpcs = 0;
 	for (TActorIterator<ALabNpc> It(World); It; ++It)
 	{
@@ -118,9 +129,9 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 	};
 
 	// 맨 앞 칸의 아이템 번호는 인벤토리의 앞 칸이 지워질 때마다 바뀐다.
-	if (NumStates > 0 || NumInventories > 0)
+	if (NumStates > 0 || NumInventories > 0 || NumBuildings > 0)
 	{
-		OverlayLines.Add(FString::Printf(TEXT("states=%d inventories=%d | own items=%d first id=%d"), NumStates, NumInventories, NumOwnItems, OwnFirstItemId));
+		OverlayLines.Add(FString::Printf(TEXT("buildings=%d states=%d inventories=%d | own items=%d first id=%d"), NumBuildings, NumStates, NumInventories, NumOwnItems, OwnFirstItemId));
 	}
 }
 

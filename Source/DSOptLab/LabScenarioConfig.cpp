@@ -35,6 +35,8 @@ const FLabServerConfig& FLabServerConfig::Get()
 		FParse::Value(Cmd, TEXT("LabStateInterval="), C.StateIntervalSeconds);
 		FParse::Value(Cmd, TEXT("LabInventoryItems="), C.InventoryItems);
 		FParse::Value(Cmd, TEXT("LabInventoryChurn="), C.InventoryChurnSeconds);
+		FParse::Value(Cmd, TEXT("LabBuildings="), C.BuildingsPerCluster);
+		FParse::Value(Cmd, TEXT("LabBuildInterval="), C.BuildIntervalSeconds);
 		return C;
 	}();
 	return Config;
@@ -72,6 +74,14 @@ FString FLabServerConfig::GetConfigName() const
 	if (InventoryChurnSeconds != Defaults.InventoryChurnSeconds)
 	{
 		Parts.Add(FString::Printf(TEXT("InventoryChurn=%g"), InventoryChurnSeconds));
+	}
+	if (BuildingsPerCluster != Defaults.BuildingsPerCluster)
+	{
+		Parts.Add(FString::Printf(TEXT("Buildings=%d"), BuildingsPerCluster));
+	}
+	if (BuildIntervalSeconds != Defaults.BuildIntervalSeconds)
+	{
+		Parts.Add(FString::Printf(TEXT("BuildInterval=%g"), BuildIntervalSeconds));
 	}
 	return Parts.IsEmpty() ? TEXT("default") : FString::Join(Parts, TEXT(";"));
 }

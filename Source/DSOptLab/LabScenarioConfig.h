@@ -35,8 +35,8 @@ struct FLabServerConfig
 
 	// 1막의 세 기법을 켜고 끈다. 인자를 주지 않으면 세 기법이 모두 적용된 구성이다.
 	// 액터의 생성자가 읽는다. 생성자는 클라이언트에서도 돌지만 세 값은 서버에서만 뜻이 있다.
-	bool bAlwaysRelevant = false;      // -LabAlwaysRelevant (자원 노드와 NPC를 거리와 상관없이 모든 연결에 보낸다)
-	bool bNodeDormancy = true;         // -LabNoNodeDormancy로 끈다
+	bool bAlwaysRelevant = false;      // -LabAlwaysRelevant (자원 노드, NPC, 건축물을 거리와 상관없이 모든 연결에 보낸다)
+	bool bNodeDormancy = true;         // -LabNoNodeDormancy로 끈다 (자원 노드와 건축물)
 	float NpcUpdateFrequency = 10.f;   // -LabNpcUpdateFrequency= (엔진 기본값은 100)
 
 	// 2막의 확장 요소. 인자를 주지 않으면 1막의 시나리오다.
@@ -48,6 +48,10 @@ struct FLabServerConfig
 	int32 InventoryItems = 0;          // -LabInventoryItems=
 	// 0보다 크면 플레이어마다 이 간격(초)으로 인벤토리의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다.
 	float InventoryChurnSeconds = 0.f; // -LabInventoryChurn=
+	// 0보다 크면 플레이어가 있는 곳마다 건축물(ALabBuilding)을 이 수만큼 모아 놓는다. 밀집 배치에서는 한 무리다.
+	int32 BuildingsPerCluster = 0;     // -LabBuildings=
+	// 0보다 크면 무리마다 이 간격(초)으로 가장 오래된 건축물 하나를 허물고 새로 하나를 짓는다.
+	float BuildIntervalSeconds = 0.f;  // -LabBuildInterval=
 
 	/** 수치 CSV의 config 열에 적는 값. 기본값과 다른 인자를 ';'로 잇고, 모두 기본값이면 "default"다. */
 	FString GetConfigName() const;

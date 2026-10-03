@@ -5,6 +5,7 @@
 #include "Math/RandomStream.h"
 #include "LabGameMode.generated.h"
 
+class ALabBuilding;
 class ALabPlayerController;
 class ULabInventoryComponent;
 class ULabStateComponent;
@@ -37,12 +38,36 @@ private:
 	void PlaceAndStart(ALabPlayerController& Player);
 	int32 CountReadyPlayers() const;
 
-	// 2막의 확장 요소(상태 값, 인벤토리). 인자를 주지 않으면 아무것도 만들지 않는다.
+	// 2막의 확장 요소(상태 값, 인벤토리, 건축물). 인자를 주지 않으면 아무것도 만들지 않는다.
 	void AddStateComponent(AActor& Actor);
 	void AddPlayerElements(ALabPlayerController& Player);
 	void StartElementTimers();
 	void ChangeOneState();
 	void ChurnOneInventory();
+
+	/** 건축물의 한 무리. 플레이어의 경로가 서로 Net Cull Distance 안에 있는 자리들이 한 무리를 함께 쓴다. */
+	struct FBuildingCluster
+	{
+		FVector FirstRouteCenter = FVector::ZeroVector;
+		FVector Center = FVector::ZeroVector;
+		int32 NumSlots = 0;
+		/** 지은 순서. 맨 앞이 가장 오래된 것이다. */
+		TArray<TWeakObjectPtr<ALabBuilding>> Buildings;
+	};
+
+	void SpawnBuildings();
+	void SpawnBuilding(FBuildingCluster& Cluster);
+	void RebuildOne();
+
+	/** 무리의 반지름(cm). 밀집 배치의 경로 상자는 무리 중심에서 60m 안이라, 무리의 건축물은 모든 플레이어에게서 140m 안에 있다. */
+	static constexpr float BuildingClusterRadius = 8000.f;
+	/** 경로 중심이 이 거리(Net Cull Distance, cm) 안인 자리들은 한 무리를 쓴다. */
+	static constexpr float BuildingClusterMergeDistance = 15000.f;
+
+	TArray<FBuildingCluster> BuildingClusters;
+	FRandomStream BuildingRng;
+	int32 NextRebuildCluster = 0;
+	FTimerHandle RebuildTimer;
 
 	bool bScenarioStarted = false;
 

@@ -8,6 +8,8 @@
 
 확정 규모는 클라이언트 8개, 자원 노드 5,000개와 검증용 1개, AI NPC 300명, 준비 구간 30초, 측정 구간 60초다(STATUS.md "확정할 값"). 1막(포스팅 0\~4)의 규모이고 1막 안에서는 바꾸지 않았다. 2막의 규모는 테스트베드를 확장한 뒤 따로 확정한다([2막 구현 계획](../Planning/2026-10-03-act-2-implementation-plan.md) 태스크 20, [ADR-0014](../Decisions/0014-act-2-testbed-expansion.md)). 아래 표는 1막의 값이다.
 
+2막의 확장 요소는 서버 인자로 켠다. 인자를 주지 않은 실행은 1막의 시나리오다. 플레이어 자리 간격(`-PlayerSpacing`), 상태 값(`-StateInterval`), 인벤토리(`-InventoryItems`, `-InventoryChurn`), 건축물(`-Buildings`, `-BuildInterval`)이고, 뜻과 배치 방법은 [2막 설계](../Planning/2026-10-03-act-2-design.md) 3절에 있다. 값은 태스크 20에서 확정해 STATUS.md "확정할 값"에 적는다. 이 요소들도 고정 시드와 공통 시작 신호를 따른다. 값을 바꾸는 타이머는 시작 신호에서 출발하고, 자원 노드와 NPC의 배치에 쓰는 난수와 따로 쓰는 시드로 고른다. 요소를 켠 실행에서는 클라이언트 화면 글자에 셋째 줄(`buildings=`, `states=`, `inventories=`, 자기 인벤토리의 칸 수와 맨 앞 칸의 번호)이 생긴다.
+
 | 항목 | 값 | 근거 |
 | --- | --- | --- |
 | 서버 틱 | 30Hz (틱 예산 33.3ms) | 엔진 소스: `NetServerMaxTickRate` 기본값 30(`Engine/Config/BaseEngine.ini:1867`). 계산값: 1000ms ÷ 30 = 33.3ms |

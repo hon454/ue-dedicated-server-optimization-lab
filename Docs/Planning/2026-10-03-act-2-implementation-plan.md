@@ -18,8 +18,8 @@
 ### 태스크 15. 세 기법을 실행 인자로 켜고 끄기
 
 - 15.1 서버 인자 세 개를 `FLabServerConfig`에 더한다. 인자를 주지 않으면 지금 구성(세 기법 모두 적용)이다.
-  - `-LabAlwaysRelevant`: 자원 노드와 NPC에 `bAlwaysRelevant = true`를 준다([포스팅 2](../../Posts/02-relevancy/README.md) "적용"에서 지운 두 줄).
-  - `-LabNoNodeDormancy`: 자원 노드를 Dormant 상태로 두지 않는다(`LabResourceNode.cpp:17`의 `NetDormancy = DORM_DormantAll`을 적용하지 않는다).
+  - `-LabAlwaysRelevant`: 자원 노드와 NPC에 `bAlwaysRelevant = true`를 준다. 2막의 건축물도 이 인자를 따른다(태스크 19.1)([포스팅 2](../../Posts/02-relevancy/README.md) "적용"에서 지운 두 줄).
+  - `-LabNoNodeDormancy`: 자원 노드를 Dormant 상태로 두지 않는다. 2막의 건축물도 이 인자를 따른다(`LabResourceNode.cpp:17`의 `NetDormancy = DORM_DormantAll`을 적용하지 않는다).
   - `-LabNpcUpdateFrequency=`: NPC의 `NetUpdateFrequency` 값(`LabNpc.cpp:17`, 기본 10). 엔진 기본값은 100이다(STATUS.md "확정할 값").
   - 값을 적용하는 자리(생성자, 스폰할 때)는 구현하면서 정한다. 세 값은 서버에서만 뜻이 있고, 생성자는 클라이언트에서도 돈다.
 - 15.2 `run-scenario.ps1`에 매개변수 `-AlwaysRelevant`, `-NoNodeDormancy`, `-NpcUpdateFrequency <값>`을 더하고, 서버 로그에 적용된 구성을 한 줄로 남긴다.
@@ -61,14 +61,14 @@ ADR-0014가 승인된 뒤에 시작한다. 요소마다 태스크 하나이고, 
 
 ### 태스크 19. 건축물, 그리고 1막 시나리오의 재현 확인
 
-- 19.1 건축물 액터와 플레이어 자리 주변의 시드 배치. 내려다보기 화면의 점 색을 정한다.
+- 19.1 건축물 액터와 플레이어 자리 주변의 시드 배치(`-LabBuildings=`), 실행 중에 짓고 허무는 타이머(`-LabBuildInterval=`). 내려다보기 화면의 점은 주황색이다. 2026-10-03에 끝냈고, 구현과 값은 설계 3.4에 있다.
 - 19.2 확정 규모에서 새 인자를 모두 끈 실행 3회를 태스크 16.1의 묶음과 연달아 재서 구별되지 않는지 확인한다. 구별되면 원인을 찾아 고친 뒤 다시 잰다.
 
 ## 단계 3. 새 기준선
 
 ### 태스크 20. 보정
 
-- 20.1 출발값을 정한다. 1막의 측정에서 계산해 근거를 적는다(예: 채널이 열린 자원 노드 하나를 확인하는 비용은 `relevancy2-r1`의 `LabResourceNode` 프레임당 1.98ms ÷ (95.6개 × 연결 8)로 구한다).
+- 20.1 출발값을 정한다. 정할 값은 플레이어 주변의 NPC 수, 상태 값의 간격(`-StateInterval`), 인벤토리의 칸 수와 앞 칸을 지우는 간격(`-InventoryItems`, `-InventoryChurn`. 출발값 200칸, 4초), 건축물의 무리 하나의 수와 짓는 간격(`-Buildings`, `-BuildInterval`)이다. 플레이어 자리 간격은 밀집 3m로 정해졌다(설계 3.1). 1막의 측정에서 계산해 근거를 적는다(예: 채널이 열린 자원 노드 하나를 확인하는 비용은 `relevancy2-r1`의 `LabResourceNode` 프레임당 1.98ms ÷ (95.6개 × 연결 8)로 구한다).
 - 20.2 보정 실행(라벨 `calib2-a`부터). 실행마다 서버 로그와 자동 스크린샷을 확인하고, 표를 [Worklog](../Worklog/)의 새 파일 `05-expanded-testbed.md`에 쌓는다.
 - 20.3 기준선의 네 조건을 확인한다. 송신 한도에 포화되면 설계 5절의 계산으로 한도를 올린다. 준비 구간 안에 초기 전송이 끝나는지 본다.
 - 20.4 세 기법을 적용한 구성에서 Insights를 열어 클래스 타이머와 비트 수를 읽고, 설계 6절의 후보마다 겨냥할 비용이 `work_avg_ms`의 변동 폭보다 큰지 표로 만든다.
