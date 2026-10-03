@@ -9,7 +9,6 @@
 - **대상**: 레거시 리플리케이션(기본 NetDriver). 게임 코드는 표준 `UPROPERTY` 리플리케이션과 RPC만 쓴다.
 - **다루는 기법**: Relevancy(Net Cull Distance), 액터 Dormancy, Net Update Frequency.
 - **측정 도구**: Unreal Insights(Timing, Network)와 서버가 남기는 수치 CSV.
-- **상태**: 테스트베드와 기준선 측정, 세 기법(Relevancy, 자원 노드 Dormancy, AI NPC Net Update Frequency)의 적용까지 다섯 편을 마쳤다.
 
 ## 포스팅
 
