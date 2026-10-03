@@ -99,10 +99,10 @@
 | 연결당 송신 대역폭(바이트/초) | 28,048 | 2,897 | 2,793 | 1,303 |
 | 연결당 열린 액터 채널 수 | 5,314 | 118 | 20 | 20 |
 
-- **출처.** 서버 프레임 시간과 리플리케이션 시간은 Timing Insights, 연결당 송신 대역폭은 Network Insights(`Connection 0`)에서 측정 구간을 읽은 값이고, 연결당 열린 액터 채널 수는 서버 CSV이다. 세 실행의 값과 변동 폭은 각 포스팅의 "결과"에 있다.
+- **출처.** 서버 프레임 시간과 리플리케이션 시간은 Timing Insights, 연결당 송신 대역폭은 Network Insights(`Connection 0`)에서 측정 구간을 읽은 값이고, 연결당 열린 액터 채널 수는 서버 CSV이다. 세 실행의 값과 변동 폭은 각 포스팅 폴더의 측정 기록(`measurements.md`)에 있다.
 - **서버 프레임 시간**은 프레임 시간에서 틱 속도 제한 대기를 뺀 시간이다([ADR-0010](Docs/Decisions/0010-frame-time-without-tick-wait.md)). P99는 측정 구간의 프레임마다 이 값을 Insights에서 내보내 읽은 99백분위 경계값이다.
 - **Dormancy 값.** 표와 차트의 Dormancy는 Net Update Frequency와 연달아 잰 `dormancy6`이다. 같은 코드를 Relevancy 직후에 잰 `dormancy2`는 서버 프레임 시간 평균이 14.69ms로 1.09ms 컸고(측정한 화면 조건이 달랐다), 기법별 변화는 연달아 잰 묶음끼리 계산했다. 기준선과 `update-frequency3`도 화면 조건이 다르지만, 이 1.09ms는 둘의 차이 185.27ms에 비해 작다([AI NPC Net Update Frequency의 "결과"](Posts/04-update-frequency/README.md#결과)).
-- **연결당 송신 대역폭**은 세 실행 가운데 일부만 Network Insights에서 읽었고, 어느 실행의 값인지는 각 포스팅의 "결과"에 있다. Relevancy부터는 연결마다 받는 액터가 위치에 따라 달라, `Connection 0`(제자리에서 채집하는 클라이언트)이 서버 CSV의 8개 연결 평균보다 35% 작다([Relevancy와 Net Cull Distance의 "한계와 다음"](Posts/02-relevancy/README.md#한계와-다음)).
+- **연결당 송신 대역폭**은 세 실행 가운데 일부만 Network Insights에서 읽었고, 어느 실행의 값인지는 각 포스팅의 측정 기록에 있다. Relevancy부터는 연결마다 받는 액터가 위치에 따라 달라, `Connection 0`(제자리에서 채집하는 클라이언트)이 서버 CSV의 8개 연결 평균보다 35% 작다([Relevancy와 Net Cull Distance의 측정 기록](Posts/02-relevancy/measurements.md) 4절).
 
 ### 차트
 
@@ -191,6 +191,7 @@ xychart-beta
 ```
 README.md                  이 문서
 Posts/NN-이름/README.md    포스팅 본문과 이미지
+Posts/NN-이름/measurements.md    본문 수치의 근거(실행별 값, 계산식, 엔진 소스 위치)
 DSOptLab.uproject          언리얼 프로젝트(레포 루트가 프로젝트 폴더)
 Source/DSOptLab/           게임 코드. 이 프로젝트에서 만든 클래스는 접두사 Lab
 Config/  Content/          설정과 에셋
