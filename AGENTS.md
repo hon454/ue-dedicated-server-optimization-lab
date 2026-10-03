@@ -34,6 +34,7 @@
 | 공개 소개, 코드 파일별 역할 | [README.md](README.md) |
 | 포스팅 본문과 이미지 | `Posts/NN-이름/README.md`, `Posts/NN-이름/images/` |
 | 포스팅 수치의 근거(정밀한 값, 실행 라벨, 계산식, 세 실행과 CSV 표, Insights 캡처, 엔진 소스 위치) | `Posts/NN-이름/measurements.md` |
+| 루트 README의 누적 수치의 근거(구성별 중앙값, 기법별 변화, 차트) | [Posts/measurements.md](Posts/measurements.md). 루트 README도 포스팅과 같은 문장 규칙으로 쓰고 실행 라벨과 계산식을 여기에 둔다 |
 | 후보 기법 자료(Insights에서 읽은 값, 엔진 소스 위치, 에이전트 의견) | `Posts/NN-이름/candidates.md` |
 | 개념도 SVG를 만드는 스크립트 | `Scripts/make-<이름>.ps1`(예: `Scripts/make-relevancy-map.ps1`) |
 | 실행 산출물 | 수치 CSV `Saved/LabMetrics/summary.csv`, 트레이스 `Saved/Traces/<라벨>-rN.utrace`, 스크린샷 `Saved/Screenshots/Lab/`, 로그 `Saved/Logs/` |
