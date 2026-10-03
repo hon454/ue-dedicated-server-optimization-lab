@@ -1,4 +1,4 @@
-# 시리즈 웹 페이지: 리플리케이션 한 프레임
+# 시리즈 웹 페이지: 서버는 한 프레임에 무엇을 보내는가
 
 [index.html](index.html)은 의존성이 없는 한 파일이다. main에 푸시하면 [배포 워크플로](../.github/workflows/pages.yml)가 이 폴더를 GitHub Pages에 올린다. 주소는 `https://hon454.github.io/ue-dedicated-server-optimization-lab/`다.
 

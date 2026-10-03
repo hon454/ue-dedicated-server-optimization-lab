@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>리플리케이션 한 프레임 | UE5 Dedicated Server 최적화 실험실</title>
+<title>서버는 한 프레임에 무엇을 보내는가 | UE5 Dedicated Server 최적화 실험실</title>
 <meta name="description" content="언리얼 엔진 Dedicated Server가 한 프레임에 하는 리플리케이션을, 최적화 기법을 하나씩 켜면서 보는 인터랙티브 설명.">
 <style>
 :root {
@@ -18,7 +18,8 @@ main { max-width: 1120px; margin: 0 auto; padding: 28px 16px 56px; }
 h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.5px; }
 h2 { font-size: 17px; margin: 0 0 4px; }
 p { margin: 0 0 10px; }
-.lead { color: var(--muted); max-width: 720px; }
+.lead { max-width: 720px; margin-bottom: 4px; }
+.source { color: var(--muted); font-size: 13px; }
 .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 22px 0 10px; }
 .steps button {
 	font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 10px;
@@ -72,8 +73,9 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 </head>
 <body>
 <main>
-	<h1>리플리케이션 한 프레임</h1>
-	<p class="lead">언리얼 엔진 Dedicated Server는 프레임마다 어떤 액터를 어느 클라이언트에게 보낼지 정한다. 최적화 기법을 하나씩 켜면서 그 일이 얼마나 줄어드는지 본다. <a href="https://github.com/hon454/ue-dedicated-server-optimization-lab">UE5 Dedicated Server 최적화 실험실</a>의 측정을 설명하는 페이지다.</p>
+	<h1>서버는 한 프레임에 무엇을 보내는가</h1>
+	<p class="lead">언리얼 엔진 Dedicated Server는 프레임마다 모든 액터를 훑어, 어느 클라이언트에게 무엇을 보낼지 정한다. 아래에서 최적화 기법을 하나씩 켜면, 서버의 일이 얼마나 줄어드는지 볼 수 있다.</p>
+	<p class="source"><a href="https://github.com/hon454/ue-dedicated-server-optimization-lab">UE5 Dedicated Server 최적화 실험실</a>의 측정을 바탕으로 만들었다.</p>
 
 	<div class="steps" id="steps" role="group" aria-label="적용한 기법"></div>
 	<div class="now">
