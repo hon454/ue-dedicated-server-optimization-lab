@@ -58,10 +58,10 @@ flowchart LR
     B -- "예<br/>약 100개" --> C{"③ Dormant<br/>상태인가?"}
     C -- "예" --> Y["건너뛴다"]
     C -- "아니오" --> D["④ 프로퍼티 비교와<br/>직렬화"]
-    D ~~~ Pad["　　　　　　"]
+    D ~~~ Pad["여백여백여백"]
     classDef cut fill:#fff3bf,stroke:#f08c00,color:#000
     class C cut
-    classDef pad fill:none,stroke:none
+    classDef pad fill:none,stroke:none,color:transparent
     class Pad pad
 ```
 

@@ -51,12 +51,12 @@ flowchart TB
         D{{"② 관련 있는가?<br/>Relevancy"}} -- "예" --> E{{"③ Dormant 상태인가?<br/>Dormancy"}}
         E -- "아니오" --> G["④ 프로퍼티 비교와<br/>직렬화"]
         G --> H["패킷 송신"]
-        H ~~~ Pad["　　　　　　"]
+        H ~~~ Pad["여백여백여백"]
     end
     Once --> PerClient
     classDef check fill:#fff3bf,stroke:#f08c00,color:#000
     class B,D,E check
-    classDef pad fill:none,stroke:none
+    classDef pad fill:none,stroke:none,color:transparent
     class Pad pad
 ```
 

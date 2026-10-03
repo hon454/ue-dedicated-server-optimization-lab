@@ -53,10 +53,10 @@ flowchart LR
     B -- "아니오" --> C["건너뛴다"]
     B -- "예" --> D["액터 채널에서<br/>프로퍼티 비교와<br/>직렬화"]
     D --> E["패킷 송신"]
-    E ~~~ Pad["　　　　　　"]
+    E ~~~ Pad["여백여백여백"]
     classDef cut fill:#fff3bf,stroke:#f08c00,color:#000
     class B cut
-    classDef pad fill:none,stroke:none
+    classDef pad fill:none,stroke:none,color:transparent
     class Pad pad
 ```
 

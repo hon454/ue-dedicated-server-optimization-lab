@@ -57,8 +57,8 @@ flowchart LR
     B --> C["준비 구간 30초<br/>수치를 버린다"]
     C --> D["측정 구간 60초"]
     D --> E["수치 기록"]
-    E ~~~ Pad["　　　　　　"]
-    classDef pad fill:none,stroke:none
+    E ~~~ Pad["여백여백여백"]
+    classDef pad fill:none,stroke:none,color:transparent
     class Pad pad
 ```
 

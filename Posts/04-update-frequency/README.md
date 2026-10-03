@@ -44,10 +44,10 @@ flowchart LR
     B -- "아니오" --> X["이번 프레임은 건너뛴다"]
     B -- "예" --> C["Consider List"]
     C --> D["클라이언트마다<br/>검사 ②③과 처리 ④"]
-    D ~~~ Pad["　　　　　　"]
+    D ~~~ Pad["여백여백여백"]
     classDef cut fill:#fff3bf,stroke:#f08c00,color:#000
     class B cut
-    classDef pad fill:none,stroke:none
+    classDef pad fill:none,stroke:none,color:transparent
     class Pad pad
 ```
 
