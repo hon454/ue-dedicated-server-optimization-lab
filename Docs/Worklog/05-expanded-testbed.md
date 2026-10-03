@@ -77,3 +77,9 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 | 지속적인 예산 초과 | 예 | `over_budget_frames` 325 = `frames` 325. `work_avg_ms` 184.837은 틱 예산 33.3ms의 5.5배 |
 | 가장 큰 비용이 네트워크 | CSV로는 예. Insights는 아직 읽지 않았다 | `netflush_avg_ms` 177.836 ÷ `work_avg_ms` 184.837 = 96.2%. 판단은 사용자가 한다 |
 | 송신 한도에 포화되지 않음 | 예 | `saturated_ratio` 0.000. 측정 구간에 `saturated_replications`의 앞 숫자가 250에서 늘지 않음 |
+
+## 2026-10-03 태스크 20: 0번 자리 옆의 무작위 노드 (`tsmall-node-gather`, `tsmall-node-apart`, `tsmall-node-noarg`, `tsmall-node-gather8`, `tsmall-node-apart8`)
+
+- 사용자가 0번 클라이언트가 검증용 노드가 고갈된 동안 다른 노드를 채집한다고 알렸다. 무작위 노드가 0번 자리에서 6m(채집 거리 5m + 1m) 안이면 6m로 밀어 놓고 서버 로그에 남기게 고쳤다.
+- 처음 확인은 클라이언트 2개로 돌려 세 배치 모두 `lab_nodes_moved_from_harvest_spot=0`이었다. 간격 배치의 0번 자리는 클라이언트 수로 정해지므로(`GetSlotLocation`) 8개 배치의 확인이 아니었다. 1막의 배치는 클라이언트 수와 상관없어 `tsmall-node-noarg-r1`의 0개는 유효하다.
+- 클라이언트 8개(자원 노드 5,000, NPC 300, 준비 20초, 측정 30초, 트레이스 끔): 밀집 `tsmall-node-gather8-r1`은 `lab_node_moved index=1719 distance_cm=291`로 1개, 분산 `tsmall-node-apart8-r1`은 0개다. 모두 종료 코드 0이다.

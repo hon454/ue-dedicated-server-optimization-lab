@@ -84,12 +84,31 @@ void ALabGameMode::SpawnWorld()
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+	// 채집 담당(0번 자리)은 제자리에서 가장 가까운 노드를 채집한다. 무작위로 놓인 노드가 채집 거리 안에 있으면
+	// 검증용 노드가 고갈된 동안 그 노드를 채집하므로, 그런 노드는 채집 거리 밖으로 밀어 놓는다.
+	// 난수는 그대로 뽑아서 다른 노드와 NPC의 배치는 달라지지 않는다.
+	const FVector HarvestSpot = GetSlotLocation(0);
+	const float HarvestClearance = ALabPlayerController::HarvestRange + 100.f;
+	int32 NumNodesMoved = 0;
+
 	for (int32 Index = 0; Index < Config.NumNodes; ++Index)
 	{
 		// 실린더 높이 300cm의 중심이 150cm에 오게 해 바닥에 세운다.
-		const FVector Location(Rng.FRandRange(-Extent, Extent), Rng.FRandRange(-Extent, Extent), 150.f);
+		FVector Location(Rng.FRandRange(-Extent, Extent), Rng.FRandRange(-Extent, Extent), 150.f);
+
+		const FVector FromSpot = FVector(Location.X - HarvestSpot.X, Location.Y - HarvestSpot.Y, 0.f);
+		if (FromSpot.SizeSquared() < FMath::Square(HarvestClearance))
+		{
+			UE_LOG(LogDSOptLab, Display, TEXT("lab_node_moved index=%d distance_cm=%.0f"), Index, FromSpot.Size());
+			// 검증용 노드는 +X 쪽 3m에 있다. 0번 자리와 겹친 노드는 반대쪽으로 민다.
+			const FVector Direction = FromSpot.IsNearlyZero() ? FVector(-1.f, 0.f, 0.f) : FromSpot.GetSafeNormal();
+			Location = FVector(HarvestSpot.X, HarvestSpot.Y, 150.f) + Direction * HarvestClearance;
+			++NumNodesMoved;
+		}
+
 		GetWorld()->SpawnActor<ALabResourceNode>(ALabResourceNode::StaticClass(), Location, FRotator::ZeroRotator, Params);
 	}
+	UE_LOG(LogDSOptLab, Display, TEXT("lab_nodes_moved_from_harvest_spot=%d"), NumNodesMoved);
 
 	for (int32 Index = 0; Index < Config.NumNpcs; ++Index)
 	{

@@ -45,6 +45,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerHarvest();
 
+	/** 채집할 수 있는 거리(cm). 폰과 노드의 수평 거리로 잰다. */
+	static constexpr float HarvestRange = 500.f;
+
 	bool IsReady() const { return Slot != INDEX_NONE; }
 	int32 GetSlot() const { return Slot; }
 
@@ -53,7 +56,6 @@ public:
 	double GetScenarioStartTime() const { return ScenarioStartTime; }
 
 private:
-	static constexpr float HarvestRange = 500.f;
 	static constexpr float HarvestInterval = 2.f;
 	static constexpr float MinServerHarvestInterval = 1.f;
 	static constexpr float WaypointReachDistance = 200.f;
