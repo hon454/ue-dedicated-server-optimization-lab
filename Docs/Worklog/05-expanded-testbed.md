@@ -33,3 +33,28 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 | 라벨 | 구성 | 요소의 값 | frames | work_avg_ms | work_p99_ms | over_budget_frames | netflush_avg_ms | out_bytes_per_sec_per_conn | open_actor_channels_per_conn | saturated_ratio | 확인한 것 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `calib2-a-r1` | 세 기법 적용, 밀집 3m | 주변 NPC 50, 상태 값 5초, 인벤토리 200칸에 4초, 건축물 500개에 1초 | 1794 | 14.682 | 24.624 | 1 | 10.678 | 16325 | 77 | 0.000 | 종료 코드 0(22:30). 서버 로그 `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`. 준비 구간의 `open_actor_channels_per_conn`이 측정 시작 31초 전(13:29:22 UTC)에 78이고 측정 구간에 76\~78. 화면 글자는 t=60초에 `npcs=57 players=8 buildings=500 states=65 inventories=8`, 자기 인벤토리 200칸(1번, 0번 자리). 0번 자리의 3인칭 화면은 건축물에 가렸다(`calib2-a-r1-tpp-03.png`) |
+
+## 2026-10-03 태스크 20.4: `calib2-a-r1`의 Timing Insights 값 (세 기법을 적용한 구성, 출발값)
+
+창을 열지 않고 Insights 내보내기로 읽었다([insights-reading.md](../Guides/insights-reading.md) "에이전트가 직접 열 때 알아 둘 것"). 북마크 시각은 창에서 읽지 않고 프레임 번호로 구했다. 서버 로그에서 `Measuring 60s`가 프레임 `[339]`, CSV 행이 `[133]`, 마지막 줄이 `[134]`이고, `TimingInsights.ExportTimingEvents`로 받은 `Frame` 이벤트가 4,134개라 끝에서 둘째 이벤트가 측정이 끝난 프레임이다. 그 1,794프레임 앞의 이벤트가 시작한 시각 91.5701초와 끝 프레임이 시작한 시각 151.6059초를 `-startTime`, `-endTime`으로 줬다(60.036초). 선택 구간의 `WorldTick` Count가 1,794로 CSV의 `frames`와 같다. 북마크는 그 프레임 안의 어느 시점이라 구간이 한 프레임까지 어긋날 수 있다.
+
+| 타이머 | Count | Incl | 프레임당(Incl ÷ 1,794) | 비고 |
+| --- | --- | --- | --- | --- |
+| `Frame` | 1,795 | 59.998초 | | |
+| `FEngineLoop_UpdateTimeAndHandleMaxTickRate` | 1,794 | 33.181초 | 18.50ms | 틱 속도 제한 대기 |
+| `WorldTick` | 1,794 | 26.017초 | 14.50ms | CSV `work_avg_ms` 14.682 |
+| `GameNetDriver` | 1,794 | 18.693초 | 10.42ms | CSV `netflush_avg_ms` 10.678(2.4% 차이). Excl 15.717초, 프레임당 8.76ms(84.1%) |
+| `LabNpc` | 205,556 | 1.597초 | 0.890ms | 프레임당 114.6번, 한 번 7.77µs |
+| `LabNpc` 아래 `LabStateComponent` | 205,556 | 0.335초 | 0.187ms | 한 번 1.63µs |
+| `LabCharacter` | 88,552 | 1.000초 | 0.557ms | 프레임당 49.4번, 한 번 11.29µs |
+| `LabCharacter` 아래 `LabInventoryComponent` | 88,552 | 0.232초 | 0.129ms | 한 번 2.62µs |
+| `LabCharacter` 아래 `LabStateComponent` | 88,552 | 0.138초 | 0.077ms | 한 번 1.56µs |
+| `LabBuilding` | 1,698 | 0.019초 | 0.011ms | Dormant 상태. 짓고 허물 때만 처리 |
+| `LabResourceNode` | 791 | 0.014초 | 0.008ms | |
+| `TickCompletionEvents` | 7,176 | 3.965초 | 2.21ms | 액터 틱 |
+| `UNetConnection_ReceivedPacket` | 11,658 | 2.298초 | 1.28ms | 클라이언트가 보낸 패킷 처리 |
+
+- 액터 클래스 타이머는 `WorldTick`의 Callees에서 `GameNetDriver` 아래의 값이다(`TimingInsights.ExportTimerCallees -timers=WorldTick -threads=GameThread`).
+- `LabStateComponent`의 합은 프레임당 0.264ms(0.187 + 0.077)다. 오늘 잰 `work_avg_ms`의 변동 폭 0.5\~0.7ms보다 작다. 출발값의 예상(많아도 0.55ms, 설계 5.1)대로 Push Model의 재료로는 모자란다.
+- `LabNpc`는 예상 1.61ms보다 작은 0.890ms다. 처리 횟수가 프레임당 114.6번으로 예상 148번(55.5 × 8 ÷ 3)보다 적고, 한 번의 시간도 1막의 10.91µs(`update-frequency3-r3`)보다 짧다. 이유는 확인하지 않았다.
+- 비트 수(Networking Insights)는 창을 열어야 해서 아직 읽지 않았다.
