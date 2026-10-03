@@ -12,13 +12,14 @@
 2. **포스팅 6: 세 기법 다시 적용(약식).** 새 기준선에 Relevancy, Dormancy, Net Update Frequency를 차례로 켠다.
 3. **NPC 이동의 클라이언트 보간**: 포스팅 4가 남긴 끊김. 아래 "작업 중 떠오른 것"의 "NPC 이동의 클라이언트 보간", "끊김을 수치로 재기".
 4. **지연과 패킷 손실에서의 동기화 품질**(진단).
-5. **`GameNetDriver` 자체 시간 나누기**(진단): 아래 "작업 중 떠오른 것"의 같은 이름 항목.
-6. **액터를 Consider List에서 빼기**: 후보는 구역 매니저 + FastArray(노드당 액터 하나에서 구역별 매니저로 전환. 노드별 관련성을 잃는 트레이드오프), Replication Graph의 공간 격자. 아래 "노드를 고려 목록에서 빼기", "휴면 노드가 클라이언트에 남는 문제".
-7. **Push Model**: 상태 값의 "바뀐 것이 있는지 확인하는 비용". 에디터 타깃은 이미 컴파일돼 있고(`TargetRules.cs:1524`), `Net.IsPushModelEnabled`의 기본값은 false다(`PushModel.cpp:434`). Push Model이 아닌 프로퍼티는 항상 바뀐 것으로 취급된다(`RepLayout.cpp:1506`).
-8. **인벤토리와 FastArray**: 일반 `TArray` 리플리케이션과 FastArray의 전송 바이트 비교. 소유자 전용 전송.
-9. **송신 한도 포화와 `NetPriority`**: 한도에 걸렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지. 1막의 최종 구성은 `out_bytes_per_sec_per_conn` 2,400으로 엔진 기본 한도 100,000바이트/초의 2.4%라 포화 조건이 없었다.
-10. **Replication Graph**: 같은 문제를 그래프 노드로 푸는 방식.
-11. **Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
+5. **NPC 이동의 `NetSerialize`**: NPC 갱신 한 번 111비트 가운데 92비트가 `ReplicatedMovement`이고, NPC는 1막의 최종 구성에서 액터 비트의 59.5%다(`update-frequency3-r1`, 포스팅 4). `FRepMovement::NetSerialize`는 플래그, 위치, 회전 세 성분, 선속도를 보낸다(`ReplicatedState.cpp:67-117`). 평면 이동에 맞춘 구조체로 바꾸고, 낮춘 정밀도는 보간 포스팅의 품질 지표로 잰다. 92비트의 내역과 Iris가 구조체의 `NetSerialize`를 그대로 쓰는지는 확인하지 않았다(2026-10-03 사용자 제안).
+6. **`GameNetDriver` 자체 시간 나누기**(진단): 아래 "작업 중 떠오른 것"의 같은 이름 항목.
+7. **액터를 Consider List에서 빼기**: 후보는 구역 매니저 + FastArray(노드당 액터 하나에서 구역별 매니저로 전환. 노드별 관련성을 잃는 트레이드오프), Replication Graph의 공간 격자. 아래 "노드를 고려 목록에서 빼기", "휴면 노드가 클라이언트에 남는 문제".
+8. **Push Model**: 상태 값의 "바뀐 것이 있는지 확인하는 비용". 에디터 타깃은 이미 컴파일돼 있고(`TargetRules.cs:1524`), `Net.IsPushModelEnabled`의 기본값은 false다(`PushModel.cpp:434`). Push Model이 아닌 프로퍼티는 항상 바뀐 것으로 취급된다(`RepLayout.cpp:1506`).
+9. **인벤토리와 FastArray**: 일반 `TArray` 리플리케이션과 FastArray의 전송 바이트 비교. 소유자 전용 전송.
+10. **송신 한도 포화와 `NetPriority`**: 한도에 걸렸을 때 무엇이 미뤄지는지, `NetPriority`로 무엇을 먼저 보낼지. 1막의 최종 구성은 `out_bytes_per_sec_per_conn` 2,400으로 엔진 기본 한도 100,000바이트/초의 2.4%라 포화 조건이 없었다.
+11. **Replication Graph**: 같은 문제를 그래프 노드로 푸는 방식.
+12. **Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
 
 ## 2막 밖
 
