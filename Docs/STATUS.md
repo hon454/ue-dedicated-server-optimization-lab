@@ -11,7 +11,7 @@
 
 ## 다음 할 일
 
-1. **[사람] 태스크 14.5.** 포스팅 0\~4와 README를 처음부터 끝까지 읽는다. 고칠 곳이 나오면 에이전트가 고친다. 이미 붙인 태그는 옮기지 않는다.
+1. **태스크 14.5에서 나온 포스팅 다시 쓰기(브랜치 `docs/posting-rewrite`, 워크트리 `.claude/worktrees/posting-rewrite`).** 사용자가 다섯 편을 읽고 낸 문제(글이 길고 수치가 나열됨, 개념 설명과 원리가 없음)로 틀을 바꿨다([ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 규칙은 [posting.md](Guides/posting.md)). [Relevancy 글](../Posts/02-relevancy/README.md)과 [측정 기록](../Posts/02-relevancy/measurements.md)을 새 틀로 다시 썼고 사용자가 승인했다(2026-10-03). 남은 것은 나머지 네 편이다: 기준선(공통 흐름도를 이 글에 둔다), Dormancy, Net Update Frequency, 테스트베드 순으로 쓰고, 끝나면 루트 README의 표와 링크를 맞춘다. GitHub에서 Mermaid와 SVG 애니메이션이 그려지는지는 푸시한 뒤에 확인한다. 그 뒤에 시리즈 웹 페이지(GitHub Pages)를 만들지 정한다([backlog.md](backlog.md) "작업 중 떠오른 것"). 이미 붙인 태그는 옮기지 않는다.
 2. 14.5에서 고친 것이 생기면 커밋한 뒤, 푸시는 사용자가 정한 시점에 한다.
 3. **[사람] [ADR-0014](Decisions/0014-act-2-testbed-expansion.md) 승인.** 2막의 테스트베드 확장이다. 내용은 [2막 설계](Planning/2026-10-03-act-2-design.md)에 풀어 썼다.
 4. **태스크 15\~16(기법 전환 인자).** ADR-0014 승인과 상관없이 시작할 수 있다. [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 1.
@@ -142,7 +142,7 @@ NPC 업데이트 빈도 `update-frequency3`(2026-10-02, 중앙값 실행 `r1`)�
 ## 사용자에게 요청한 일
 
 - **ADR-0014 승인.** 위 "다음 할 일" 3번. 요소 네 개를 한 번에 넣는 것과 포스팅 5, 6을 나누는 것은 에이전트 추천을 그대로 적은 것이라, 다르게 하려면 승인 전에 알려 준다.
-- **ADR-0013 확인.** [ADR-0013](Decisions/0013-lift-legacy-only-rule.md)은 "레거시 리플리케이션만 쓴다는 규칙을 버린다"는 사용자 결정(2026-10-03)을 에이전트가 옮긴 것이라 상태를 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.
+- **ADR-0013, ADR-0015 확인.** [ADR-0013](Decisions/0013-lift-legacy-only-rule.md)은 "레거시 리플리케이션만 쓴다는 규칙을 버린다"는 사용자 결정(2026-10-03)을, [ADR-0015](Decisions/0015-post-body-and-measurement-record.md)는 포스팅 틀을 바꾼다는 사용자 결정(2026-10-03)을 에이전트가 옮긴 것이라 상태를 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.
 - **포스팅 4 확인.** [포스팅 4](../Posts/04-update-frequency/README.md)의 "관찰"과 "선택"은 인터뷰 답(대역폭 중심, 포스팅 1의 이유와 전제가 채워졌는지 확인)을 에이전트가 문장으로 옮긴 것이다. 초안과 끊김 영상은 승인됐다(2026-10-02). 남은 것은 Insights 캡처 네 장과 `before-clip.gif`, `after-clip.gif`를 보고 다른 장면이 좋으면 바꾸는 것이다.
 - **포스팅 3 확인.** [포스팅 3](../Posts/03-dormancy/README.md)의 "정확성 확인"에 넣은 전후 영상(`before-clip.gif`, `after-clip.gif`)과 세 항목의 표, 다시 찍은 `after-timing.png`, `after-network.png`를 보고 다른 장면이 좋으면 바꾼다. 요약의 내려다보기 화면은 순번 04(t=75s)다.
 - **포스팅 1 확인.** [포스팅 1](../Posts/01-baseline/README.md)의 "선택"에서 순서의 이유 세 단락은 에이전트가 추천 근거를 옮긴 문장이다. 본인의 판단과 다르면 고친다. 연결당 송신 대역폭은 `r1` 값이다(`r2` 미확인). "관찰"의 서버 프레임 시간 문장은 ADR-0010에 맞춰 에이전트가 고쳤다(아직 확인하지 않음).

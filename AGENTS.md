@@ -20,7 +20,7 @@
 | 측정 규약: 시나리오, 절차, 지표, 한계 | [measurement.md](Docs/Guides/measurement.md) |
 | 수치를 부르는 이름 | measurement.md "수치의 이름과 출처" |
 | 시각 자료의 종류와 파일 이름 | [posting.md](Docs/Guides/posting.md) "시각 자료" |
-| 포스팅 틀 | posting.md "틀" |
+| 포스팅의 독자와 분량, 틀, 문장 규칙, 본문과 측정 기록의 구분 | posting.md "독자와 분량", "틀", "문장 규칙", "본문과 측정 기록". 따라 쓸 본보기는 [Relevancy 글](Posts/02-relevancy/README.md)과 그 [측정 기록](Posts/02-relevancy/measurements.md) |
 | 엔진 기본값, 동작 순서, 소스 위치, 실행에서 확인한 사실 | [engine-notes.md](Docs/Reference/engine-notes.md) |
 | 빌드나 실행이 실패했을 때의 증상별 대처 | [troubleshooting.md](Docs/Guides/troubleshooting.md). 문제가 생겼을 때만 연다 |
 | Insights로 트레이스를 여는 법과 읽는 순서, 역할 분담 | [insights-reading.md](Docs/Guides/insights-reading.md). 여는 명령은 `Scripts/open-insights.ps1 -Label <라벨>-rN`, 문서용 캡처는 `Scripts/capture-insights.ps1`, 캡처에 번호 붙은 상자를 그리는 것은 `Scripts/annotate-image.ps1` |
@@ -32,7 +32,10 @@
 | 2막의 목적, 확장 요소, 포스팅 계획과 태스크 15부터의 순서 | [2막 설계](Docs/Planning/2026-10-03-act-2-design.md), [2막 구현 계획](Docs/Planning/2026-10-03-act-2-implementation-plan.md) |
 | 끝난 단기(1막) 설계 문서와 구현 계획(태스크 1\~14가 가리키는 곳) | 태그 `post-04-update-frequency`의 [설계 문서](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-portfolio-design.md), [구현 계획](https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/post-04-update-frequency/Docs/Planning/2026-10-01-short-term-implementation-plan.md). 2026-10-03에 레포에서 지웠다 |
 | 공개 소개, 코드 파일별 역할 | [README.md](README.md) |
-| 포스팅 본문과 이미지, 후보 기법 자료(Insights에서 읽은 값, 엔진 소스 위치, 에이전트 의견) | `Posts/NN-이름/README.md`, `Posts/NN-이름/images/`, `Posts/NN-이름/candidates.md` |
+| 포스팅 본문과 이미지 | `Posts/NN-이름/README.md`, `Posts/NN-이름/images/` |
+| 포스팅 수치의 근거(정밀한 값, 실행 라벨, 계산식, 세 실행과 CSV 표, Insights 캡처, 엔진 소스 위치) | `Posts/NN-이름/measurements.md` |
+| 후보 기법 자료(Insights에서 읽은 값, 엔진 소스 위치, 에이전트 의견) | `Posts/NN-이름/candidates.md` |
+| 개념도 SVG를 만드는 스크립트 | `Scripts/make-<이름>.ps1`(예: `Scripts/make-relevancy-map.ps1`) |
 | 실행 산출물 | 수치 CSV `Saved/LabMetrics/summary.csv`, 트레이스 `Saved/Traces/<라벨>-rN.utrace`, 스크린샷 `Saved/Screenshots/Lab/`, 로그 `Saved/Logs/` |
 
 새 문서를 만들거나 옮기면 이 표를 함께 고친다.
@@ -53,8 +56,9 @@
 - **패키징하지 않고 null RHI를 쓰지 않는다.** 에디터 빌드 실행 파일을 쿠킹 없이 실행한다([ADR-0002](Docs/Decisions/0002-editor-build-without-packaging.md)).
 - **에디터 작업을 만들지 않는다.** 에이전트는 에디터를 다룰 수 없어서, 에디터 작업이 끼면 사람을 기다려야 하고 결과를 스스로 검증하지 못한다. 액터는 C++로 작성하고, 자원 노드와 AI NPC는 실행 시 코드로 생성한다. 블루프린트와 맵 편집이 필요한 설계를 피한다.
 - **수치를 정해진 이름으로만 부른다.** CSV 값과 Insights 값은 정의가 달라서, 이름을 섞으면 다른 수치를 같은 것처럼 비교하게 된다([ADR-0004](Docs/Decisions/0004-insights-and-csv-metrics.md)). [measurement.md](Docs/Guides/measurement.md)의 "수치의 이름과 출처" 표를 따른다. CSV 값을 Insights 지표 이름으로 부르지 않고, 열린 액터 채널 수를 액터 수라고 부르지 않는다.
-- **모든 수치와 설정값에 근거를 적는다.** 측정값(조건 명시), 엔진 소스 확인값(파일과 심볼 명시), 계산값(식 명시) 중 하나다. 기억에 의존한 엔진 기본값은 5.8.3 소스에서 확인한 뒤에 쓴다.
-- **시각 자료를 적극적으로 모은다.** 측정할 때마다 자동 스크린샷을 직접 열어 보고 포스팅에 넣는다. 전후 비교는 이미지를 나란히 놓고, 수치는 Mermaid 차트로도 보여준다. 클라이언트 영상은 에이전트가 `Scripts/capture-video.ps1`로 찍고, 찍은 뒤 미리보기(`Saved/Screenshots/Lab/<이름>-preview.png`)를 열어 확인한다. 영상은 GitHub 마크다운 본문에서 이미지처럼 바로 보이는 GIF(폭 960px, 8fps, 48색. `capture-video.ps1`의 기본값)로 넣는다. 15fps, 256색은 10초에 9\~13MB라 줄였다. 시각 자료는 글이 설명하는 구성의 빌드에서 찍는다. 지난 구성의 화면이 필요하면 그 태그를 빌드해서 찍고, 지금 빌드의 화면으로 대신하지 않는다(테스트베드 포스팅의 `visual11`은 `post-01-baseline`을 빌드해 찍었다).
+- **모든 수치와 설정값에 근거를 적는다.** 측정값(조건 명시), 엔진 소스 확인값(파일과 심볼 명시), 계산값(식 명시) 중 하나다. 기억에 의존한 엔진 기본값은 5.8.3 소스에서 확인한 뒤에 쓴다. 포스팅에서는 근거를 본문 문장에 넣지 않고 같은 폴더의 `measurements.md`에 둔다. 본문의 수치는 모두 그 파일의 "본문의 수치와 출처" 표에 있어야 한다([ADR-0015](Docs/Decisions/0015-post-body-and-measurement-record.md)).
+- **포스팅은 독자가 3\~5분에 읽고 원리를 이해하게 쓴다.** 독자는 UE 네트워킹의 초급에서 중급 사이인 개발자다. 본문은 6,000자 안팎이고, 직전 구성의 문제, 기법이 그것을 줄이는 원리(도식), 예상, 결과의 순서로 쓴다. 문장은 [posting.md](Docs/Guides/posting.md)의 "문장 규칙"을 따른다: 한 문장에 사실 하나, 80자 이하, 숫자 둘과 괄호 하나까지, 새 용어는 처음 나올 때 정의한다. 사용자가 포스팅 0\~4를 읽고 글이 길고 수치만 나열되어 이해하기 어렵다고 했다(2026-10-03).
+- **시각 자료를 적극적으로 모은다.** 측정할 때마다 자동 스크린샷을 직접 열어 보고 포스팅에 쓸 것을 고른다. 본문에는 주장 하나에 시각 자료 하나를 넣고, 원리는 흐름도나 개념도로 그린다(posting.md "시각 자료"). 전후 비교는 이미지를 나란히 놓고, 수치는 Mermaid 차트로도 보여준다. 클라이언트 영상은 에이전트가 `Scripts/capture-video.ps1`로 찍고, 찍은 뒤 미리보기(`Saved/Screenshots/Lab/<이름>-preview.png`)를 열어 확인한다. 영상은 GitHub 마크다운 본문에서 이미지처럼 바로 보이는 GIF(폭 960px, 8fps, 48색. `capture-video.ps1`의 기본값)로 넣는다. 15fps, 256색은 10초에 9\~13MB라 줄였다. 시각 자료는 글이 설명하는 구성의 빌드에서 찍는다. 지난 구성의 화면이 필요하면 그 태그를 빌드해서 찍고, 지금 빌드의 화면으로 대신하지 않는다(테스트베드 포스팅의 `visual11`은 `post-01-baseline`을 빌드해 찍었다).
 - **영상은 수치를 쓰는 측정 실행에서 찍지 않는다.** 녹화와 인코딩이 측정 PC의 CPU를 쓰기 때문이다. `Scripts/run-manual.ps1`의 실행이나, 수치를 쓰지 않는 시각 자료 전용 라벨(`visualN`)의 `run-scenario.ps1` 실행에서 찍는다. `capture-video.ps1`은 측정 중인 서버가 있으면 거부하고, `visualN` 실행에서만 `-AllowMeasuring`으로 넘긴다. `visualN`의 수치는 포스팅과 STATUS.md의 비교에 쓰지 않는다. 전후 영상은 자동 이동 클라이언트(정해진 정사각형 경로)를 찍어 같은 경로로 비교한다. 특정 장면을 위해 관찰자를 조작해야 할 때만 그 조작을 사용자에게 요청한다.
 - **화면을 찍기 전에 허가를 받는다.** `capture-video.ps1`은 화면을 그대로 받아서 사용자의 다른 창과 개인 정보가 찍힐 수 있다. 실행하기 전에 무엇을(창 제목 패턴이나 영역), 어느 실행에서, 몇 초, 어느 파일 이름으로 찍는지 채팅에 적고 사용자의 승인을 받는다. 여러 개를 찍을 때는 목록을 한 번에 보여 주고 승인받아도 된다. 승인은 그 목록에만 유효하고 다음 녹화로 이어지지 않는다. 창 하나의 내용만 받는 `capture-insights.ps1`은 해당하지 않는다.
 - **구조와 이름.** 언리얼 프로젝트는 레포 루트의 `DSOptLab.uproject`다(모듈 `DSOptLab`). 이 프로젝트에서 만드는 클래스, 실행 인자, 저장 폴더의 접두사는 `Lab`이다(`ALabResourceNode`, `-LabNodes=`, `Saved/LabMetrics/`). 폴더 이름은 대문자로 시작한다(`Docs/`, `Posts/`, `Scripts/`). 런처 설치본(`G:\Epic Games\UE_5.8`)으로 프로젝트를 열거나 빌드하지 않는다. 소스 빌드와 같은 `Binaries/`에 번갈아 빌드하게 된다(engine-notes.md 0절).
@@ -68,7 +72,7 @@
 
 - 대안을 비교해 내린 결정이 새로 생기면(측정 정의를 고침, 설정 방침을 정함, 구조를 바꿈) [Docs/Decisions/](Docs/Decisions/README.md)에 상태 "제안됨"으로 초안을 쓰고, [Docs/STATUS.md](Docs/STATUS.md)의 "사용자에게 요청한 일"에 승인을 요청한다. 승인은 사용자가 한다.
 - 승인된 ADR의 본문은 고치지 않는다. 결정이 바뀌면 새 ADR로 대체한다. 쓰는 법은 [Docs/Decisions/README.md](Docs/Decisions/README.md)에 있다.
-- 기법 선택과 포스팅 순서는 ADR로 쓰지 않는다. 사용자가 포스팅의 "선택" 섹션에 직접 쓴다.
+- 기법 선택과 포스팅 순서는 ADR로 쓰지 않는다. 사용자가 정하고, 진단하는 포스팅(기준선 글)의 "선택" 섹션에 적는다.
 
 ## 완료 확인
 
@@ -86,14 +90,14 @@
 
 다음은 직접 하지 않고, 필요한 시점에 무엇을 해야 하는지 구체적으로 적어 사용자에게 요청한다.
 
-- **Insights 분석의 판단과 포스팅의 "관찰", "선택" 섹션 작성.** 판단은 사용자가 하고 두 섹션도 사용자가 직접 쓴다. 에이전트는 Insights를 직접 열어 [insights-reading.md](Docs/Guides/insights-reading.md)의 순서로 값을 읽고, CSV와 대조한 표와 후보 기법 목록(각 기법의 구현 비용과 관련 엔진 소스 위치)을 준비한다. 판단에 도움이 되는 의견도 낸다(2026-10-01 사용자 결정). 의견은 화면에서 읽은 사실과 구분해 "에이전트 의견"으로 적고, 근거가 된 수치와 확인하지 않은 것을 함께 적는다. 기법과 순서를 정하는 것은 사용자다.
+- **Insights 분석의 판단과 기법의 선택.** 가장 큰 비용이 무엇인지, 어떤 기법을 어떤 순서로 적용할지는 사용자가 판단한다. 포스팅의 "문제"와 "원리"(진단하는 글의 "선택" 포함)는 에이전트가 그 판단을 옮겨 초안을 쓰고 사용자가 승인한다(2026-10-03 사용자 결정, [ADR-0015](Docs/Decisions/0015-post-body-and-measurement-record.md). 그 전에는 "관찰"과 "선택"을 사용자가 직접 쓰는 규칙이었다). 에이전트는 Insights를 직접 열어 [insights-reading.md](Docs/Guides/insights-reading.md)의 순서로 값을 읽고, CSV와 대조한 표와 후보 기법 목록(각 기법의 구현 비용과 관련 엔진 소스 위치)을 준비한다. 판단에 도움이 되는 의견도 낸다(2026-10-01 사용자 결정). 의견은 화면에서 읽은 사실과 구분해 "에이전트 의견"으로 적고, 근거가 된 수치와 확인하지 않은 것을 함께 적는다. 기법과 순서를 정하는 것은 사용자다.
 - 포스팅에 넣을 시각 자료의 최종 선택. 클라이언트 영상과 전체 화면(`Scripts/capture-video.ps1`, 찍기 전에 허가를 받는다), Insights 스크린샷(`Scripts/capture-insights.ps1`)은 에이전트가 찍어 후보로 주고, 포스팅에 넣을 것은 사용자가 고르거나 직접 찍는다. 특정 장면을 위해 관찰자를 조작해야 하면 그 조작만 사용자에게 요청한다.
 - 기준선 확정(단기 구현 계획 태스크 8.6, 2막 구현 계획 태스크 20.5). 결과를 표로 보고하고 사용자가 확정한다. 기준선이 송신 한도에 포화되면 프로젝트 설정에서 한도를 올리는 것은 이미 정해진 방침이라 묻지 않고 진행한다([ADR-0007](Docs/Decisions/0007-raise-send-limit-once.md), 태스크 8.4a). 그 밖의 설정이나 시나리오 규모는 임의로 바꾸지 않는다.
 - ADR 승인.
 - 에디터에서만 가능한 작업.
 - GitHub 푸시.
 
-포스팅의 나머지 섹션(요약, 적용, 결과, 한계와 다음)은 에이전트가 초안을 쓴다.
+포스팅의 나머지 섹션(요약, 적용, 결과, 배운 것과 한계)과 측정 기록(`measurements.md`)은 에이전트가 쓴다.
 
 ## 세션을 끝낼 때
 
