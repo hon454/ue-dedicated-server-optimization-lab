@@ -243,6 +243,20 @@
 - 영향: `frames`와 초당 값(`out_bytes_per_sec_per_conn`)이 약 0.71배가 된다. 틱마다 하는 일이 달라져 `work_avg_ms`도 흔들릴 수 있다(`dormancy2-r1` 16.205, `refactor-after2-r3` 14.794. `refactor-after2-r1`은 12.850으로 차이가 없었다). 틱 예산을 넘는 구성(`baseline3`)은 기다리지 않으므로 영향이 없다.
 - 대처는 [ADR-0012](../Decisions/0012-server-timer-resolution.md)(승인됨)다. `Scripts/common.ps1`의 `Disable-LabTimerThrottle`이 서버를 띄운 직후 이 스로틀을 끈다. 적용 뒤 `timerfix-min-r1`(서버 창 최소화, 작은 규모)이 `frames` 902, 확정 규모 `timerfix` 세 실행이 1,788 / 1,784 / 1,796이다.
 
+## 자. 2막 계획을 세우며 확인한 것 (2026-10-03)
+
+모두 5.8.3 소스에서 읽은 것이고 실행해 보지 않았다. 쓰이는 곳은 [2막 설계](../Planning/2026-10-03-act-2-design.md) 3절과 6절이다.
+
+| 사실 | 소스 위치 | 쓰이는 곳 |
+| --- | --- | --- |
+| Push Model은 에디터 타깃에서 기본으로 컴파일된다(`bWithPushModel`의 기본값이 `Type == TargetType.Editor`). 다른 타깃은 `Target.cs`에서 켜야 한다 | `Engine/Source/Programs/UnrealBuildTool/Configuration/Rules/TargetRules.cs:1522-1526` | Push Model 포스팅. Test 패키지로 재측정할 때는 서버 타깃에서 따로 켠다 |
+| Push Model은 컴파일돼 있어도 실행 중 기본값이 꺼짐이다(`Net.IsPushModelEnabled`, `bIsPushModelEnabled = false`) | `Engine/Source/Runtime/Net/Core/Private/Net/Core/PushModel/PushModel.cpp:434-437` | Push Model 포스팅 |
+| Push Model이 아닌 프로퍼티는 비교할 때 항상 바뀐 것으로 취급된다 | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1506` | Push Model 포스팅. 엔진 기본 프로퍼티 가운데 어느 것이 해당하는지는 보지 않았다 |
+| `APlayerState`는 Always Relevant이고 Net Update Frequency가 1이다 | `Engine/Source/Runtime/Engine/Private/PlayerState.cpp:26, 28` | 인벤토리를 어느 액터에 둘지(설계 3.3절) |
+| `FRepMovement::NetSerialize`는 플래그(2비트 또는 4비트), 위치, 회전 세 성분, 선속도를 보내고, `bRepPhysics`일 때만 각속도를 더 보낸다. 위치와 속도의 정밀도는 `LocationQuantizationLevel`, `VelocityQuantizationLevel`, 회전은 `RotationQuantizationLevel`(바이트 또는 쇼트)이 정한다 | `Engine/Source/Runtime/Engine/Private/Engine/ReplicatedState.cpp:67-117`, `Engine/Source/Runtime/Engine/Classes/Engine/ReplicatedState.h:164-172` | NPC 이동의 `NetSerialize` 포스팅. NPC 갱신의 `ReplicatedMovement` 92비트(`update-frequency3-r1`)가 성분마다 얼마인지는 보지 않았다 |
+
+확인하지 않은 것: 지연과 패킷 손실을 넣는 설정의 이름과 위치, Iris가 구조체의 `NetSerialize`를 그대로 쓰는지(`PropertyNetSerializerInfoRegistry.cpp:98-118`에 `FLastResortPropertyNetSerializerInfo`가 있다는 것까지만 봤다), `GameNetDriver` 타이머가 Iris에서 같은 범위를 감싸는지.
+
 ## 라. 계획 초안의 코드에서 바꾼 것 요약
 
 | 태스크 | 바꾼 것 | 이유 |

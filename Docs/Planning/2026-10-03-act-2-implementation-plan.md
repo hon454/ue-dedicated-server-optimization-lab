@@ -17,17 +17,27 @@
 
 ### 태스크 15. 세 기법을 실행 인자로 켜고 끄기
 
-- 15.1 서버 인자 세 개를 더한다. 인자를 주지 않으면 지금 구성(세 기법 모두 적용)이다.
-  - Always Relevant를 켜는 인자(자원 노드와 NPC에 `bAlwaysRelevant = true`. [포스팅 2](../../Posts/02-relevancy/README.md) "적용"에서 지운 두 줄)
-  - 자원 노드 Dormancy를 끄는 인자(`LabResourceNode.cpp:17`)
-  - NPC의 `NetUpdateFrequency` 값을 받는 인자(`LabNpc.cpp:17`, 기본 10)
-- 15.2 `run-scenario.ps1`에 같은 뜻의 매개변수를 더하고 서버 로그에 적용된 구성을 한 줄로 남긴다.
-- 15.3 작은 규모에서 네 구성(기준선, Relevancy, Dormancy, 기본)을 한 번씩 실행해 종료 코드 0을 확인한다.
+- 15.1 서버 인자 세 개를 `FLabServerConfig`에 더한다. 인자를 주지 않으면 지금 구성(세 기법 모두 적용)이다.
+  - `-LabAlwaysRelevant`: 자원 노드와 NPC에 `bAlwaysRelevant = true`를 준다([포스팅 2](../../Posts/02-relevancy/README.md) "적용"에서 지운 두 줄).
+  - `-LabNoNodeDormancy`: 자원 노드를 Dormant 상태로 두지 않는다(`LabResourceNode.cpp:17`의 `NetDormancy = DORM_DormantAll`을 적용하지 않는다).
+  - `-LabNpcUpdateFrequency=`: NPC의 `NetUpdateFrequency` 값(`LabNpc.cpp:17`, 기본 10). 엔진 기본값은 100이다(STATUS.md "확정할 값").
+  - 값을 적용하는 자리(생성자, 스폰할 때)는 구현하면서 정한다. 세 값은 서버에서만 뜻이 있고, 생성자는 클라이언트에서도 돈다.
+- 15.2 `run-scenario.ps1`에 매개변수 `-AlwaysRelevant`, `-NoNodeDormancy`, `-NpcUpdateFrequency <값>`을 더하고, 서버 로그에 적용된 구성을 한 줄로 남긴다.
+- 15.2a 수치 CSV에 `config` 열을 더한다. 지금 열에는 구성이 없어서(`LabMetricsSubsystem.cpp:280`), 한 바이너리에서 구성을 바꿔 재면 행이 어느 구성인지 라벨에만 기댄다. 값은 기본값과 다른 인자를 `;`로 이은 문자열이고(예: `AlwaysRelevant;NoNodeDormancy;NpcUpdateFrequency=100`), 인자 없는 실행은 `default`다. 2막에서 더하는 요소와 기법의 인자도 이 열에 적는다. 열이 달라지므로 지금의 `Saved/LabMetrics/summary.csv`는 `summary-act1.csv`로 이름을 바꿔 남기고 새 파일로 시작한다. [measurement.md](../Guides/measurement.md)에 열의 뜻을 적는다.
+- 15.3 작은 규모에서 네 구성을 한 번씩 실행해 종료 코드 0과 `config` 열을 확인한다.
+
+| 구성 | 서버 인자 | `run-scenario.ps1` 매개변수 | 1막의 `open_actor_channels_per_conn` |
+| --- | --- | --- | --- |
+| 기준선 | `-LabAlwaysRelevant -LabNoNodeDormancy -LabNpcUpdateFrequency=100` | `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100` | 5,314(`baseline3`) |
+| Relevancy | `-LabNoNodeDormancy -LabNpcUpdateFrequency=100` | `-NoNodeDormancy -NpcUpdateFrequency 100` | 118(`relevancy2`) |
+| Dormancy | `-LabNpcUpdateFrequency=100` | `-NpcUpdateFrequency 100` | 20(`dormancy6`) |
+| Net Update Frequency(기본) | 없음 | 없음 | 20(`update-frequency3`) |
 
 ### 태스크 16. 인자가 1막의 구성을 재현하는지 확인
 
-- 16.1 확정 규모에서 인자 없는 실행 3회를 재서 `timerfix`(STATUS.md "단계")와 비교한다. `work_avg_ms`, `netflush_avg_ms`의 중앙값 차이가 변동 폭 안이어야 한다. 벗어나면 인자를 넣기 전 커밋을 다시 빌드해 연달아 재서 가린다.
-- 16.2 확정 규모에서 기준선, Relevancy, Dormancy 구성을 한 번씩 실행해 `open_actor_channels_per_conn`이 1막의 값(5,314, 118, 20)과 같은지 확인한다. 이 실행의 시간 수치는 비교에 쓰지 않는다.
+- 16.0 확정 규모 측정을 시작하기 전에 사용자에게 알리고 답을 받는다. 측정하는 동안 이 PC에서 다른 작업을 할 수 없다(STATUS.md "명령"). 16.1과 16.2를 한 번에 알린다.
+- 16.1 확정 규모에서 인자 없는 실행 3회(라벨 `toggle1`)를 재서 `timerfix`(STATUS.md "단계")와 비교한다. `work_avg_ms`, `netflush_avg_ms`의 중앙값 차이가 변동 폭 안이어야 한다. 벗어나면 인자를 넣기 전 커밋을 다시 빌드해 연달아 재서 가린다.
+- 16.2 확정 규모에서 기준선, Relevancy, Dormancy 구성을 한 번씩 실행해(라벨 `toggle-baseline`, `toggle-relevancy`, `toggle-dormancy`) `open_actor_channels_per_conn`이 위 표의 1막 값과 같은지 확인한다. 이 실행의 시간 수치는 비교에 쓰지 않는다.
 - 16.3 STATUS.md "명령"에 구성별 명령을 적는다.
 
 ## 단계 2. 테스트베드 확장
