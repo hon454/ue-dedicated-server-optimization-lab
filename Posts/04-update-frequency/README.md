@@ -44,8 +44,11 @@ flowchart LR
     B -- "아니오" --> X["이번 프레임은 건너뛴다"]
     B -- "예" --> C["Consider List"]
     C --> D["클라이언트마다<br/>검사 ②③과 처리 ④"]
+    D ~~~ Pad["　　　　　　"]
     classDef cut fill:#fff3bf,stroke:#f08c00,color:#000
     class B cut
+    classDef pad fill:none,stroke:none
+    class Pad pad
 ```
 
 이 검사는 [기준선 글의 흐름도](../01-baseline/README.md#원리-서버가-한-프레임에-하는-일)의 ①이다. Consider List는 이번 프레임에 고려할 액터의 목록이다. 이 설정은 NPC의 움직임을 바꾸지 않는다. NPC는 서버에서 여전히 프레임마다 움직이고, 서버가 그 위치를 보내는 횟수만 준다.

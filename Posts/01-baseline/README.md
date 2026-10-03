@@ -51,10 +51,13 @@ flowchart TB
         D{{"② 관련 있는가?<br/>Relevancy"}} -- "예" --> E{{"③ Dormant 상태인가?<br/>Dormancy"}}
         E -- "아니오" --> G["④ 프로퍼티 비교와<br/>직렬화"]
         G --> H["패킷 송신"]
+        H ~~~ Pad["　　　　　　"]
     end
     Once --> PerClient
     classDef check fill:#fff3bf,stroke:#f08c00,color:#000
     class B,D,E check
+    classDef pad fill:none,stroke:none
+    class Pad pad
 ```
 
 노란 칸이 검사다. 서버는 검사를 통과하지 못한 액터를 그 프레임에 건너뛴다.

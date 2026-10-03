@@ -40,7 +40,6 @@ Dormant 상태인 액터는 스스로 깨어나지 않는다. 상태를 바꾸�
 
 ```mermaid
 stateDiagram-v2
-    direction LR
     state "채널 없음" as None
     state "채널 열림" as Open
     state "Dormant 상태 (채널 닫힘)" as Dormant
@@ -59,8 +58,11 @@ flowchart LR
     B -- "예<br/>약 100개" --> C{"③ Dormant<br/>상태인가?"}
     C -- "예" --> Y["건너뛴다"]
     C -- "아니오" --> D["④ 프로퍼티 비교와<br/>직렬화"]
+    D ~~~ Pad["　　　　　　"]
     classDef cut fill:#fff3bf,stroke:#f08c00,color:#000
     class C cut
+    classDef pad fill:none,stroke:none
+    class Pad pad
 ```
 
 **처음 예상은 틀렸다.** [기준선 글](../01-baseline/README.md)에서는 Dormancy가 거리 검사 ②까지 없앨 것으로 예상했다. 모든 클라이언트에서 Dormant 상태가 된 액터는 서버의 활성 목록에서 빠지기 때문이다. 활성 목록은 서버가 프레임마다 훑는 액터의 목록이다.

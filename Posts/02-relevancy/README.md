@@ -53,8 +53,11 @@ flowchart LR
     B -- "아니오" --> C["건너뛴다"]
     B -- "예" --> D["액터 채널에서<br/>프로퍼티 비교와<br/>직렬화"]
     D --> E["패킷 송신"]
+    E ~~~ Pad["　　　　　　"]
     classDef cut fill:#fff3bf,stroke:#f08c00,color:#000
     class B cut
+    classDef pad fill:none,stroke:none
+    class Pad pad
 ```
 
 거리 검사는 두 좌표의 거리를 비교하는 값싼 일이다. 채널에서 하는 프로퍼티 비교와 직렬화는 비싼 일이다. Relevancy는 값싼 검사로 비싼 일의 대상을 줄인다.
