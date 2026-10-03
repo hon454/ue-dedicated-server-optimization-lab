@@ -15,7 +15,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 21(포스팅 5: 테스트베드 확장과 새 기준선).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 3. 21.1은 확정 규모에서 기준선 3회와 분산 배치의 비교 구성을 재는 것이다. 시작하기 전에 잴 구성, 라벨, 걸리는 시간을 알리고 답을 받는다. 건축물과 노드를 고친 지금 빌드(`0f689c2`의 소스)로 잰다. 이어서 21.2(Insights 캡처와 자동 스크린샷, `Posts/05-expanded-testbed/candidates.md`), 21.3(포스팅의 틀에서 뺄 섹션을 사용자와 먼저 정한다), 21.4(태그)다. 그 뒤는 구현 계획의 단계 순이고([ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다), 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
+2. **태스크 21(포스팅 5: 테스트베드 확장과 새 기준선).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 3. 21.1은 끝났다(2026-10-04, 기준선 `act2-baseline1` 3회, 아래 "측정 결과"와 "기준선 조건"). 분산 배치의 비교는 새로 재지 않고 20.4a의 `layout-dense`, `layout-apart` 묶음을 포스팅 5에 쓴다(사용자 결정, 2026-10-04. 같은 빌드로 번갈아 쟀고, Always Relevant 기준선은 배치와 상관없이 모든 연결이 모든 액터를 받아 분산 기준선은 배치가 아니라 월드의 액터 수를 비교하게 된다). 다음은 21.2(Insights 캡처와 자동 스크린샷, `Posts/05-expanded-testbed/candidates.md`), 21.3(포스팅의 틀에서 뺄 섹션을 사용자와 먼저 정한다), 21.4(태그)다. 그 뒤는 구현 계획의 단계 순이고([ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다), 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
 
 ## 포스팅 진행
 
@@ -73,7 +73,7 @@
 
 ## 기준선 조건
 
-구현 계획 태스크 8.4\~8.6에서 채운다.
+1막은 단기 구현 계획 태스크 8.4\~8.6, 2막은 2막 구현 계획 태스크 21.1(`act2-baseline1`)에서 채웠다.
 
 | 조건 | 결과 | 근거 |
 | --- | --- | --- |
@@ -81,6 +81,10 @@
 | 지속적인 예산 초과 | 예 | `calib-f-r1`: `over_budget_frames` 356 = `frames` 356. `work_avg_ms` 168.309는 틱 예산 33.3ms(1 ÷ 30Hz)의 5.0배 |
 | 가장 큰 비용이 네트워크 | 예(사용자 판단, 2026-10-01) | `calib-f-r1`의 Insights 측정 구간: `WorldTick` 59.84초 중 `GameNetDriver` 57.45초(96.01%). [insights-walkthrough-calib-f.md](Guides/insights-walkthrough-calib-f.md) 6단계 |
 | 송신 한도에 포화되지 않음(포화되면 한도를 올린다. 2026-10-01 결정) | 예(한도를 350,000으로 올린 뒤) | 엔진 기본 한도에서는 `saturated_ratio` 1.000(`calib-a-r1`). 350,000에서 0.000(`calib-f-r1`), 측정 구간에 `saturated_replications`의 앞 숫자가 211에서 늘지 않음 |
+| 2막: 초기 전송 완료 | 예 | 서버 로그: `open_actor_channels_per_conn`이 측정 시작 19초, 16초, 20초 전(`r1`, `r2`, `r3`)에 5,871에 도달해 더 늘지 않음 |
+| 2막: 지속적인 예산 초과 | 예 | 세 실행 모두 `over_budget_frames` = `frames`(279, 278, 272). `work_avg_ms` 중앙값 215.801은 틱 예산 33.3ms의 6.47배 |
+| 2막: 가장 큰 비용이 네트워크 | CSV로는 예. Insights는 21.2에서 읽는다 | `netflush_avg_ms` ÷ `work_avg_ms` = 206.944 ÷ 215.801 = 95.9%(중앙값). 보정의 `calib2-d3-r1` 트레이스에서 `GameNetDriver`가 `WorldTick`의 96.1%. 판단은 사용자가 한다 |
+| 2막: 송신 한도에 포화되지 않음 | 예 | 세 실행 모두 `saturated_ratio` 0.000. 측정 구간에 `saturated_replications`의 앞 숫자가 259, 258, 261에서 늘지 않음. 30Hz 환산 송신량은 36,994 × 30 ÷ (278 ÷ 60) = 239,529바이트/초로 한도 350,000의 68%(`r2`) |
 
 ## 측정 결과
 
@@ -122,8 +126,15 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | **중앙값** | 1797 | 12.894 | 19.080 | 1 | 8.969 | 2400 | 20 | 0.000 |
 | **변동 폭** | 3 | 0.444 | 1.029 | 0 | 0.335 | 2 | 0 | 0.000 |
 | **`dormancy6` 대비** | +3 | -0.449(-3.4%) | -1.524(-7.4%) | 0 | -0.631(-6.6%) | -1917(-44.4%) | 0 | 0 |
+| `act2-baseline1-r1` | 279 | 215.238 | 261.636 | 279 | 206.558 | 37065 | 5871 | 0.000 |
+| `act2-baseline1-r2` | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
+| `act2-baseline1-r3` | 272 | 220.521 | 331.528 | 272 | 211.365 | 36324 | 5871 | 0.000 |
+| **중앙값** | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
+| **변동 폭** | 7 | 5.283 | 69.892 | 7 | 4.807 | 741 | 0 | 0.000 |
 
 1막 네 묶음의 경위와 특이점(`baseline3`의 실행과 높은 중앙값, `verify-baseline-r1`, `relevancy2`의 흔들리는 `frames`, `dormancy2-r1`만 느림, `update-frequency3`은 `dormancy6`과 비교)은 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)의 "태스크 21.1 준비: STATUS.md 정리"로 옮겼다. Insights 값은 각 포스팅의 `measurements.md`에 있다.
+
+2막 기준선 `act2-baseline1`(2026-10-04 00:47\~00:55, 본체 화면, `0f689c2` 소스의 빌드, 중앙값 실행 `r2`)은 확정 명령에 2막의 확정값과 기준선 인자를 더해 `-Label act2-baseline1 -Runs 3`으로 한 번에 쟀고 종료 코드 0이다. 마지막 선호도 재적용은 측정 시작 16초, 7초, 19초 전이다. 세 실행 모두 서버 로그가 `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`이고, 화면 글자는 `nodes=5001 npcs=350 players=8 buildings=500 states=358 inventories=8`이다. 같은 구성을 보정에서 한 번 잰 `calib2-d3-r1`(184.837)보다 30.964 높지만, 약 1.5시간 떨어졌고 건축물 배치와 노드를 고치기 전의 빌드라 비교하지 않는다. `work_p99_ms`는 `r3`만 331.528로 높다(원인 모름).
 
 ## 포스팅 주기 진행
 
