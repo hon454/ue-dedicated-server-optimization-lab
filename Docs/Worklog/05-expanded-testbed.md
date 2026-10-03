@@ -25,3 +25,11 @@ STATUS.md에서 옮긴 작업 기록이다. 옮길 때의 문장을 그대로 �
 ## 2026-10-03 태스크 19.2: 인자 없는 실행의 재현 확인 (`reproduce1`, `reproduce2`, `abcheck-old`, `abcheck-old2`, `abcheck-new`, `abcheck-new2`)
 
 **2막 태스크 19.2 완료(2026-10-03). 인자 없는 실행은 지금 빌드에서도 1막의 시나리오다.** 확정 규모에서 `toggle1`을 잰 소스(`4c65b33`)를 다시 빌드한 `abcheck-old2` 3회와, 지금 빌드의 성공한 3회(`abcheck-new-r1`, `abcheck-new-r2`, `abcheck-new2-r1`)를 20:43\~21:02에 연달아 쟀다. `work_avg_ms`는 옛 빌드 13.333 / 12.784 / 12.953(중앙값 12.953, 변동 폭 0.549), 지금 빌드 12.642 / 12.536 / 13.245(중앙값 12.642, 변동 폭 0.709)다. 차이 0.311이 변동 폭보다 작아 구별되지 않는다. `netflush_avg_ms`도 중앙값 9.092와 8.776(변동 폭 0.517, 0.576)으로 구별되지 않고, `open_actor_channels_per_conn`은 모두 20이다. 앞서 잰 지금 빌드의 `reproduce2` 3회(20:25\~20:33, `work_avg_ms` 중앙값 12.459, 변동 폭 0.502)가 `toggle1`(18:28\~18:35, 13.581)과 구별된 것은 코드가 아니라 시간대 차이다. 같은 옛 소스가 두 시간 뒤에는 12.953이었다. 이 저녁의 확정 규모 14회 가운데 4회(`reproduce1-r1`, `abcheck-old-r2`, `abcheck-new-r3`, `abcheck-new2-r2`)가 `FAIL: processor affinity was re-applied`로 끝나 수치를 쓰지 않았다. 묶음은 실패한 실행에서 멈추므로 지금 빌드의 3회는 두 라벨에 걸쳐 있다.
+
+## 2026-10-03 태스크 20.2: 2막 보정 실행 표 (`calib2-a`\~)
+
+보정 실행마다 한 줄씩 더한다. 모두 확정 규모(클라이언트 8, 자원 노드 5,000, 맵 전체의 NPC 300, 준비 구간 30초, 측정 구간 60초)이고 한 번씩 잰 값이라 방향만 본다. 출발값의 계산은 [2막 설계](../Planning/2026-10-03-act-2-design.md) 5.1에 있다.
+
+| 라벨 | 구성 | 요소의 값 | frames | work_avg_ms | work_p99_ms | over_budget_frames | netflush_avg_ms | out_bytes_per_sec_per_conn | open_actor_channels_per_conn | saturated_ratio | 확인한 것 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `calib2-a-r1` | 세 기법 적용, 밀집 3m | 주변 NPC 50, 상태 값 5초, 인벤토리 200칸에 4초, 건축물 500개에 1초 | 1794 | 14.682 | 24.624 | 1 | 10.678 | 16325 | 77 | 0.000 | 종료 코드 0(22:30). 서버 로그 `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`. 준비 구간의 `open_actor_channels_per_conn`이 측정 시작 31초 전(13:29:22 UTC)에 78이고 측정 구간에 76\~78. 화면 글자는 t=60초에 `npcs=57 players=8 buildings=500 states=65 inventories=8`, 자기 인벤토리 200칸(1번, 0번 자리). 0번 자리의 3인칭 화면은 건축물에 가렸다(`calib2-a-r1-tpp-03.png`) |
