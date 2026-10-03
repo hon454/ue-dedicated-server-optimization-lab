@@ -13,7 +13,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **[사람] 시리즈 웹 페이지를 만들지 정한다.** 태스크 16을 막지 않는다. GitHub Pages의 Source는 "GitHub Actions"로 설정해 두었고, 워크플로와 `Site/`가 생기기 전에는 아무것도 공개되지 않는다([backlog.md](backlog.md) "작업 중 떠오른 것").
+2. **[사람] 시리즈 웹 페이지의 공개를 승인한다.** [Site/index.html](../Site/index.html)(리플리케이션 한 프레임)과 배포 워크플로 `.github/workflows/pages.yml`을 만들어 커밋했다(2026-10-03, 사용자 지시). 모형이 센 값이 네 단계 모두 측정값과 맞는 것을 로컬에서 확인했다([Site/README.md](../Site/README.md)). 푸시하면 `https://hon454.github.io/ue-dedicated-server-optimization-lab/`에 공개되므로, 사용자가 로컬 미리보기를 본 뒤에 푸시한다. 태스크 16을 막지 않는다.
 3. **태스크 16(인자가 1막의 구성을 재현하는지 확인).** 확정 규모 측정이라 시작하기 전에 사용자에게 알리고 답을 받는다(16.0). [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 1.
 4. 그 뒤는 2막 구현 계획의 단계 순이다(태스크 17부터 테스트베드 확장. [ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다). 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
 

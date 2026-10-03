@@ -37,6 +37,7 @@
 | 루트 README의 누적 수치의 근거(구성별 중앙값, 기법별 변화, 차트) | [Posts/measurements.md](Posts/measurements.md). 루트 README도 포스팅과 같은 문장 규칙으로 쓰고 실행 라벨과 계산식을 여기에 둔다 |
 | 후보 기법 자료(Insights에서 읽은 값, 엔진 소스 위치, 에이전트 의견) | `Posts/NN-이름/candidates.md` |
 | 개념도 SVG를 만드는 스크립트 | `Scripts/make-<이름>.ps1`(예: `Scripts/make-relevancy-map.ps1`) |
+| 시리즈 웹 페이지(리플리케이션 한 프레임)와 그 수치의 출처, 배포 | `Site/index.html`(의존성 없는 한 파일), [Site/README.md](Site/README.md), `.github/workflows/pages.yml`. main의 `Site/`가 바뀐 채로 푸시되면 `https://hon454.github.io/ue-dedicated-server-optimization-lab/`에 공개된다 |
 | 실행 산출물 | 수치 CSV `Saved/LabMetrics/summary.csv`(`config` 열을 더하기 전인 1막의 행은 `summary-act1.csv`), 트레이스 `Saved/Traces/<라벨>-rN.utrace`, 스크린샷 `Saved/Screenshots/Lab/`, 로그 `Saved/Logs/` |
 
 새 문서를 만들거나 옮기면 이 표를 함께 고친다.

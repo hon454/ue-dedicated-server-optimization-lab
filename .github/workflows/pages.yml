@@ -1,0 +1,34 @@
+# Site/ 폴더를 GitHub Pages에 올린다. 테스트나 빌드는 하지 않는다(AGENTS.md "개발 속도가 최우선이다"의 예외).
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: Site
+      - id: deployment
+        uses: actions/deploy-pages@v4

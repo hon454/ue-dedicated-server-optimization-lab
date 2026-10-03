@@ -8,6 +8,8 @@
 - **기법**: Relevancy, 액터 Dormancy, Net Update Frequency.
 - **측정 도구**: Unreal Insights와 서버가 남기는 수치 CSV.
 
+서버가 한 프레임에 하는 일을 기법을 하나씩 켜면서 보는 페이지가 있다: [리플리케이션 한 프레임](https://hon454.github.io/ue-dedicated-server-optimization-lab/).
+
 ## 결과 한눈에 보기
 
 세 기법을 적용한 서버는 서버 프레임 시간 평균이 198ms에서 13.2ms로 줄었다. 30Hz 서버가 한 프레임에 쓸 수 있는 시간은 33.3ms이고, 이 시간을 틱 예산이라고 부른다. 서버는 틱 예산의 6배를 쓰다가 절반 이하를 쓰게 됐다.
@@ -131,6 +133,7 @@ DSOptLab.uproject              언리얼 프로젝트(레포 루트가 프로젝
 Source/DSOptLab/               게임 코드. 이 프로젝트에서 만든 클래스는 접두사 Lab
 Config/  Content/              설정과 에셋
 Scripts/                       빌드, 측정 실행, 수동 확인, 개념도 생성용 PowerShell 스크립트
+Site/                          인터랙티브 설명 페이지(GitHub Pages로 공개)
 Docs/                          작업 문서
 ```
 
