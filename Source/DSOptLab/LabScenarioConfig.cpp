@@ -37,6 +37,7 @@ const FLabServerConfig& FLabServerConfig::Get()
 		FParse::Value(Cmd, TEXT("LabInventoryChurn="), C.InventoryChurnSeconds);
 		FParse::Value(Cmd, TEXT("LabBuildings="), C.BuildingsPerCluster);
 		FParse::Value(Cmd, TEXT("LabBuildInterval="), C.BuildIntervalSeconds);
+		FParse::Value(Cmd, TEXT("LabNpcsNearPlayers="), C.NpcsPerCluster);
 		return C;
 	}();
 	return Config;
@@ -82,6 +83,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (BuildIntervalSeconds != Defaults.BuildIntervalSeconds)
 	{
 		Parts.Add(FString::Printf(TEXT("BuildInterval=%g"), BuildIntervalSeconds));
+	}
+	if (NpcsPerCluster != Defaults.NpcsPerCluster)
+	{
+		Parts.Add(FString::Printf(TEXT("NpcsNearPlayers=%d"), NpcsPerCluster));
 	}
 	return Parts.IsEmpty() ? TEXT("default") : FString::Join(Parts, TEXT(";"));
 }

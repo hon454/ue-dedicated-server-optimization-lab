@@ -17,7 +17,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 20(보정) 진행 중.** 20.1의 출발값을 계산했다([2막 설계](Planning/2026-10-03-act-2-design.md) 5.1): 건축물은 무리 하나 500개에 1초, 상태 값 5초, 인벤토리 200칸에 4초다. 플레이어 주변의 NPC를 어떻게 늘릴지는 사용자의 답을 기다린다(아래 "사용자에게 요청한 일"). 답이 무리 배치면 인자와 배치 코드를 더해 작은 규모로 확인한 뒤, 보정 실행 `calib2-a`(세 기법을 적용한 구성, 밀집, 트레이스 켬)부터 잰다. 확정 규모 측정이라 시작하기 전에 알리고 답을 받는다. 실행마다 서버 로그와 자동 스크린샷을 확인하고 표를 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)에 쌓는다. 구성 사이의 비교는 연달아 잰 묶음끼리만 한다("명령").
+2. **태스크 20(보정) 진행 중.** 20.1이 끝났다(2026-10-03). 출발값은 건축물 무리 하나 500개에 1초, 플레이어 주변의 NPC 무리 하나 50개, 상태 값 5초, 인벤토리 200칸에 4초다([2막 설계](Planning/2026-10-03-act-2-design.md) 5.1). NPC는 새 인자 `-LabNpcsNearPlayers=`(`-NpcsNearPlayers`)로 놓는다(사용자 결정, 설계 3.5). 작은 규모 확인(2026-10-03): `tsmall-npc-r1`(밀집, 종료 코드 0)은 `clusters=1`에 화면 글자 `npcs=50`, `tsmall-npc-apart-r1`(분산, 종료 코드 0)은 `clusters=2`, `tsmall-noarg6-r1`(인자 없음, 종료 코드 0)은 화면 글자 두 줄에 t=45초 위치 x=536m, y=290m다. 클라이언트 8개에 출발값을 모두 켠 `tsmall-calib-r1`은 화면 글자가 `npcs=50 players=8 buildings=500 states=58 inventories=8`이었지만 선호도 재설정으로 실패 처리돼 수치는 쓰지 않는다. **다음은 20.2의 보정 실행 `calib2-a`다**(세 기법을 적용한 구성, 밀집, 출발값, 트레이스 켬, 1회. 명령은 "명령"의 구성별 실행). 확정 규모 측정이라 시작하기 전에 알리고 답을 받는다. 실행마다 서버 로그와 자동 스크린샷을 확인하고 표를 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)에 쌓는다. 구성 사이의 비교는 연달아 잰 묶음끼리만 한다("명령"). 3인칭 화면이 건축물에 가리는 것은 포스팅 5의 시각 자료 전에 정한다(설계 3.5).
 3. 그 뒤는 2막 구현 계획의 단계 순이다(태스크 20부터 새 기준선. [ADR-0014](Decisions/0014-act-2-testbed-expansion.md)는 2026-10-03에 승인됐다). 태스크 20에 밀집과 분산 배치의 비교(20.4a)가 들어 있다(2026-10-03 사용자 결정, 2막 설계 5절). 포스팅 7부터의 순서는 [backlog.md](backlog.md)의 잠정 순서를 포스팅 6 뒤에 확정한다.
 
 ## 포스팅 진행
@@ -48,7 +48,7 @@
 - Insights 이미지에 번호 붙은 상자 그리기: `powershell -ExecutionPolicy Bypass -File Scripts/annotate-image.ps1 -In <원본>.png -Out <포스팅용 이름>.png -Boxes "x,y,w,h;x,y,w,h"`. 좌표는 원본 픽셀 기준, 상자는 최대 3개, 원본은 그대로 둔다.
 - 빌드나 실행이 실패하면 [troubleshooting.md](Guides/troubleshooting.md)에서 증상을 찾는다.
 - 수치 CSV 위치: `Saved/LabMetrics/summary.csv`(`config` 열이 있다. 2026-10-03 태스크 15 전의 행은 `summary-act1.csv`)
-- 구성별 실행: 확정 명령에 기준선은 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`, Relevancy는 `-NoNodeDormancy -NpcUpdateFrequency 100`, Dormancy는 `-NpcUpdateFrequency 100`을 더한다(확정 규모에서 `toggle-baseline2`, `toggle-relevancy`, `toggle-dormancy`로 확인). 2막의 플레이어 배치는 밀집 `-PlayerSpacing 3`, 분산 `-PlayerSpacing 300`을 더한다. 상태 값은 `-StateInterval <초>`, 인벤토리는 `-InventoryItems <칸 수> -InventoryChurn <초>`, 건축물은 `-Buildings <무리 하나의 수> -BuildInterval <초>`를 더한다. 더하지 않으면 세 기법이 모두 적용된 구성이다(`config` 열 `default`)
+- 구성별 실행: 확정 명령에 기준선은 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`, Relevancy는 `-NoNodeDormancy -NpcUpdateFrequency 100`, Dormancy는 `-NpcUpdateFrequency 100`을 더한다(확정 규모에서 `toggle-baseline2`, `toggle-relevancy`, `toggle-dormancy`로 확인). 2막의 플레이어 배치는 밀집 `-PlayerSpacing 3`, 분산 `-PlayerSpacing 300`을 더한다. 상태 값은 `-StateInterval <초>`, 인벤토리는 `-InventoryItems <칸 수> -InventoryChurn <초>`, 건축물은 `-Buildings <무리 하나의 수> -BuildInterval <초>`, 플레이어 주변의 NPC는 `-NpcsNearPlayers <무리 하나의 수>`를 더한다. 보정의 출발값을 모두 켠 실행은 `-PlayerSpacing 3 -NpcsNearPlayers 50 -StateInterval 5 -InventoryItems 200 -InventoryChurn 4 -Buildings 500 -BuildInterval 1`이다([2막 설계](Planning/2026-10-03-act-2-design.md) 5.1, 확정값이 아니다). 더하지 않으면 세 기법이 모두 적용된 구성이다(`config` 열 `default`)
 - 리플리케이션 시간으로 쓰는 Insights 타이머: `GameNetDriver`(프레임당 Incl = 선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 확정했고 이후 바꾸지 않는다.
 
 ## 확정할 값
@@ -145,6 +145,5 @@ NPC 업데이트 빈도 `update-frequency3`(2026-10-02, 중앙값 실행 `r1`)�
 
 ## 사용자에게 요청한 일
 
-- **플레이어 주변의 NPC를 늘리는 방법을 정한다(태스크 20.1).** 에이전트 추천은 건축물처럼 플레이어 무리마다 NPC 50개를 더 놓는 인자를 만드는 것이다. 다른 안은 전체 `-Npcs`를 약 2,830으로 늘리는 것(기준선에 프레임당 약 165ms를 더한다)과 300 그대로 두는 것이다. 계산은 [2막 설계](Planning/2026-10-03-act-2-design.md) 5.1에 있다.
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
 - **ADR-0015 확인.** [ADR-0015](Decisions/0015-post-body-and-measurement-record.md)는 포스팅 틀을 바꾼다는 사용자 결정(2026-10-03)을 에이전트가 옮긴 것이라 상태를 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.

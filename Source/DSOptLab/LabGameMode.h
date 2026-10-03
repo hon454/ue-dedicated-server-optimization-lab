@@ -38,15 +38,15 @@ private:
 	void PlaceAndStart(ALabPlayerController& Player);
 	int32 CountReadyPlayers() const;
 
-	// 2막의 확장 요소(상태 값, 인벤토리, 건축물). 인자를 주지 않으면 아무것도 만들지 않는다.
+	// 2막의 확장 요소(상태 값, 인벤토리, 건축물, 플레이어 주변의 NPC). 인자를 주지 않으면 아무것도 만들지 않는다.
 	void AddStateComponent(AActor& Actor);
 	void AddPlayerElements(ALabPlayerController& Player);
 	void StartElementTimers();
 	void ChangeOneState();
 	void ChurnOneInventory();
 
-	/** 건축물의 한 무리. 플레이어의 경로가 서로 Net Cull Distance 안에 있는 자리들이 한 무리를 함께 쓴다. */
-	struct FBuildingCluster
+	/** 플레이어 주변에 놓는 것(건축물, NPC)의 한 무리. 경로가 서로 Net Cull Distance 안에 있는 자리들이 한 무리를 함께 쓴다. */
+	struct FPlayerCluster
 	{
 		FVector FirstRouteCenter = FVector::ZeroVector;
 		FVector Center = FVector::ZeroVector;
@@ -55,16 +55,23 @@ private:
 		TArray<TWeakObjectPtr<ALabBuilding>> Buildings;
 	};
 
+	void BuildPlayerClusters();
 	void SpawnBuildings();
-	void SpawnBuilding(FBuildingCluster& Cluster);
+	void SpawnBuilding(FPlayerCluster& Cluster);
 	void RebuildOne();
+	void SpawnClusterNpcs();
 
-	/** 무리의 반지름(cm). 밀집 배치의 경로 상자는 무리 중심에서 60m 안이라, 무리의 건축물은 모든 플레이어에게서 140m 안에 있다. */
+	/** 건축물 무리의 반지름(cm). 밀집 배치의 경로 상자는 무리 중심에서 60m 안이라, 무리의 건축물은 모든 플레이어에게서 140m 안에 있다. */
 	static constexpr float BuildingClusterRadius = 8000.f;
+	/**
+	 * NPC 무리의 반지름(cm). NPC는 시작 위치에서 대각선으로 42.4m(30m × √2)까지 움직이므로,
+	 * 밀집 배치에서 모든 플레이어에게서 142.4m(40 + 42.4 + 60) 안에 있다.
+	 */
+	static constexpr float NpcClusterRadius = 4000.f;
 	/** 경로 중심이 이 거리(Net Cull Distance, cm) 안인 자리들은 한 무리를 쓴다. */
-	static constexpr float BuildingClusterMergeDistance = 15000.f;
+	static constexpr float ClusterMergeDistance = 15000.f;
 
-	TArray<FBuildingCluster> BuildingClusters;
+	TArray<FPlayerCluster> PlayerClusters;
 	FRandomStream BuildingRng;
 	int32 NextRebuildCluster = 0;
 	FTimerHandle RebuildTimer;

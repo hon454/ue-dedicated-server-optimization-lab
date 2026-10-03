@@ -52,6 +52,8 @@ struct FLabServerConfig
 	int32 BuildingsPerCluster = 0;     // -LabBuildings=
 	// 0보다 크면 무리마다 이 간격(초)으로 가장 오래된 건축물 하나를 허물고 새로 하나를 짓는다.
 	float BuildIntervalSeconds = 0.f;  // -LabBuildInterval=
+	// 0보다 크면 플레이어가 있는 곳마다 NPC(ALabNpc)를 이 수만큼 더 놓는다. 맵 전체에 놓는 -LabNpcs=와 따로다.
+	int32 NpcsPerCluster = 0;          // -LabNpcsNearPlayers=
 
 	/** 수치 CSV의 config 열에 적는 값. 기본값과 다른 인자를 ';'로 잇고, 모두 기본값이면 "default"다. */
 	FString GetConfigName() const;
