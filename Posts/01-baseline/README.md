@@ -43,7 +43,7 @@ bAlwaysRelevant = true;
 flowchart TB
     subgraph Once["프레임마다 한 번"]
         direction LR
-        A["활성 목록<br/>리플리케이트하는 모든 액터"] --> B{{"① 고려할 시각인가?<br/>Net Update Frequency"}}
+        A["활성 목록<br/>리플리케이트하는<br/>모든 액터"] --> B{{"① 고려할 시각인가?<br/>Net Update Frequency"}}
         B -- "예" --> C["Consider List"]
     end
     subgraph Check["클라이언트마다 반복: 검사"]
