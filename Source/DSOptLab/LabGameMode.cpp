@@ -145,7 +145,8 @@ void ALabGameMode::BuildPlayerClusters()
 	TArray<FVector> CenterSums;
 	for (int32 Slot = 0; Slot < Config.ExpectedClients; ++Slot)
 	{
-		FVector RouteCenter = GetSlotLocation(Slot) + FVector(0.5f * Side, 0.5f * Side, 0.f);
+		const FVector RouteOrigin = GetSlotLocation(Slot);
+		FVector RouteCenter = RouteOrigin + FVector(0.5f * Side, 0.5f * Side, 0.f);
 		RouteCenter.Z = 0.f;
 
 		const int32 Found = PlayerClusters.IndexOfByPredicate([&RouteCenter](const FPlayerCluster& Cluster)
@@ -156,12 +157,14 @@ void ALabGameMode::BuildPlayerClusters()
 		{
 			CenterSums[Found] += RouteCenter;
 			++PlayerClusters[Found].NumSlots;
+			PlayerClusters[Found].RouteOrigins.Add(RouteOrigin);
 		}
 		else
 		{
 			FPlayerCluster& Cluster = PlayerClusters.AddDefaulted_GetRef();
 			Cluster.FirstRouteCenter = RouteCenter;
 			Cluster.NumSlots = 1;
+			Cluster.RouteOrigins.Add(RouteOrigin);
 			CenterSums.Add(RouteCenter);
 		}
 	}
@@ -192,10 +195,41 @@ void ALabGameMode::SpawnBuildings()
 
 void ALabGameMode::SpawnBuilding(FPlayerCluster& Cluster)
 {
-	// 원 안에 고르게 놓는다. 한 변 200cm 정육면체의 중심이 100cm에 오게 해 바닥에 세운다.
-	const float Distance = BuildingClusterRadius * FMath::Sqrt(BuildingRng.FRand());
-	const float Angle = 2.f * PI * BuildingRng.FRand();
-	const FVector Location = Cluster.Center + FVector(FMath::Cos(Angle) * Distance, FMath::Sin(Angle) * Distance, 100.f);
+	const double Side = FLabServerConfig::Get().PlayerSpacingMeters > 0.f ? ALabPlayerController::SpacedWaypointSide : ALabPlayerController::WaypointSide;
+
+	// 점에서 한 자리의 경로(축에 나란한 정사각형의 둘레)까지의 거리.
+	const auto DistanceToRoute = [Side](const FVector& Point, const FVector& RouteOrigin) -> double
+	{
+		const double X = Point.X - RouteOrigin.X;
+		const double Y = Point.Y - RouteOrigin.Y;
+		const double OutsideX = FMath::Max3(-X, 0.0, X - Side);
+		const double OutsideY = FMath::Max3(-Y, 0.0, Y - Side);
+		if (OutsideX > 0.0 || OutsideY > 0.0)
+		{
+			return FMath::Sqrt(OutsideX * OutsideX + OutsideY * OutsideY);
+		}
+		return FMath::Min(FMath::Min(X, Side - X), FMath::Min(Y, Side - Y));
+	};
+
+	// 원 안에 고르게 놓되, 경로에서 가까운 위치는 다시 뽑는다. 경로 위의 건축물은 3인칭 화면을 가린다.
+	// 난수만 쓰므로 실행마다 같은 배치다. 한 변 200cm 정육면체의 중심이 100cm에 오게 해 바닥에 세운다.
+	FVector Location = Cluster.Center;
+	for (int32 Attempt = 0; Attempt < 100; ++Attempt)
+	{
+		const float Distance = BuildingClusterRadius * FMath::Sqrt(BuildingRng.FRand());
+		const float Angle = 2.f * PI * BuildingRng.FRand();
+		Location = Cluster.Center + FVector(FMath::Cos(Angle) * Distance, FMath::Sin(Angle) * Distance, 0.f);
+
+		const bool bNearRoute = Cluster.RouteOrigins.ContainsByPredicate([&](const FVector& RouteOrigin)
+		{
+			return DistanceToRoute(Location, RouteOrigin) < BuildingRouteClearance;
+		});
+		if (!bNearRoute)
+		{
+			break;
+		}
+	}
+	Location.Z = 100.f;
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

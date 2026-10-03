@@ -51,6 +51,8 @@ private:
 		FVector FirstRouteCenter = FVector::ZeroVector;
 		FVector Center = FVector::ZeroVector;
 		int32 NumSlots = 0;
+		/** 이 무리를 쓰는 자리들의 경로(정사각형)의 0번 꼭짓점. 건축물을 경로에서 띄워 놓는 데 쓴다. */
+		TArray<FVector> RouteOrigins;
 		/** 지은 순서. 맨 앞이 가장 오래된 것이다. */
 		TArray<TWeakObjectPtr<ALabBuilding>> Buildings;
 	};
@@ -63,6 +65,11 @@ private:
 
 	/** 건축물 무리의 반지름(cm). 밀집 배치의 경로 상자는 무리 중심에서 60m 안이라, 무리의 건축물은 모든 플레이어에게서 140m 안에 있다. */
 	static constexpr float BuildingClusterRadius = 8000.f;
+	/**
+	 * 건축물의 중심을 경로의 변에서 띄우는 거리(cm). 3인칭 카메라는 캐릭터에서 4m 떨어져 있고(LabCharacter.cpp의 TargetArmLength),
+	 * 한 변 2m 정육면체의 중심에서 모서리까지가 1.41m다. 이보다 가까우면 건축물이 화면을 가린다.
+	 */
+	static constexpr float BuildingRouteClearance = 600.f;
 	/**
 	 * NPC 무리의 반지름(cm). NPC는 시작 위치에서 대각선으로 42.4m(30m × √2)까지 움직이므로,
 	 * 밀집 배치에서 모든 플레이어에게서 142.4m(40 + 42.4 + 60) 안에 있다.
