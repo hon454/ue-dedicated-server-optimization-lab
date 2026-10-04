@@ -38,8 +38,39 @@ using System; using System.Runtime.InteropServices;
 public static class LabProcess {
     [StructLayout(LayoutKind.Sequential)] public struct PROCESS_POWER_THROTTLING_STATE { public uint Version, ControlMask, StateMask; }
     [DllImport("kernel32.dll", SetLastError = true)] public static extern bool SetProcessInformation(IntPtr process, int infoClass, ref PROCESS_POWER_THROTTLING_STATE info, uint size);
+    [StructLayout(LayoutKind.Sequential)] public struct JOBOBJECT_BASIC_LIMIT_INFORMATION {
+        public long PerProcessUserTimeLimit, PerJobUserTimeLimit; public uint LimitFlags;
+        public UIntPtr MinimumWorkingSetSize, MaximumWorkingSetSize; public uint ActiveProcessLimit;
+        public UIntPtr Affinity; public uint PriorityClass, SchedulingClass;
+    }
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern IntPtr CreateJobObject(IntPtr attributes, string name);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern bool SetInformationJobObject(IntPtr job, int infoClass, ref JOBOBJECT_BASIC_LIMIT_INFORMATION info, uint size);
+    [DllImport("kernel32.dll", SetLastError = true)] public static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
 }
 "@
+
+# 프로세스를 선호도 제한이 걸린 Job 객체에 넣는다. 프로세스 선호도(ProcessorAffinity)만 설정하면, 엔진이 스레드마다
+# SetThreadGroupAffinity로 그룹의 모든 코어를 요청할 때 Windows가 프로세스 선호도를 전체 코어로 넓힌다
+# (WindowsRunnableThread.cpp:140-142, engine-notes.md 마절). Job의 제한은 스레드가 넓히지 못한다. 그 요청은 실패하고(오류 31)
+# 엔진은 경고 한 줄을 남긴 채 계속 돈다.
+function Set-LabJobAffinity($Process, [long]$Mask) {
+    $Job = [LabProcess]::CreateJobObject([IntPtr]::Zero, $null)
+    if ($Job -eq [IntPtr]::Zero) {
+        throw "CreateJobObject failed (error $([Runtime.InteropServices.Marshal]::GetLastWin32Error()))."
+    }
+    $Limit = New-Object LabProcess+JOBOBJECT_BASIC_LIMIT_INFORMATION
+    $Limit.LimitFlags = 0x10  # JOB_OBJECT_LIMIT_AFFINITY
+    $Limit.Affinity = [UIntPtr][uint64]$Mask
+    $JobObjectBasicLimitInformation = 2
+    $Size = [Runtime.InteropServices.Marshal]::SizeOf([type][LabProcess+JOBOBJECT_BASIC_LIMIT_INFORMATION])
+    if (-not [LabProcess]::SetInformationJobObject($Job, $JobObjectBasicLimitInformation, [ref]$Limit, $Size)) {
+        throw "SetInformationJobObject(affinity $Mask) failed (error $([Runtime.InteropServices.Marshal]::GetLastWin32Error()))."
+    }
+    if (-not [LabProcess]::AssignProcessToJobObject($Job, $Process.Handle)) {
+        throw "AssignProcessToJobObject failed for pid $($Process.Id) (error $([Runtime.InteropServices.Marshal]::GetLastWin32Error()))."
+    }
+    Write-Host "JOB: pid $($Process.Id) is limited to affinity $Mask"
+}
 
 function Disable-LabTimerThrottle($Process) {
     $ProcessPowerThrottling = 4

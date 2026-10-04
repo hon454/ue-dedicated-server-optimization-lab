@@ -89,9 +89,9 @@ if ($Logical -le 8 -or $Logical -gt 62) {
 }
 $ClientMask = (([long]1 -shl $Logical) - 1) - [long]0xFF
 
-# 에디터 실행 파일은 시작하는 동안 프로세스 선호도가 전체 코어로 되돌아간다(2026-10-01 smoke1, smoke3에서 관찰).
-# 그래서 실행 직후 한 번 설정하고, 서버를 기다리는 동안 2초마다 다시 읽어 달라져 있으면 다시 설정한다.
-# 되돌린 횟수를 돌려준다.
+# 프로세스 선호도는 엔진이 스레드 선호도를 설정할 때마다 전체 코어로 넓어진다(2026-10-01 smoke1, smoke3에서 관찰,
+# 원인은 2026-10-05에 확인. engine-notes.md 마절). 그래서 실행 직후 Job 객체로 묶어 넓어지지 않게 하고(Set-LabJobAffinity),
+# 그래도 서버를 기다리는 동안 2초마다 다시 읽어 달라져 있으면 다시 설정한다. 되돌린 횟수를 돌려준다.
 function Set-Affinity($Process, [long]$Mask) {
     if ($Process.HasExited) { return 0 }
     # 종료 중인 프로세스는 선호도를 읽을 수 없다. 읽지 못한 것은 달라진 것이 아니므로 다시 설정하지 않고 줄만 남긴다.
@@ -126,6 +126,7 @@ function Start-LabClient([int]$Index, [string]$RunLabel) {
         $ClientArgs += @("-LabTopDown", "-LabAutoScreenshot")
     }
     $Client = Start-Process -FilePath $Editor -ArgumentList $ClientArgs -PassThru
+    Set-LabJobAffinity $Client $ClientMask
     $null = Set-Affinity $Client $ClientMask
     return $Client
 }
@@ -209,6 +210,7 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
         $null = $Server.Handle
         # 서버 콘솔 창이 가려지거나 최소화돼도 틱이 약 21Hz로 떨어지지 않게 한다(ADR-0012).
         Disable-LabTimerThrottle $Server
+        Set-LabJobAffinity $Server $ServerMask
         $null = Set-Affinity $Server $ServerMask
 
         # 서버가 맵을 열고 월드를 생성할 시간.

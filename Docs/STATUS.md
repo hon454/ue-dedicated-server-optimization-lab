@@ -12,7 +12,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 22(포스팅 6: 세 기법 다시 적용).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 4. 네 구성(기준선, Relevancy, Dormancy, Net Update Frequency)을 3회씩 연달아 잰다. 기준선도 다시 잰다(`act2-baseline1`과 몇 시간 떨어지므로). 시작하기 전에 라벨, 순서(묶음 또는 번갈아), 걸리는 시간을 알리고 답을 받는다. 루트 README는 22.3a, 22.4에서 2막 기준으로 다시 쓴다(지도, 표, 테스트베드 화면. 2026-10-05 사용자 결정). 포스팅 7부터의 순서는 포스팅 6 뒤에 확정한다(태스크 23).
+2. **태스크 22(포스팅 6: 세 기법 다시 적용).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 4. 네 구성(기준선, Relevancy, Dormancy, Net Update Frequency)을 3회씩 연달아 잰다. 기준선도 다시 잰다(`act2-baseline1`과 몇 시간 떨어지므로). 2026-10-05에 구성별 묶음으로 재기로 했다(사용자 승인, 라벨 `act2-baseline11`, `act2-relevancy1`, `act2-dormancy1`, `act2-update-frequency1`). Job 객체 없이 시작한 `act2-baseline2`\~`10`은 측정 중 클라이언트 선호도 재설정으로 모두 실패해 쓰지 않는다([ADR-0016](Decisions/0016-affinity-through-job-objects.md)). 루트 README는 22.3a, 22.4에서 2막 기준으로 다시 쓴다(지도, 표, 테스트베드 화면. 2026-10-05 사용자 결정). 포스팅 7부터의 순서는 포스팅 6 뒤에 확정한다(태스크 23).
 
 ## 포스팅 진행
 
@@ -146,4 +146,4 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 ## 사용자에게 요청한 일
 
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
-- **ADR-0015 확인.** [ADR-0015](Decisions/0015-post-body-and-measurement-record.md)는 포스팅 틀을 바꾼다는 사용자 결정(2026-10-03)을 에이전트가 옮긴 것이라 상태를 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다.
+- **ADR-0015, ADR-0016 확인.** [ADR-0015](Decisions/0015-post-body-and-measurement-record.md)는 포스팅 틀을 바꾼다는 사용자 결정(2026-10-03)을 에이전트가 옮긴 것이라 상태를 "승인됨"으로 적었다. 고칠 곳이 있으면 알려 준다. [ADR-0016](Decisions/0016-affinity-through-job-objects.md)(코어 고정을 Job 객체로 지킴)은 "제안됨"이다. 사용자가 방식을 골라 스크립트는 이미 바꿨다(2026-10-05).
