@@ -13,6 +13,8 @@
 
 ## 2. 본문의 수치와 출처
 
+본문은 구성을 서버에서 바꾼 것으로 부른다. ① 거리 판정은 `act2-relevancy1`, ② Dormant 상태는 `act2-dormancy1`, ③ NPC 업데이트 빈도는 `act2-update-frequency1`의 구성이다. 이 파일과 [관찰 자료](candidates.md)의 표는 라벨을 따라 Relevancy, Dormancy, Net Update Frequency로 부른다.
+
 서버 프레임 시간과 리플리케이션 시간은 구성마다 `work_avg_ms` 중앙값 실행의 Timing Insights 값이다(기준선 `act2-baseline11-r2`, Relevancy `act2-relevancy1-r2`, Dormancy `act2-dormancy1-r2`, Net Update Frequency `act2-update-frequency1-r1`). 연결당 송신 대역폭은 같은 실행의 Networking Insights `Connection 0`이다. 연결당 열린 액터 채널 수는 서버 CSV다.
 
 | 본문의 수치 | 정밀한 값 | 출처 |
@@ -22,24 +24,24 @@
 | 연결당 송신 대역폭 36,400, 30,100, 30,300, 15,900바이트/초 | 36,449, 30,055, 30,254, 15,926 | 관찰 자료 6절. (`Actor` + `PacketHeaderAndInfo`) ÷ 8 ÷ 고른 범위의 시간 |
 | 연결당 열린 액터 채널 수 5,871, 695, 77, 77 | 같음 | 3절의 CSV `open_actor_channels_per_conn` |
 | 틱 예산 33.3ms | 1000 ÷ 30 = 33.33 | `NetServerMaxTickRate` 30(`Engine/Config/BaseEngine.ini:1867`) |
-| Dormancy가 Relevancy 구성의 서버 프레임 시간을 45% 더 줄였다 | 19.814 ÷ 35.904 − 1 = -44.8% | 관찰 자료 2절 |
+| Dormant 상태가 거리 판정 구성의 서버 프레임 시간을 45% 더 줄였다 | 19.814 ÷ 35.904 − 1 = -44.8% | 관찰 자료 2절 |
 | 기준선의 다른 측정 216ms | 216.067ms(`act2-baseline1-r2`) | [포스팅 5 측정 기록](../05-expanded-testbed/measurements.md) 2절 |
 | 건축물 500개, 무리 중심에서 80m 안, 무리 곁의 NPC 50명 | `-Buildings 500`, `BuildingClusterRadius` 8,000cm, `-NpcsNearPlayers 50`, `NpcClusterRadius` 4,000cm | `Source/DSOptLab/LabGameMode.h`, 1절의 인자 |
 | 3m 간격, 여덟 명이 서로 다른 방향 | `-PlayerSpacing 3`, 짝수 자리는 꼭짓점에서 정방향, 홀수 자리는 변의 가운데에서 역방향 | `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation`과 자리별 출발, [2막 설계](../../Docs/Planning/2026-10-03-act-2-design.md) 3.1 |
-| Relevancy만 적용: 연결 하나가 프레임마다 처리하는 건축물 500개 가운데 413개 | `LabBuilding` 프레임당 Count 3,302.4 ÷ 8 = 412.8 | 관찰 자료 3절 |
-| Relevancy만 적용: 틱 예산을 넘은 프레임 56% | `act2-relevancy1-r2`의 `over_budget_frames` 919 ÷ `frames` 1,640 = 56.0% | 3절 |
+| 거리 판정만 켠 서버: 연결 하나가 프레임마다 처리하는 건축물 500개 가운데 413개 | `LabBuilding` 프레임당 Count 3,302.4 ÷ 8 = 412.8 | 관찰 자료 3절 |
+| 거리 판정만 켠 서버: 틱 예산을 넘은 프레임 56% | `act2-relevancy1-r2`의 `over_budget_frames` 919 ÷ `frames` 1,640 = 56.0% | 3절 |
 | Net Cull Distance 기본값 150m | `NetCullDistanceSquared` 225,000,000 | `Engine/Source/Runtime/Engine/Private/Actor.cpp:312` |
 | NPC의 Net Update Frequency 10 | `FLabServerConfig::NpcUpdateFrequency` 기본값 10 | `Source/DSOptLab/LabScenarioConfig.h:40`, `Source/DSOptLab/LabNpc.cpp:24` |
 | 예상: 기준선의 건축물 처리 프레임당 9.61ms | 9.613ms | 관찰 자료 3절(`LabBuilding`, `act2-baseline11-r2`) |
-| 예상: Dormancy의 몫이 1막의 17%보다 커야 한다 | 1막 `relevancy2` → `dormancy2`의 서버 프레임 시간 평균 -16.7% | [누적 수치의 측정 기록](../measurements.md) 4절 |
-| 1막: Relevancy -91%, Dormancy -17%, Net Update Frequency 구별되지 않음 | -91.1%, -16.7%, 구별되지 않음(13.60 → 13.16ms) | 누적 수치의 측정 기록 4절 |
-| 2막: Relevancy -83%, Dormancy -45% | 35.904 ÷ 213.713 − 1 = -83.2%, 19.814 ÷ 35.904 − 1 = -44.8% | 관찰 자료 2절 |
-| 2막: Net Update Frequency 구별되지 않음 | CSV `work_avg_ms` 중앙값의 변화 -2.804(19.536 → 16.732)가 Net Update Frequency의 변동 폭 3.616보다 작다. Insights 값으로는 -14.1%(17.022 ÷ 19.814 − 1) | 3절. 구별의 규칙은 [누적 수치의 측정 기록](../measurements.md) 4절 |
-| Relevancy 뒤 건축물 처리 6.99ms, 73%가 남았다 | 6.987ms, 6.987 ÷ 9.613 = 72.7% | 관찰 자료 3절 |
-| Dormancy 뒤 건축물 처리 0.012ms | 0.012ms | 관찰 자료 3절 |
-| Dormancy가 네트워크 드라이버 자체 시간을 6.78ms 줄였다 | `GameNetDriver` Excl 17.940 → 11.156ms, -6.784 | 관찰 자료 4절 |
+| 예상: ②의 몫이 1막의 17%보다 커야 한다 | 1막 `relevancy2` → `dormancy2`의 서버 프레임 시간 평균 -16.7% | [누적 수치의 측정 기록](../measurements.md) 4절 |
+| 1막: ① -91%, ② -17%, ③ 구별되지 않음 | -91.1%, -16.7%, 구별되지 않음(13.60 → 13.16ms) | 누적 수치의 측정 기록 4절 |
+| 2막: ① -83%, ② -45% | 35.904 ÷ 213.713 − 1 = -83.2%, 19.814 ÷ 35.904 − 1 = -44.8% | 관찰 자료 2절 |
+| 2막: ③ 구별되지 않음 | CSV `work_avg_ms` 중앙값의 변화 -2.804(19.536 → 16.732)가 Net Update Frequency의 변동 폭 3.616보다 작다. Insights 값으로는 -14.1%(17.022 ÷ 19.814 − 1) | 3절. 구별의 규칙은 [누적 수치의 측정 기록](../measurements.md) 4절 |
+| ① 뒤 건축물 처리 6.99ms, 73%가 남았다 | 6.987ms, 6.987 ÷ 9.613 = 72.7% | 관찰 자료 3절 |
+| ② 뒤 건축물 처리 0.012ms | 0.012ms | 관찰 자료 3절 |
+| ②가 네트워크 드라이버 자체 시간을 6.78ms 줄였다 | `GameNetDriver` Excl 17.940 → 11.156ms, -6.784 | 관찰 자료 4절 |
 | 모든 연결에서 Dormant 상태가 되면 Consider List에서 빠진다 | 활성 목록에서 빠지는 조건과 Consider List를 만드는 곳 | `FNetworkObjectList::MarkDormant`(`NetworkObjectList.cpp:348-376`), `ServerReplicateActors_BuildConsiderList`(`NetDriver.cpp:5315`). [engine-notes.md](../../Docs/Reference/engine-notes.md) "휴면 액터와 관련성" |
-| Relevancy는 대역폭을 18%만 줄였다 | 30,055 ÷ 36,449 − 1 = -17.5% | 관찰 자료 6절 |
+| 거리 판정은 대역폭을 18%만 줄였다 | 30,055 ÷ 36,449 − 1 = -17.5% | 관찰 자료 6절 |
 | 받는 NPC 350명 → 47명 | 기준선 NPC 350(맵 300 + 무리 곁 50), Relevancy `LabNpc` 프레임당 Count 378.1 ÷ 8 = 47.3 | 관찰 자료 3절 |
 | 서버 프레임(초당) 4.68 → 27.3 | `frames` 281 ÷ 60 = 4.68, 1,640 ÷ 60 = 27.33 | 3절 |
 | NPC를 보낸 횟수(초당) 1,640 → 1,270 | `LabNpc` Count 98,316 ÷ 59.890 = 1,641.6, 75,853 ÷ 59.846 = 1,267.5 | 관찰 자료 6절 |
@@ -47,7 +49,7 @@
 | 보낸 횟수가 3분의 1, 연결당 송신 대역폭 -47% | `LabNpc` 초당 횟수 1,290.7 → 419.6(32.5%), 15,926 ÷ 30,254 − 1 = -47.4% | 관찰 자료 6절 |
 | 느린 실행이 3ms쯤 느렸다 | `act2-update-frequency1-r2`의 `work_avg_ms` 19.927, 다른 두 실행 16.732, 16.311 | 3절, 관찰 자료 5절 |
 | 처리한 NPC 354번 → 115번, 2.69ms → 0.965ms | `LabNpc` 프레임당 Count 354.0 → 114.5, Incl 2.688 → 0.965ms | 관찰 자료 3절 |
-| Relevancy 뒤 화면: 건축물 500개와 가까운 자원 노드, NPC | 화면 글자 `nodes=125 npcs=58 buildings=500`(`act2-relevancy1-r2-topdown-03`), Dormancy `nodes=176 npcs=58 buildings=500`(`act2-dormancy1-r2-topdown-03`) | 자동 스크린샷(t=60초) |
+| ① 뒤 화면: 건축물 500개와 가까운 자원 노드, NPC | 화면 글자 `nodes=125 npcs=58 buildings=500`(`act2-relevancy1-r2-topdown-03`), Dormancy `nodes=176 npcs=58 buildings=500`(`act2-dormancy1-r2-topdown-03`) | 자동 스크린샷(t=60초) |
 | 남은 리플리케이션 시간의 85%가 네트워크 드라이버 자체 시간 | 10.141 ÷ 11.967 = 84.7% | 관찰 자료 3절 |
 | 보낸 액터 데이터의 30%는 인벤토리 | `LabInventoryComponent` 2,200,264 ÷ `Actor` 7,454,034 = 29.5% | 관찰 자료 6절 |
 
