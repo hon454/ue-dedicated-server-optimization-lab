@@ -1,6 +1,6 @@
 # 현재 상태
 
-마지막 갱신: 2026-10-04
+마지막 갱신: 2026-10-05
 
 ## 단계
 
@@ -12,7 +12,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 22(포스팅 6: 세 기법 다시 적용).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 4. 네 구성(기준선, Relevancy, Dormancy, Net Update Frequency)을 3회씩 연달아 잰다. 기준선도 다시 잰다(`act2-baseline1`과 몇 시간 떨어지므로). 시작하기 전에 라벨, 순서(묶음 또는 번갈아), 걸리는 시간을 알리고 답을 받는다. 포스팅 7부터의 순서는 포스팅 6 뒤에 확정한다(태스크 23).
+2. **태스크 22(포스팅 6: 세 기법 다시 적용).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 4. 네 구성(기준선, Relevancy, Dormancy, Net Update Frequency)을 3회씩 연달아 잰다. 기준선도 다시 잰다(`act2-baseline1`과 몇 시간 떨어지므로). 시작하기 전에 라벨, 순서(묶음 또는 번갈아), 걸리는 시간을 알리고 답을 받는다. 루트 README는 22.3a, 22.4에서 2막 기준으로 다시 쓴다(지도, 표, 테스트베드 화면. 2026-10-05 사용자 결정). 포스팅 7부터의 순서는 포스팅 6 뒤에 확정한다(태스크 23).
 
 ## 포스팅 진행
 
