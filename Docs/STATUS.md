@@ -7,12 +7,14 @@
 **단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 사용자의 14.5(전체 읽기)에서 나온 문제로 포스팅 0\~4와 루트 README를 새 틀로 다시 썼고, main을 `87c83f9`까지 푸시했다(2026-10-03). 태그 시점의 글은 옛 틀이다. 세 기법을 모두 적용했다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있고, 태스크 9.4\~9.5와 14는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 9.4\~9.5, 14"에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
 - **2막 단계 1\~3(태스크 15\~21)이 끝났다(2026-10-04).** 기법 전환 인자, 확장 요소, 규모 확정, 포스팅 5(`post-05-expanded-testbed`)까지다. 빌드된 바이너리는 main의 소스와 같다(소스가 마지막으로 바뀐 커밋 `0f689c2`). 확정값은 아래 "확정할 값"의 2막 줄, 인자는 "명령"에 있고, 경위는 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)의 "태스크 15"부터 "태스크 15\~21: STATUS.md에서 옮긴 경위"까지에 있다.
+- **태스크 22(포스팅 6, `post-06-three-techniques-again`)가 끝났다(2026-10-05).** 아래는 다음 세션에서 `Docs/Worklog/06-three-techniques-again.md`(새 파일)로 옮길 경위다. [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 4. 네 구성(기준선, Relevancy, Dormancy, Net Update Frequency)을 3회씩 연달아 잰다. 기준선도 다시 잰다(`act2-baseline1`과 몇 시간 떨어지므로). **22.1 끝(2026-10-05).** 구성별 묶음 `act2-baseline11`, `act2-relevancy1`, `act2-dormancy1`, `act2-update-frequency1`의 `work_avg_ms` 중앙값은 213.555 → 35.674 → 19.536 → 16.732다. 12회의 표와 변화는 [포스팅 6 측정 기록](../Posts/06-three-techniques-again/measurements.md) 3절에 있다. `act2-update-frequency1-r2`만 19.927로 커서 변동 폭(3.616)이 Dormancy 대비 차이(2.804)보다 크다. **22.2 끝(2026-10-05).** Timing 값과 `GameNetDriver` 내역은 [관찰 자료](../Posts/06-three-techniques-again/candidates.md)에 있다(`r2`는 처리 횟수가 같고 모든 타이머가 느린 실행). **22.3, 22.3a 끝(2026-10-05).** 사용자가 중심 주장(플레이어가 모이면 Dormancy의 몫이 커진다)과 틀을 골랐고, [초안](../Posts/06-three-techniques-again/README.md)과 2막 지도를 썼다. "문제"와 "원리"는 다시 쓴 뒤 승인됐다. **22.4 끝(2026-10-05).** 루트 README의 결과, 지도, 테스트베드를 2막으로 바꿨다. **22.5 끝(2026-10-05).** 태그를 붙이고 README 포스팅 표의 "(작성 중)"을 뺐다. Job 객체 없이 시작한 `act2-baseline2`\~`10`은 측정 중 클라이언트 선호도 재설정으로 모두 실패해 쓰지 않는다([ADR-0016](Decisions/0016-affinity-through-job-objects.md)). 루트 README는 22.3a, 22.4에서 2막 기준으로 다시 쓴다(지도, 표, 테스트베드 화면. 2026-10-05 사용자 결정). 포스팅 7부터의 순서는 포스팅 6 뒤에 확정한다(태스크 23).
 - **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
+- 다음 시각 자료 라벨은 `visual14`다(`visual13`은 README의 8개 창 화면, 2026-10-05).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 22(포스팅 6: 세 기법 다시 적용).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 4. 네 구성(기준선, Relevancy, Dormancy, Net Update Frequency)을 3회씩 연달아 잰다. 기준선도 다시 잰다(`act2-baseline1`과 몇 시간 떨어지므로). **22.1 끝(2026-10-05).** 구성별 묶음 `act2-baseline11`, `act2-relevancy1`, `act2-dormancy1`, `act2-update-frequency1`의 `work_avg_ms` 중앙값은 213.555 → 35.674 → 19.536 → 16.732다. 12회의 표와 변화는 [포스팅 6 측정 기록](../Posts/06-three-techniques-again/measurements.md) 3절에 있다. `act2-update-frequency1-r2`만 19.927로 커서 변동 폭(3.616)이 Dormancy 대비 차이(2.804)보다 크다. **22.2 끝(2026-10-05).** Timing 값과 `GameNetDriver` 내역은 [관찰 자료](../Posts/06-three-techniques-again/candidates.md)에 있다(`r2`는 처리 횟수가 같고 모든 타이머가 느린 실행). **22.3, 22.3a 끝(2026-10-05).** 사용자가 중심 주장(플레이어가 모이면 Dormancy의 몫이 커진다)과 틀을 골랐고, [초안](../Posts/06-three-techniques-again/README.md)과 2막 지도를 썼다. "문제"와 "원리"는 다시 쓴 뒤 승인됐다. **22.4 끝(2026-10-05).** 루트 README의 결과, 지도, 테스트베드를 2막으로 바꿨다. 다음은 22.5 태그(태그를 붙이는 커밋에서 README 포스팅 표의 "(작성 중)"을 뺀다)다. Job 객체 없이 시작한 `act2-baseline2`\~`10`은 측정 중 클라이언트 선호도 재설정으로 모두 실패해 쓰지 않는다([ADR-0016](Decisions/0016-affinity-through-job-objects.md)). 루트 README는 22.3a, 22.4에서 2막 기준으로 다시 쓴다(지도, 표, 테스트베드 화면. 2026-10-05 사용자 결정). 포스팅 7부터의 순서는 포스팅 6 뒤에 확정한다(태스크 23).
+2. **태스크 23(2막 포스팅 순서 확정).** [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 4. 23.1: 포스팅 6의 최종 구성에서 남은 비용을 큰 순서로 정리하고, [2막 설계](Planning/2026-10-03-act-2-design.md) 6절의 후보마다 겨냥할 비용의 크기를 적는다. 재료는 포스팅 6 [관찰 자료](../Posts/06-three-techniques-again/candidates.md) 3절, 6절, 7절이다(남은 리플리케이션 시간의 84.7%가 `GameNetDriver` Excl, 보낸 액터 데이터의 29.5%가 인벤토리). 23.2 `[사람]` 순서 확정: 에이전트가 추천 순서와 이유를 내고, 확정된 순서는 [backlog.md](backlog.md) "우선순위 순"에 적는다.
 
 ## 포스팅 진행
 
@@ -24,7 +26,7 @@
 | 3. 자원 노드 Dormancy(휴면) | 완료 | `post-03-dormancy` |
 | 4. AI NPC Net Update Frequency(업데이트 빈도) | 완료 | `post-04-update-frequency` |
 | 5. 테스트베드 확장과 새 기준선 | 완료 | `post-05-expanded-testbed` |
-| 6. 1막의 세 최적화를 2막에 다시 적용 | 승인, 태그 전 | |
+| 6. 1막의 세 최적화를 2막에 다시 적용 | 완료 | `post-06-three-techniques-again` |
 
 ## 명령
 
@@ -135,10 +137,6 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 1막 네 묶음의 경위와 특이점(`baseline3`의 실행과 높은 중앙값, `verify-baseline-r1`, `relevancy2`의 흔들리는 `frames`, `dormancy2-r1`만 느림, `update-frequency3`은 `dormancy6`과 비교)은 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)의 "태스크 21.1 준비: STATUS.md 정리"로 옮겼다. Insights 값은 각 포스팅의 `measurements.md`에 있다.
 
 `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다.
-
-## 포스팅 주기 진행
-
-- 다음 시각 자료 라벨은 `visual14`다(`visual13`은 README의 8개 창 화면, 2026-10-05).
 
 ## 막힌 것
 
