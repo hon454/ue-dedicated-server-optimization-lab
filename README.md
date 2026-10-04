@@ -146,20 +146,9 @@ xychart-beta horizontal
 
 같은 라벨은 다시 쓸 수 없다. 다시 실행할 때는 라벨을 바꾼다. 실행 중에는 클라이언트 창에 키를 입력하지 않는다. 클라이언트 두 개를 직접 조작해 보려면 `Scripts/run-manual.ps1`을 쓴다.
 
-## 레포 구조
+## 코드
 
-```
-README.md                      이 문서
-Posts/NN-이름/README.md        포스팅 본문과 이미지
-Posts/NN-이름/measurements.md  본문 수치의 근거(실행별 값, 계산식, 엔진 소스 위치)
-Posts/measurements.md          이 문서의 누적 수치의 근거
-DSOptLab.uproject              언리얼 프로젝트(레포 루트가 프로젝트 폴더)
-Source/DSOptLab/               게임 코드. 이 프로젝트에서 만든 클래스는 접두사 Lab
-Config/  Content/              설정과 에셋
-Scripts/                       빌드, 측정 실행, 수동 확인, 개념도 생성용 PowerShell 스크립트
-Site/                          인터랙티브 설명 페이지(GitHub Pages로 공개)
-Docs/                          작업 문서
-```
+포스팅은 `Posts/NN-이름/README.md`에 있고, 본문 수치의 근거(실행별 값, 계산식, 엔진 소스 위치)는 같은 폴더의 `measurements.md`에 있다. 게임 코드는 `Source/DSOptLab/`에 있고, 이 프로젝트에서 만든 클래스는 접두사 `Lab`을 쓴다.
 
 | 코드 | 역할 |
 | --- | --- |
