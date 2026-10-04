@@ -23,7 +23,7 @@
 | 포스팅의 독자와 분량, 틀, 문장 규칙, 본문과 측정 기록의 구분 | posting.md "독자와 분량", "틀", "문장 규칙", "본문과 측정 기록". 따라 쓸 본보기는 [Relevancy 글](Posts/02-relevancy/README.md)과 그 [측정 기록](Posts/02-relevancy/measurements.md) |
 | 엔진 기본값, 동작 순서, 소스 위치, 실행에서 확인한 사실 | [engine-notes.md](Docs/Reference/engine-notes.md) |
 | 빌드나 실행이 실패했을 때의 증상별 대처 | [troubleshooting.md](Docs/Guides/troubleshooting.md). 문제가 생겼을 때만 연다 |
-| Insights로 트레이스를 여는 법과 읽는 순서, 역할 분담 | [insights-reading.md](Docs/Guides/insights-reading.md). 여는 명령은 `Scripts/open-insights.ps1 -Label <라벨>-rN`, 문서용 캡처는 `Scripts/capture-insights.ps1`, 캡처에 번호 붙은 상자를 그리는 것은 `Scripts/annotate-image.ps1` |
+| Insights로 트레이스를 여는 법과 읽는 순서, 역할 분담 | [insights-reading.md](Docs/Guides/insights-reading.md). 여는 명령은 `Scripts/open-insights.ps1 -Label <라벨>-rN`, 창 없이 Timing 값을 내보내는 것은 `Scripts/export-insights.ps1 -Label <라벨>-rN`, 문서용 캡처는 `Scripts/capture-insights.ps1`, 캡처에 번호 붙은 상자를 그리는 것은 `Scripts/annotate-image.ps1` |
 | 클라이언트 화면 영상과 전체 화면 캡처 | `Scripts/capture-video.ps1`(사용법은 파일 머리 주석). 찍기 전 허가와 측정 분리는 아래 규칙 "화면을 찍기 전에 허가를 받는다" |
 | Insights 화면을 단계별로 읽은 예(캡처와 행동마다의 이유) | [insights-walkthrough-calib-f.md](Docs/Guides/insights-walkthrough-calib-f.md) |
 | 다음 주제의 우선순위, 작업 중 떠오른 기법 | [backlog.md](Docs/backlog.md) |
