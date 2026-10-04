@@ -23,13 +23,19 @@
 | 리플리케이션 시간 204ms, 30.9ms, 14.7ms, 12.0ms | 204.327, 30.934, 14.744, 11.967ms | 관찰 자료 2절, 3절(`GameNetDriver` Incl ÷ `WorldTick` Count) |
 | 연결당 송신 대역폭 36,400, 30,100, 30,300, 15,900바이트/초 | 36,449, 30,055, 30,254, 15,926 | 관찰 자료 6절. (`Actor` + `PacketHeaderAndInfo`) ÷ 8 ÷ 고른 범위의 시간 |
 | 연결당 열린 액터 채널 수 5,871, 695, 77, 77 | 같음 | 3절의 CSV `open_actor_channels_per_conn` |
+| 처리 횟수(프레임마다) 46,917, 4,533, 423, 184 | 46,916.8, 4,532.9, 423.2, 183.6 | 관찰 자료 3절의 Callees에서 계산. `GameNetDriver` 바로 아래 클래스 타이머의 Count 합(RPC `ClientMoveResponsePacked` 제외) ÷ `WorldTick` Count |
+| 그 가운데 건축물 4,000, 3,302, 1, 1 | `LabBuilding` 4,000.0, 3,302.4, 1.0, 1.0 | 관찰 자료 3절 |
+| 그 가운데 NPC 2,800, 378, 354, 115 | `LabNpc` 2,800.0, 378.1, 354.0, 114.5 | 관찰 자료 3절 |
+| 액터 1,000개, 클라이언트 8개면 처리 횟수 8,000번 | 1,000 × 8 | 설명을 위한 계산 예시 |
+| 거리 판정만 켠 서버: 처리 횟수 4,533번, 그 가운데 건축물 3,302번(73%) | 3,302.4 ÷ 4,532.9 = 72.9% | 위의 값 |
+| ①이 처리 횟수를 10분의 1로 줄였다 | 4,532.9 ÷ 46,916.8 = 9.7% | 위의 값 |
+| ③이 NPC의 처리를 3분의 1로 줄였다 | 114.5 ÷ 354.0 = 32.3% | 위의 값 |
+| 자원 노드 5,001개, 건축물 500개, NPC 350명 | 5,000 + 검증용 1, `-Buildings 500`, 맵 300 + 무리 곁 50 | 1절의 인자 |
 | 틱 예산 33.3ms | 1000 ÷ 30 = 33.33 | `NetServerMaxTickRate` 30(`Engine/Config/BaseEngine.ini:1867`) |
 | Dormant 상태가 거리 판정 구성의 서버 프레임 시간을 45% 더 줄였다 | 19.814 ÷ 35.904 − 1 = -44.8% | 관찰 자료 2절 |
 | 기준선의 다른 측정 216ms | 216.067ms(`act2-baseline1-r2`) | [포스팅 5 측정 기록](../05-expanded-testbed/measurements.md) 2절 |
-| 건축물 500개, 무리 중심에서 80m 안, 무리 곁의 NPC 50명 | `-Buildings 500`, `BuildingClusterRadius` 8,000cm, `-NpcsNearPlayers 50`, `NpcClusterRadius` 4,000cm | `Source/DSOptLab/LabGameMode.h`, 1절의 인자 |
-| 3m 간격, 여덟 명이 서로 다른 방향 | `-PlayerSpacing 3`, 짝수 자리는 꼭짓점에서 정방향, 홀수 자리는 변의 가운데에서 역방향 | `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation`과 자리별 출발, [2막 설계](../../Docs/Planning/2026-10-03-act-2-design.md) 3.1 |
+| 지도: 건축물 500개가 무리 중심에서 80m 안, 무리 곁의 NPC 50명 | `-Buildings 500`, `BuildingClusterRadius` 8,000cm, `-NpcsNearPlayers 50`, `NpcClusterRadius` 4,000cm | `Source/DSOptLab/LabGameMode.h`, 1절의 인자 |
 | 거리 판정만 켠 서버: 연결 하나가 프레임마다 처리하는 건축물 500개 가운데 413개 | `LabBuilding` 프레임당 Count 3,302.4 ÷ 8 = 412.8 | 관찰 자료 3절 |
-| 거리 판정만 켠 서버: 틱 예산을 넘은 프레임 56% | `act2-relevancy1-r2`의 `over_budget_frames` 919 ÷ `frames` 1,640 = 56.0% | 3절 |
 | Net Cull Distance 기본값 150m | `NetCullDistanceSquared` 225,000,000 | `Engine/Source/Runtime/Engine/Private/Actor.cpp:312` |
 | NPC의 Net Update Frequency 10 | `FLabServerConfig::NpcUpdateFrequency` 기본값 10 | `Source/DSOptLab/LabScenarioConfig.h:40`, `Source/DSOptLab/LabNpc.cpp:24` |
 | 예상: 기준선의 건축물 처리 프레임당 9.61ms | 9.613ms | 관찰 자료 3절(`LabBuilding`, `act2-baseline11-r2`) |
@@ -48,7 +54,7 @@
 | 받는 NPC를 86% 줄였다, 5.8배 자주, 횟수는 23%만 | 47.3 ÷ 350 − 1 = -86.5%, 27.33 ÷ 4.68 = 5.84, 1,267.5 ÷ 1,641.6 − 1 = -22.8% | 위의 값 |
 | 보낸 횟수가 3분의 1, 연결당 송신 대역폭 -47% | `LabNpc` 초당 횟수 1,290.7 → 419.6(32.5%), 15,926 ÷ 30,254 − 1 = -47.4% | 관찰 자료 6절 |
 | 느린 실행이 3ms쯤 느렸다 | `act2-update-frequency1-r2`의 `work_avg_ms` 19.927, 다른 두 실행 16.732, 16.311 | 3절, 관찰 자료 5절 |
-| 처리한 NPC 354번 → 115번, 2.69ms → 0.965ms | `LabNpc` 프레임당 Count 354.0 → 114.5, Incl 2.688 → 0.965ms | 관찰 자료 3절 |
+| NPC의 처리에 쓴 시간 2.69ms → 0.965ms | `LabNpc` 프레임당 Count 354.0 → 114.5, Incl 2.688 → 0.965ms | 관찰 자료 3절 |
 | ① 뒤 화면: 건축물 500개와 가까운 자원 노드, NPC | 화면 글자 `nodes=125 npcs=58 buildings=500`(`act2-relevancy1-r2-topdown-03`), Dormancy `nodes=176 npcs=58 buildings=500`(`act2-dormancy1-r2-topdown-03`) | 자동 스크린샷(t=60초) |
 | 남은 리플리케이션 시간의 85%가 네트워크 드라이버 자체 시간 | 10.141 ÷ 11.967 = 84.7% | 관찰 자료 3절 |
 | 보낸 액터 데이터의 30%는 인벤토리 | `LabInventoryComponent` 2,200,264 ÷ `Actor` 7,454,034 = 29.5% | 관찰 자료 6절 |
