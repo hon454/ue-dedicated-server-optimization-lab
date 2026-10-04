@@ -39,9 +39,9 @@ xychart-beta horizontal
 
 실행별 값과 계산식, 구별되지 않은 차이는 [누적 수치의 측정 기록](Posts/measurements.md)에 있다.
 
-![서버가 보는 지도. 적용 전에는 모든 액터를, Relevancy 적용 후에는 150m 원 안의 액터만 보낸다](Posts/02-relevancy/images/relevancy-map.svg)
+![서버가 보는 지도. 적용 전에는 모든 액터를, 거리 판정을 켠 뒤에는 150m 원 안의 액터만 보낸다](Posts/02-relevancy/images/relevancy-map.svg)
 
-가장 큰 변화인 Relevancy를 서버의 관점에서 그린 개념도다. 맵 크기, 플레이어 8명의 자리와 경로, 150m 원은 실제 비율이다. 점의 위치는 예시다.
+가장 큰 변화인 거리 판정을 서버의 관점에서 그린 개념도다. 맵 크기, 플레이어 8명의 자리와 경로, 150m 원은 실제 비율이다. 점의 위치는 예시다.
 
 ## 포스팅
 
