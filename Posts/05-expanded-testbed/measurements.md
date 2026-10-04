@@ -173,6 +173,7 @@
 
 - `topdown.png`, `tpp.png`는 `act2-baseline1-r2`의 자동 스크린샷 03번(t=60초)이다.
 - `dense-topdown.png`, `apart-topdown.png`는 세 기법을 적용한 구성의 `layout-dense4-r1`, `layout-apart8-r1` 03번이다. 분산 배치의 화면 글자 `buildings=934`는 시작 신호 전에 맵 가운데에서 받은 다른 무리의 건축물이 Dormant 상태로 남은 것이다(2막 설계 3.4).
+- `all-clients.png`는 루트 README가 쓰는 8개 창의 화면이다. 수치를 쓰지 않는 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 커밋 `ff496df`의 스크립트, 세 기법 적용 + 2막의 요소, `-NoTrace`)의 측정 시작 15초 뒤에 `Scripts/capture-video.ps1 -RaiseSlots "0,1,2,3,4,5,6,7" -Region "0,0,3840,1126" -NoMouse -AllowMeasuring`으로 한 프레임을 찍었다. 이 글의 본문에는 넣지 않았다.
 - 영상은 찍지 않았다.
 
 ## 12. 확인하지 않은 것
