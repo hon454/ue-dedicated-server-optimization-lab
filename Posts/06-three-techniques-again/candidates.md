@@ -77,7 +77,7 @@
 | Dormancy(Relevancy → Dormancy) | -16.190 | -6.784 | -1.818 | -0.488 | -6.975 | -0.125 |
 | Net Update Frequency(Dormancy → Net Update Frequency) | -2.777 | -1.015 | 0 | -1.723 | 0 | -0.039 |
 
-각 칸은 뒤 구성의 값 − 앞 구성의 값이다. 1막의 같은 변화(CSV `work_avg_ms`)는 Relevancy -91.3%(`baseline3` → `relevancy2`), Dormancy -17.1%(`relevancy2` → `dormancy2`), Net Update Frequency -3.4%(`dormancy6` → `update-frequency3`)이고, 2막은 -83.3%, -45.2%, -14.4%다([측정 기록](measurements.md) 2절, [STATUS.md](../../Docs/STATUS.md) "측정 결과").
+각 칸은 뒤 구성의 값 − 앞 구성의 값이다. 1막의 같은 변화(CSV `work_avg_ms`)는 Relevancy -91.3%(`baseline3` → `relevancy2`), Dormancy -17.1%(`relevancy2` → `dormancy2`), Net Update Frequency -3.4%(`dormancy6` → `update-frequency3`)이고, 2막은 -83.3%, -45.2%, -14.4%다([측정 기록](measurements.md) 3절, [STATUS.md](../../Docs/STATUS.md) "측정 결과").
 
 ## 5. `act2-update-frequency1-r2`가 느린 까닭
 
