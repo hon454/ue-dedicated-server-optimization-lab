@@ -1,7 +1,7 @@
 # ADR-0016: 서버와 클라이언트의 코어 고정을 Job 객체로 지킨다
 
-- 상태: 제안됨
-- 날짜: 2026-10-05 (사용자가 방식을 고르고 측정 진행을 지시함. ADR 승인은 기다림)
+- 상태: 승인됨
+- 날짜: 2026-10-05 (사용자 승인)
 - 출처: [engine-notes.md](../Reference/engine-notes.md) 마절, [ADR-0009](0009-server-cores-without-dpc-load.md), [ADR-0008](0008-reproducible-runs.md)
 
 ## 맥락
