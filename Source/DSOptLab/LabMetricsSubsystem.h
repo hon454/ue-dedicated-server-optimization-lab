@@ -50,6 +50,7 @@ private:
 
 	FConnectionSample SampleConnections() const;
 	bool WriteSummary(const FConnectionSample& Sample, double MeasuredSeconds) const;
+	void LogNetworkObjects() const;
 	void Fail(const TCHAR* Reason);
 
 	EPhase Phase = EPhase::WaitingForClients;

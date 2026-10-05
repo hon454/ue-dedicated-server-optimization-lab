@@ -2,6 +2,7 @@
 
 #include "Engine/NetConnection.h"
 #include "Engine/NetDriver.h"
+#include "Engine/NetworkObjectList.h"
 #include "Engine/World.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
@@ -245,6 +246,7 @@ void ULabMetricsSubsystem::HandleEndFrame()
 				Fail(TEXT("could not write summary.csv"));
 				return;
 			}
+			LogNetworkObjects();
 
 			Phase = EPhase::Done;
 			FPlatformMisc::RequestExitWithStatus(false, 0);
@@ -254,6 +256,57 @@ void ULabMetricsSubsystem::HandleEndFrame()
 	default:
 		break;
 	}
+}
+
+void ULabMetricsSubsystem::LogNetworkObjects() const
+{
+	// Consider List는 활성 목록만 돈다(NetDriver.cpp의 ServerReplicateActors_BuildConsiderList). 액터는 모든 연결에서 Dormant 상태여야
+	// 활성 목록에서 빠진다(NetworkObjectList.cpp의 FNetworkObjectList::MarkDormant). 측정이 끝난 뒤 한 번만 세어 클래스별로 남긴다.
+	// 값은 클래스마다 활성 목록의 수 / 그 가운데 일부 연결에서 Dormant 상태인 수 / 모든 연결에서 Dormant 상태라 빠진 수다.
+	const UNetDriver* NetDriver = GetWorld()->GetNetDriver();
+	if (!NetDriver)
+	{
+		return;
+	}
+
+	struct FClassCount
+	{
+		int32 Active = 0;
+		int32 ActivePartlyDormant = 0;
+		int32 DormantOnAll = 0;
+	};
+	TMap<FName, FClassCount> Counts;
+
+	const FNetworkObjectList& List = NetDriver->GetNetworkObjectList();
+	for (const TSharedPtr<FNetworkObjectInfo>& Info : List.GetActiveObjects())
+	{
+		if (const AActor* Actor = Info->WeakActor.Get())
+		{
+			FClassCount& Count = Counts.FindOrAdd(Actor->GetClass()->GetFName());
+			++Count.Active;
+			if (Info->DormantConnections.Num() > 0)
+			{
+				++Count.ActivePartlyDormant;
+			}
+		}
+	}
+	for (const TSharedPtr<FNetworkObjectInfo>& Info : List.GetDormantObjectsOnAllConnections())
+	{
+		if (const AActor* Actor = Info->WeakActor.Get())
+		{
+			++Counts.FindOrAdd(Actor->GetClass()->GetFName()).DormantOnAll;
+		}
+	}
+
+	Counts.ValueSort([](const FClassCount& A, const FClassCount& B) { return A.Active > B.Active; });
+	FString ByClass;
+	for (const TPair<FName, FClassCount>& Pair : Counts)
+	{
+		ByClass += FString::Printf(TEXT("%s%s=%d/%d/%d"), ByClass.IsEmpty() ? TEXT("") : TEXT(","),
+			*Pair.Key.ToString(), Pair.Value.Active, Pair.Value.ActivePartlyDormant, Pair.Value.DormantOnAll);
+	}
+	UE_LOG(LogLabMetrics, Display, TEXT("lab_network_objects active=%d dormant_on_all=%d by_class(active/partly_dormant/dormant_on_all)=%s"),
+		List.GetActiveObjects().Num(), List.GetDormantObjectsOnAllConnections().Num(), *ByClass);
 }
 
 bool ULabMetricsSubsystem::WriteSummary(const FConnectionSample& Sample, double MeasuredSeconds) const
