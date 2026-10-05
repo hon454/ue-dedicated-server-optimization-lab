@@ -55,6 +55,10 @@ struct FLabServerConfig
 	// 0보다 크면 플레이어가 있는 곳마다 NPC(ALabNpc)를 이 수만큼 더 놓는다. 맵 전체에 놓는 -LabNpcs=와 따로다.
 	int32 NpcsPerCluster = 0;          // -LabNpcsNearPlayers=
 
+	// 2막의 기법. 인자를 주지 않으면 끈 상태다.
+	// 자원 노드의 NetUpdateFrequency. 기본값은 엔진 기본값 100이다(Actor.cpp의 AActor 생성자). 포스팅 8에서 2로 낮춘다.
+	float NodeUpdateFrequency = 100.f; // -LabNodeUpdateFrequency=
+
 	/** 수치 CSV의 config 열에 적는 값. 기본값과 다른 인자를 ';'로 잇고, 모두 기본값이면 "default"다. */
 	FString GetConfigName() const;
 

@@ -12,6 +12,8 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Net/NetAnalyticsTypes.h"
+#include "Net/NetworkMetricsDatabase.h"
+#include "Net/NetworkMetricsDefs.h"
 #include "ProfilingDebugging/MiscTrace.h"
 #include "LabGameMode.h"
 #include "LabPlayerController.h"
@@ -215,6 +217,7 @@ void ULabMetricsSubsystem::HandleEndFrame()
 			ReplicationsAtMeasureStart = Sample.Replications;
 			SaturatedReplicationsAtMeasureStart = Sample.SaturatedReplications;
 			OpenChannelsPerConnectionSum = 0.0;
+			ConsideredActorsSum = 0;
 			WorkMs.Reset();
 			NetFlushMs.Reset();
 
@@ -236,6 +239,7 @@ void ULabMetricsSubsystem::HandleEndFrame()
 		WorkMs.Add((Now - FrameStartTime) * 1000.0);
 		NetFlushMs.Add((Now - PostActorTickTime) * 1000.0);
 		OpenChannelsPerConnectionSum += OpenChannelsPerConnection;
+		ConsideredActorsSum += SampleConsideredActors();
 
 		if (Now - PhaseStartTime >= Config.MeasureSeconds)
 		{
@@ -248,6 +252,10 @@ void ULabMetricsSubsystem::HandleEndFrame()
 			}
 			LogNetworkObjects();
 
+			// 측정 구간의 프레임마다 Consider List에 든 액터 수의 평균. 연결과 상관없이 프레임에 한 번 만드는 목록이다.
+			UE_LOG(LogLabMetrics, Display, TEXT("lab_consider_list avg_per_frame=%.1f frames=%d"),
+				WorkMs.Num() > 0 ? static_cast<double>(ConsideredActorsSum) / WorkMs.Num() : 0.0, WorkMs.Num());
+
 			Phase = EPhase::Done;
 			FPlatformMisc::RequestExitWithStatus(false, 0);
 		}
@@ -256,6 +264,19 @@ void ULabMetricsSubsystem::HandleEndFrame()
 	default:
 		break;
 	}
+}
+
+int64 ULabMetricsSubsystem::SampleConsideredActors() const
+{
+	// 엔진이 Consider List를 만들 때마다 그 길이를 지표로 남긴다(NetDriver.cpp의 ServerReplicateActors_BuildConsiderList 끝,
+	// UE::Net::Metric::NumConsideredActors). 프레임 끝에 읽으면 그 프레임의 값이다.
+	UNetDriver* NetDriver = GetWorld()->GetNetDriver();
+	UNetworkMetricsDatabase* Metrics = NetDriver ? NetDriver->GetMetrics().Get() : nullptr;
+	if (!Metrics || !Metrics->Contains(UE::Net::Metric::NumConsideredActors))
+	{
+		return 0;
+	}
+	return Metrics->GetInt(UE::Net::Metric::NumConsideredActors);
 }
 
 void ULabMetricsSubsystem::LogNetworkObjects() const

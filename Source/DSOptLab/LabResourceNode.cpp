@@ -25,6 +25,9 @@ ALabResourceNode::ALabResourceNode()
 		NetDormancy = DORM_DormantAll;
 	}
 
+	// 낮추면 활성 목록에 남은 노드가 Consider List에 드는 간격이 길어진다(NetDriver.cpp의 NextUpdateTime 검사).
+	SetNetUpdateFrequency(Config.NodeUpdateFrequency);
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	SetRootComponent(Mesh);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -61,8 +64,7 @@ void ALabResourceNode::Harvest()
 		return;
 	}
 
-	// Dormant 상태면 깨워서 아래 변경이 전송되게 한다.
-	FlushNetDormancy();
+	WakeForChange();
 
 	--Health;
 	OnRep_Health();
@@ -74,9 +76,24 @@ void ALabResourceNode::Harvest()
 	}
 }
 
+void ALabResourceNode::WakeForChange()
+{
+	// Dormant 상태면 깨워서 아래 변경이 전송되게 한다.
+	// NetUpdateFrequency를 낮춘 구성에서는 다음 고려 시각도 앞당긴다. 그러지 않으면 변경이 최대 1 ÷ 빈도초 늦는다.
+	// ForceNetUpdate는 NextUpdateTime을 지금으로 당기고(NetDriver.cpp의 UNetDriver::ForceNetUpdate), Dormant 상태면 FlushNetDormancy도 부른다(Actor.cpp).
+	if (FLabServerConfig::Get().NodeUpdateFrequency < FLabServerConfig().NodeUpdateFrequency)
+	{
+		ForceNetUpdate();
+	}
+	else
+	{
+		FlushNetDormancy();
+	}
+}
+
 void ALabResourceNode::Respawn()
 {
-	FlushNetDormancy();
+	WakeForChange();
 
 	Health = MaxHealth;
 	OnRep_Health();

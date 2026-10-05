@@ -47,5 +47,8 @@ private:
 
 	void Respawn();
 
+	/** 서버 전용. 상태를 바꾸기 직전에 불러 변경이 바로 전송되게 한다. */
+	void WakeForChange();
+
 	FTimerHandle RespawnTimer;
 };

@@ -51,6 +51,7 @@ private:
 	FConnectionSample SampleConnections() const;
 	bool WriteSummary(const FConnectionSample& Sample, double MeasuredSeconds) const;
 	void LogNetworkObjects() const;
+	int64 SampleConsideredActors() const;
 	void Fail(const TCHAR* Reason);
 
 	EPhase Phase = EPhase::WaitingForClients;
@@ -69,6 +70,7 @@ private:
 	int64 ReplicationsAtMeasureStart = 0;
 	int64 SaturatedReplicationsAtMeasureStart = 0;
 	double OpenChannelsPerConnectionSum = 0.0;
+	int64 ConsideredActorsSum = 0;
 
 	TArray<double> WorkMs;
 	TArray<double> NetFlushMs;

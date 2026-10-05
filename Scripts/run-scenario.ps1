@@ -37,7 +37,9 @@
     # 무리마다 이 간격(초)으로 가장 오래된 건축물 하나를 허물고 새로 하나를 짓는다. 0이면 하지 않는다.
     [double]$BuildInterval = 0,
     # 플레이어가 있는 곳마다 NPC를 이 수만큼 더 놓는다(반지름 40m 원 안). 맵 전체에 놓는 -Npcs와 따로다. 0이면 놓지 않는다.
-    [int]$NpcsNearPlayers = 0
+    [int]$NpcsNearPlayers = 0,
+    # 2막의 기법. 자원 노드의 NetUpdateFrequency. 0이면 인자를 넘기지 않아 엔진 기본값(100)이다. 포스팅 8의 구성은 2다.
+    [double]$NodeUpdateFrequency = 0
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -199,6 +201,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($NpcsNearPlayers -gt 0) {
         $ServerArgs += "-LabNpcsNearPlayers=$NpcsNearPlayers"
+    }
+    if ($NodeUpdateFrequency -gt 0) {
+        $ServerArgs += "-LabNodeUpdateFrequency=$NodeUpdateFrequency"
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")

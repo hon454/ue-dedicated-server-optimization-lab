@@ -6,16 +6,17 @@
 
 **단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 사용자의 14.5(전체 읽기)에서 나온 문제로 포스팅 0\~4와 루트 README를 새 틀로 다시 썼고, main을 `87c83f9`까지 푸시했다(2026-10-03). 태그 시점의 글은 옛 틀이다. 세 기법을 모두 적용했다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있고, 태스크 9.4\~9.5와 14는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 9.4\~9.5, 14"에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
-- **2막 단계 1\~3(태스크 15\~21)이 끝났다(2026-10-04).** 기법 전환 인자, 확장 요소, 규모 확정, 포스팅 5(`post-05-expanded-testbed`)까지다. 빌드된 바이너리는 main의 소스와 같다(소스가 마지막으로 바뀐 커밋 `0f689c2`). 확정값은 아래 "확정할 값"의 2막 줄, 인자는 "명령"에 있고, 경위는 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)의 "태스크 15"부터 "태스크 15\~21: STATUS.md에서 옮긴 경위"까지에 있다.
+- **2막 단계 1\~3(태스크 15\~21)이 끝났다(2026-10-04).** 기법 전환 인자, 확장 요소, 규모 확정, 포스팅 5(`post-05-expanded-testbed`)까지다. 확정값은 아래 "확정할 값"의 2막 줄, 인자는 "명령"에 있고, 경위는 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)의 "태스크 15"부터 "태스크 15\~21: STATUS.md에서 옮긴 경위"까지에 있다.
 - **태스크 22(포스팅 6, `post-06-three-techniques-again`)가 끝났다(2026-10-05).** 구성별 `work_avg_ms` 중앙값은 213.555 → 35.674 → 19.536 → 16.732다([포스팅 6 측정 기록](../Posts/06-three-techniques-again/measurements.md) 3절). 경위는 [Worklog/06-three-techniques-again.md](Worklog/06-three-techniques-again.md)의 "태스크 22"에 있다.
 - **태스크 24(포스팅 7, `post-07-net-driver-breakdown`)가 끝났다(2026-10-06).** `GameNetDriver` Incl 가운데 `Prioritize Actors Time` 56.4%, `Consider Actors Time` 23.5%이고, 활성 목록 5,272개 가운데 자원 노드가 4,887개다. 경위는 [Worklog/07-net-driver-breakdown.md](Worklog/07-net-driver-breakdown.md)의 "태스크 24"에 있다.
+- **태스크 25(포스팅 8, 자원 노드의 Net Update Frequency 낮추기)를 시작했다(2026-10-06).** 사용자가 [후보](../Posts/08-node-update-frequency/candidates.md) A를 골랐다. 구현과 작은 규모 확인이 끝났고, 빌드된 바이너리는 그 커밋의 소스다. 인자는 "명령"에 있다. 낮춘 구성에서는 채집과 되살아남이 `ForceNetUpdate()`로 다음 고려 시각을 당긴다(`LabResourceNode.cpp`의 `WakeForChange`). 새 서버 로그 `lab_consider_list avg_per_frame=`(측정 구간의 프레임당 Consider List 길이, 엔진 지표 `NumConsideredActors`)가 작은 규모에서 85.1 → 15.2였다(`tsmall-nodeuf-off1-r1`, `tsmall-nodeuf-on1-r1`, 클라이언트 2, 자원 노드 100). 낮춘 구성에서도 검증용 자원 노드가 고갈되어 화면에서 사라졌다.
 - **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
 - 다음 시각 자료 라벨은 `visual14`다(`visual13`은 README의 8개 창 화면, 2026-10-05).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **[사람] 포스팅 8(액터를 Consider List에서 빼기)의 기법을 고른다.** 후보 비교와 에이전트 의견(A. 자원 노드의 Net Update Frequency를 2로 낮추기를 추천)은 [포스팅 8 후보 기법](../Posts/08-consider-list/candidates.md)에 있다. 폴더 이름은 임시다.
+2. **포스팅 8의 확정 규모 측정.** 사용자의 답을 받은 뒤 잰다(아래 "사용자에게 요청한 일"). 그다음 Insights 값, 시각 자료, 초안.
 
 ## 포스팅 진행
 
@@ -29,6 +30,7 @@
 | 5. 테스트베드 확장과 새 기준선 | 완료 | `post-05-expanded-testbed` |
 | 6. 1막의 세 최적화를 2막에 다시 적용 | 완료 | `post-06-three-techniques-again` |
 | 7. 네트워크 드라이버 자체 시간 나누기 | 완료 | `post-07-net-driver-breakdown` |
+| 8. 자원 노드의 Net Update Frequency 낮추기 | 구현 | |
 
 ## 명령
 
@@ -49,7 +51,7 @@
 - Insights 이미지에 번호 붙은 상자 그리기: `powershell -ExecutionPolicy Bypass -File Scripts/annotate-image.ps1 -In <원본>.png -Out <포스팅용 이름>.png -Boxes "x,y,w,h;x,y,w,h"`. 좌표는 원본 픽셀 기준, 상자는 최대 3개, 원본은 그대로 둔다.
 - 빌드나 실행이 실패하면 [troubleshooting.md](Guides/troubleshooting.md)에서 증상을 찾는다.
 - 수치 CSV 위치: `Saved/LabMetrics/summary.csv`(`config` 열이 있다. 2026-10-03 태스크 15 전의 행은 `summary-act1.csv`)
-- 구성별 실행: 확정 명령에 기준선은 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`, Relevancy는 `-NoNodeDormancy -NpcUpdateFrequency 100`, Dormancy는 `-NpcUpdateFrequency 100`을 더한다(확정 규모에서 `toggle-baseline2`, `toggle-relevancy`, `toggle-dormancy`로 확인). 2막의 플레이어 배치는 밀집 `-PlayerSpacing 3`, 분산 `-PlayerSpacing 300`을 더한다. 상태 값은 `-StateInterval <초>`, 인벤토리는 `-InventoryItems <칸 수> -InventoryChurn <초>`, 건축물은 `-Buildings <무리 하나의 수> -BuildInterval <초>`, 플레이어 주변의 NPC는 `-NpcsNearPlayers <무리 하나의 수>`를 더한다. 보정의 출발값을 모두 켠 실행은 `-PlayerSpacing 3 -NpcsNearPlayers 50 -StateInterval 5 -InventoryItems 200 -InventoryChurn 4 -Buildings 500 -BuildInterval 1`이다([2막 설계](Planning/2026-10-03-act-2-design.md) 5.1, 확정값이 아니다). 더하지 않으면 세 기법이 모두 적용된 구성이다(`config` 열 `default`). 간격 배치의 0번 자리는 클라이언트 수로 정해지므로(`GetSlotLocation`), 배치를 확인하는 작은 규모 실행은 `-Clients 8`로 한다(`tsmall-node-gather8-r1`)
+- 구성별 실행: 확정 명령에 기준선은 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`, Relevancy는 `-NoNodeDormancy -NpcUpdateFrequency 100`, Dormancy는 `-NpcUpdateFrequency 100`을 더한다(확정 규모에서 `toggle-baseline2`, `toggle-relevancy`, `toggle-dormancy`로 확인). 2막의 플레이어 배치는 밀집 `-PlayerSpacing 3`, 분산 `-PlayerSpacing 300`을 더한다. 상태 값은 `-StateInterval <초>`, 인벤토리는 `-InventoryItems <칸 수> -InventoryChurn <초>`, 건축물은 `-Buildings <무리 하나의 수> -BuildInterval <초>`, 플레이어 주변의 NPC는 `-NpcsNearPlayers <무리 하나의 수>`를 더한다. 보정의 출발값을 모두 켠 실행은 `-PlayerSpacing 3 -NpcsNearPlayers 50 -StateInterval 5 -InventoryItems 200 -InventoryChurn 4 -Buildings 500 -BuildInterval 1`이다([2막 설계](Planning/2026-10-03-act-2-design.md) 5.1, 확정값이 아니다). 더하지 않으면 세 기법이 모두 적용된 구성이다(`config` 열 `default`). 2막의 기법은 기본값이 끔이다: 자원 노드의 Net Update Frequency는 `-NodeUpdateFrequency 2`(포스팅 8). 간격 배치의 0번 자리는 클라이언트 수로 정해지므로(`GetSlotLocation`), 배치를 확인하는 작은 규모 실행은 `-Clients 8`로 한다(`tsmall-node-gather8-r1`)
 - stat 타이머로 시간을 나누는 실행: `run-scenario.ps1`에 `-StatNamedEvents`를 더한다(서버에 `-statnamedevents`, 트레이스 필요). 이 실행의 수치는 다른 실행과 비교하지 않고 비율만 본다. `export-insights.ps1`이 서버 로그의 명령줄을 보고 `GameNetDriver`를 뿌리로 내보내고 `GameNetDriver`, `TickCompletionEvents` 아래 트리를 요약에 적는다. 이 트레이스에서는 `WorldTick`이 프레임을 감싸지 않고, 클래스 타이머는 `Replicate Actor Time` 아래에 있다(engine-notes.md 차절)
 - 리플리케이션 시간으로 쓰는 Insights 타이머: `GameNetDriver`(프레임당 Incl = 선택 구간의 Incl ÷ `WorldTick`의 Count). 태스크 8.5에서 사용자가 확정했고 이후 바꾸지 않는다.
 
@@ -148,3 +150,4 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 ## 사용자에게 요청한 일
 
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
+- **포스팅 8 확정 규모 측정의 허가.** 위 "다음 할 일" 2번. 잴 구성, 라벨, 시간, 화면 조건은 채팅에 적었다(2026-10-06).

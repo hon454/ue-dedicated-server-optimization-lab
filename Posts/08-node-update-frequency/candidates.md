@@ -1,6 +1,6 @@
 # 포스팅 8 후보 기법 (액터를 Consider List에서 빼기)
 
-포스팅 8의 기법을 고르기 위한 자료다. 기법은 사용자가 고른다. 이 폴더 이름은 임시이고, 기법이 정해지면 그에 맞게 바꾼다.
+포스팅 8의 기법을 고르기 위한 자료다. 기법은 사용자가 고른다. 사용자가 A(자원 노드의 Net Update Frequency를 2로 낮추기)를 골랐다(2026-10-06).
 
 - 출발점: [포스팅 7 관찰 자료](../07-net-driver-breakdown/candidates.md)(`act2-split1-r3`, `act2-split2`, `act2-split-nodes2500-1`). 이 파일은 새로 측정하지 않았다. 수치는 포스팅 7의 값과 그 값으로 계산한 값이다.
 - 엔진 소스는 5.8.3(`G:\Epic Games\UE_Source`)에서 읽었다. 경로는 `Engine/Source/Runtime/Engine/Private/` 기준이다(따로 적은 것 제외).
