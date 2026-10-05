@@ -14,7 +14,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 24(포스팅 7, `GameNetDriver` 자체 시간 나누기, 진단).** 태스크 23에서 포스팅 7\~14의 순서를 확정했다([backlog.md](backlog.md) "우선순위 순", 2026-10-05). [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 5의 주기를 따르되 진단 포스팅이라 3, 4를 건너뛴다. 기준 묶음은 포스팅 6의 최종 구성이다. `-statnamedevents`를 더한 별도 실행의 수치는 비교에 쓰지 않고 비율만 본다. 클래스 타이머의 이름은 바뀌지 않고 부모만 바뀜을 확인했다(`tsmall-named-on1-r1`, engine-notes.md 차절, 2026-10-05). 확정 규모 측정 계획을 사용자에게 보여 주고 답을 기다린다.
+2. **태스크 24(포스팅 7, `GameNetDriver` 자체 시간 나누기, 진단).** 순서는 [backlog.md](backlog.md) "우선순위 순"(태스크 23). [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 5의 주기에서 3, 4를 건너뛴다. 측정과 Insights 값까지 끝났다(2026-10-05): 기준 묶음 `act2-split-base1`(`work_avg_ms` 중앙값 17.358, 변동 폭 0.155)과 나누는 묶음 `act2-split1`(`-StatNamedEvents`, 17.703, 0.229). `GameNetDriver` Incl 가운데 `Prioritize Actors Time` 56.4%, `Consider Actors Time` 23.5%이고 활성 목록 5,272개 가운데 자원 노드가 4,887개다. 값과 의견은 [관찰 자료](../Posts/07-net-driver-breakdown/candidates.md). **[사람] 관찰 자료를 보고 해석을 판단한다.** 그다음 에이전트가 본문과 `measurements.md` 초안을 쓴다. 자원 노드 수만 바꾼 대조 실행(관찰 자료 6절)은 하지 않았다.
 
 ## 포스팅 진행
 
