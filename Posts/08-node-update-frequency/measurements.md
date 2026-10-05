@@ -82,7 +82,21 @@
 - 요약의 두 이미지는 `act2-nodeuf-base1-r3-topdown-03.png`와 `act2-nodeuf1-r3-topdown-03.png`(t=60초)를 `images/before-topdown.png`, `images/after-topdown.png`로 복사했다. 두 묶음의 중앙값 실행이고 같은 순번이다.
 - 원리의 흐름도는 Mermaid로 그렸다. ①\~③은 [포스팅 7](../07-net-driver-breakdown/README.md)의 흐름도와 같은 번호이고 stat 타이머에 대응한다(① `Consider Actors Time`, ② `Prioritize Actors Time`, ③ `Process Prioritized Actors Time`).
 - 결과의 차트 값은 `split` 묶음의 중앙값 실행의 프레임당 ms다.
-- Insights 캡처는 아직 찍지 않았다.
+- Insights 캡처는 `act2-nodeuf-split-base1-r3`(적용 전)과 `act2-nodeuf-split1-r3`(적용 후)의 Timing Insights다. 창을 3000×2080으로 맞추고 Log View에서 `Lab_MeasureStart`와 `Lab_MeasureEnd`를 골라 구간을 정했다. 이 트레이스에서는 `WorldTick`이 프레임을 감싸지 않는다(engine-notes.md 차절). Timers에서 `GameNetDriver`를 골라 Callees 패널을 띄웠다. 적용 후 트레이스에서는 Insights가 가장 큰 ③을 펼쳐 보여서 그 줄을 접었다. 2026-10-06에 찍었다.
+- 두 구간 모두 `GameNetDriver` Count 1,789가 CSV `frames`와 같다. Incl 24.32초 ÷ 1,789 = 13.59ms, 7.3초 ÷ 1,789 = 4.08ms로 내보낸 요약(13.590, 4.081)과 같다.
+- 번호 상자는 원리의 흐름도와 같은 번호다.
+
+| 단계 | 적용 전 Incl(% Root) | 적용 후 Incl(% Root) |
+| --- | --- | --- |
+| ① `Consider Actors Time` | 5.97초(24.56%) | 1.71초(23.48%) |
+| ② `Prioritize Actors Time` | 13.59초(55.87%) | 1.51초(20.69%) |
+| ③ `Process Prioritized Actors Time` | 3.9초(16.06%) | 3.34초(45.79%) |
+
+![적용 전 act2-nodeuf-split-base1-r3의 GameNetDriver Callees. ② Prioritize Actors Time이 가장 크다](images/insights-before-callees-crop.png)
+
+![적용 후 act2-nodeuf-split1-r3의 GameNetDriver Callees. ③ Process Prioritized Actors Time이 가장 크다](images/insights-after-callees-crop.png)
+
+창 전체: [적용 전](images/insights-before-callees.png), [적용 후](images/insights-after-callees.png).
 
 ## 5. 확인하지 않은 것
 
