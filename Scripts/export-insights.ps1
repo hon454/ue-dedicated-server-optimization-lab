@@ -9,6 +9,8 @@
 # 서버 프레임 시간은 프레임마다 (Frame − 그 안의 FEngineLoop_UpdateTimeAndHandleMaxTickRate)다(ADR-0010).
 # 타이머 통계와 Callees는 응답 파일(-ExecOnAnalysisCompleteCmd="@=<파일>", ExportCommandsTests.cpp:234)로 한 번에 내보낸다.
 # 맞게 골랐으면 선택 구간의 WorldTick Count가 CSV frames와 같다. 다르면 실패로 끝낸다.
+# -statnamedevents로 잰 트레이스에서는 WorldTick이 프레임을 감싸지 않으므로(tsmall-named-on1-r1에서 프레임당 약 1µs)
+# GameNetDriver를 Callees의 뿌리로 쓰고 그 Count로 프레임을 센다. 요약에는 GameNetDriver 아래 stat 타이머의 트리를 더한다.
 # Networking Insights(패킷과 Net Stats)는 내보내기 명령이 없어 창에서 읽는다.
 
 param(
@@ -57,6 +59,9 @@ $Frames = [int](($RowLine -split ',')[5])
 $StartMod = Get-FrameMod $MeasureLine
 $EndMod = Get-FrameMod $RowLine
 $LastMod = Get-FrameMod $LastLine
+$CommandLine = $LogLines | Where-Object { $_ -match 'LogInit: Command Line:' } | Select-Object -First 1
+$NamedEvents = [bool]($CommandLine -match '-statnamedevents')
+$RootTimer = if ($NamedEvents) { 'GameNetDriver' } else { 'WorldTick' }
 
 # 1. Frame과 틱 대기 이벤트를 내보내 측정 구간의 시각을 정한다.
 $EventsCsv = Join-Path $OutDir 'frames.csv'
@@ -91,31 +96,57 @@ $Sorted = $Work.ToArray()
 [Array]::Sort($Sorted)
 $WorkP99 = $Sorted[[Math]::Ceiling($Sorted.Count * 0.99) - 1]
 
-# 3. 측정 구간의 타이머 통계와 WorldTick 아래 트리를 한 번에 내보낸다.
+# 3. 측정 구간의 타이머 통계와 뿌리 타이머(WorldTick, named events 트레이스에서는 GameNetDriver) 아래 트리를 한 번에 내보낸다.
+#    named events 트레이스에서는 GameNetDriver 밖의 TickCompletionEvents 아래 트리도 내보낸다.
 $StatsCsv = Join-Path $OutDir 'stats.csv'
 $CalleesCsv = Join-Path $OutDir 'callees.csv'
-if (-not (Test-Path $StatsCsv) -or -not (Test-Path $CalleesCsv)) {
+$CompletionCsv = Join-Path $OutDir 'callees-tickcompletion.csv'
+if (-not (Test-Path $StatsCsv) -or -not (Test-Path $CalleesCsv) -or ($NamedEvents -and -not (Test-Path $CompletionCsv))) {
     $Start = $StartTime.ToString('R', $Inv)
     $End = $EndTime.ToString('R', $Inv)
     $Response = Join-Path $OutDir 'commands.rsp'
-    @(
+    $Commands = @(
         "TimingInsights.ExportTimerStatistics $StatsCsv -threads=GameThread -startTime=$Start -endTime=$End",
-        "TimingInsights.ExportTimerCallees $CalleesCsv -timers=WorldTick -threads=GameThread -startTime=$Start -endTime=$End"
-    ) | Set-Content -Encoding ASCII $Response
+        "TimingInsights.ExportTimerCallees $CalleesCsv -timers=$RootTimer -threads=GameThread -startTime=$Start -endTime=$End"
+    )
+    if ($NamedEvents) {
+        $Commands += "TimingInsights.ExportTimerCallees $CompletionCsv -timers=TickCompletionEvents -threads=GameThread -startTime=$Start -endTime=$End"
+    }
+    $Commands | Set-Content -Encoding ASCII $Response
     Invoke-InsightsExport "@=$Response" 'insights-stats.log'
 }
 
 # 4. 요약. 같은 타이머가 여러 부모 아래에 나오므로 Callees는 줄의 ParentId로 부모를 가린다.
 $Callees = @(Import-Csv $CalleesCsv)
-$WorldTick = $Callees | Where-Object { $_.TimerName -eq 'WorldTick' -and $_.ParentId -eq '-1' } | Select-Object -First 1
-$WorldTickCount = [int]$WorldTick.Count
+$Root = $Callees | Where-Object { $_.TimerName -eq $RootTimer -and $_.ParentId -eq '-1' } | Select-Object -First 1
+if (-not $Root) { Write-Host "FAIL: no $RootTimer root row in $CalleesCsv (delete the file to export it again)"; exit 1 }
+$WorldTickCount = [int]$Root.Count
 $Driver = $Callees | Where-Object { $_.TimerName -eq 'GameNetDriver' } | Select-Object -First 1
 $PerFrame = { param([string]$Seconds) [double]$Seconds * 1000.0 / $WorldTickCount }
 
 $Summary = [System.Collections.Generic.List[string]]::new()
+
+# 트리를 요약에 적는다. 들여쓰기가 깊이이고, 비율은 뿌리 Incl에 대한 값이다. Incl이 뿌리의 0.5% 미만인 줄과 그 아래, MaxDepth보다 깊은 줄은 뺀다.
+function Add-Tree($Rows, $Top, [int]$MaxDepth = 99) {
+    $TopIncl = [double]$Top.'Inc.Time'
+    $Summary.Add("tree under $($Top.TimerName) (per frame: count, incl ms, excl ms; incl % and excl % of $($Top.TimerName) incl):")
+    $Walk = {
+        param($Parent, [int]$Depth)
+        foreach ($Row in ($Rows | Where-Object { $_.ParentId -eq $Parent.TimerId } | Sort-Object { - [double]$_.'Inc.Time' })) {
+            if ([double]$Row.'Inc.Time' -lt $TopIncl * 0.005 -or $Depth -gt $MaxDepth) { continue }
+            $Summary.Add(("{0}{1,-44} {2,10} {3,9} {4,9} {5,7} {6,7}" -f ('  ' * $Depth), $Row.TimerName,
+                ([double]$Row.Count / $WorldTickCount).ToString('0.0', $Inv),
+                (& $PerFrame $Row.'Inc.Time').ToString('0.000', $Inv), (& $PerFrame $Row.'Exc.Time').ToString('0.000', $Inv),
+                ([double]$Row.'Inc.Time' / $TopIncl * 100).ToString('0.0', $Inv), ([double]$Row.'Exc.Time' / $TopIncl * 100).ToString('0.0', $Inv)))
+            & $Walk $Row ($Depth + 1)
+        }
+    }
+    & $Walk $Top 1
+}
+
 $Summary.Add("label: $Label")
 $Summary.Add("window: frames $StartIndex..$EndIndex of $($FrameEvents.Count) events, -startTime $($StartTime.ToString('R', $Inv)) -endTime $($EndTime.ToString('R', $Inv)) ($(($EndTime - $StartTime).ToString('0.000', $Inv)) s)")
-$Summary.Add("WorldTick count: $WorldTickCount (CSV frames $Frames)")
+$Summary.Add("$RootTimer count: $WorldTickCount (CSV frames $Frames)$(if ($NamedEvents) { ', statnamedevents trace' })")
 $Summary.Add("server frame time: avg $($WorkAvg.ToString('0.000', $Inv)) ms, p99 $($WorkP99.ToString('0.000', $Inv)) ms (ADR-0010)")
 if ($Driver) {
     $Summary.Add("GameNetDriver per frame: incl $((& $PerFrame $Driver.'Inc.Time').ToString('0.000', $Inv)) ms, excl $((& $PerFrame $Driver.'Exc.Time').ToString('0.000', $Inv)) ms")
@@ -124,12 +155,18 @@ if ($Driver) {
         $Summary.Add(("  {0,-40} {1,10} {2,9} {3,9}" -f $Row.TimerName, ([double]$Row.Count / $WorldTickCount).ToString('0.0', $Inv),
             (& $PerFrame $Row.'Inc.Time').ToString('0.000', $Inv), (& $PerFrame $Row.'Exc.Time').ToString('0.000', $Inv)))
     }
+    if ($NamedEvents) { Add-Tree $Callees $Driver }
+}
+if ($NamedEvents) {
+    $Completion = @(Import-Csv $CompletionCsv)
+    $CompletionTop = $Completion | Where-Object { $_.TimerName -eq 'TickCompletionEvents' -and $_.ParentId -eq '-1' } | Select-Object -First 1
+    if ($CompletionTop) { Add-Tree $Completion $CompletionTop 4 }
 }
 $Summary | Set-Content -Encoding UTF8 (Join-Path $OutDir 'summary.txt')
 $Summary | ForEach-Object { Write-Host $_ }
 
 if ($WorldTickCount -ne $Frames) {
-    Write-Host "FAIL: WorldTick count $WorldTickCount differs from CSV frames $Frames. Check the window."
+    Write-Host "FAIL: $RootTimer count $WorldTickCount differs from CSV frames $Frames. Check the window."
     exit 1
 }
 Write-Host "SAVED: $OutDir"

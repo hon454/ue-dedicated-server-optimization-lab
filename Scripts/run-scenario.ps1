@@ -10,6 +10,9 @@
     # 서버를 고정할 논리 프로세서의 비트 마스크. 기본값 252(0xFC)는 2~7이다(ADR-0009). 진단용으로만 바꾼다.
     [long]$ServerMask = 0xFC,
     [switch]$NoTrace,
+    # 서버에 -statnamedevents를 넘겨 cycle stat(STAT_NetConsiderActorsTime 등)도 Insights 타이머로 남긴다(LaunchEngineLoop.cpp:1759).
+    # 이벤트를 더 기록하므로 이 실행의 수치는 다른 실행과 비교하지 않고 GameNetDriver 안의 비율만 본다. 트레이스가 필요하다.
+    [switch]$StatNamedEvents,
     # 0번 자리 앞을 왕복하는 영상용 NPC 하나를 더 스폰한다(-LabShowcaseNpc). 수치를 쓰지 않는 visualN 라벨에서만 쓴다.
     [switch]$ShowcaseNpc,
     # 1막의 세 기법을 켜고 끈다. 주지 않으면 세 기법이 모두 적용된 구성이다(수치 CSV의 config 열이 default).
@@ -38,6 +41,11 @@
 )
 
 . "$PSScriptRoot\common.ps1"
+
+if ($StatNamedEvents -and $NoTrace) {
+    Write-Host "FAIL: -StatNamedEvents only adds trace events, so it needs the trace (remove -NoTrace)."
+    exit 1
+}
 
 if ($ShowcaseNpc -and $Label -notmatch '^visual\d+$') {
     Write-Host "FAIL: -ShowcaseNpc adds an actor to the scenario, so it is only allowed with a visual-only label (visualN)."
@@ -194,6 +202,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")
+        if ($StatNamedEvents) {
+            $ServerArgs += "-statnamedevents"
+        }
     }
     else {
         # 이 인자는 -tracefile의 시작도 막으므로 트레이스를 켠 서버에는 주지 않는다.
