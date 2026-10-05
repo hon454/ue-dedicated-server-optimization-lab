@@ -264,6 +264,24 @@
 
 확인하지 않은 것: 지연과 패킷 손실을 넣는 설정의 이름과 위치, Iris가 구조체의 `NetSerialize`를 그대로 쓰는지(`PropertyNetSerializerInfoRegistry.cpp:98-118`에 `FLastResortPropertyNetSerializerInfo`가 있다는 것까지만 봤다), `GameNetDriver` 타이머가 Iris에서 같은 범위를 감싸는지.
 
+## 차. `-statnamedevents`가 트레이스에 주는 영향 (2026-10-05, 태스크 24)
+
+포스팅 7(`GameNetDriver` 자체 시간 나누기)을 시작하며 확인했다. 실행은 작은 규모 두 번이다: `tsmall-named-off1-r1`(인자 없음), `tsmall-named-on1-r1`(`run-scenario.ps1 -StatNamedEvents`). 둘 다 클라이언트 2, 자원 노드 100, NPC 10, 2막 요소를 줄인 값(`-PlayerSpacing 3 -NpcsNearPlayers 5 -StateInterval 5 -InventoryItems 20 -InventoryChurn 4 -Buildings 20 -BuildInterval 1`), 측정 30초다.
+
+| 사실 | 근거 |
+| --- | --- |
+| 명령줄 `-statnamedevents`는 `GCycleStatsShouldEmitNamedEvents`만 올리고 stat 수집(`FThreadStats::bPrimaryEnable`)은 켜지 않는다 | `Engine/Source/Runtime/Launch/Private/LaunchEngineLoop.cpp:1759-1762`. 수집을 켜는 것은 `StatsPrimaryEnableAdd`이고 `stat` 명령에서만 불린다(`Engine/Source/Runtime/Core/Private/Stats/StatsCommand.cpp`) |
+| 켜지면 cycle stat 범위(`SCOPE_CYCLE_COUNTER`)가 stat 설명을 이름으로 하는 Insights 타이머가 된다(`STAT_NetConsiderActorsTime`은 `Consider Actors Time`) | `Engine/Source/Runtime/Core/Public/Stats/StatsSystemTypes.h:1526-1543`(`FCycleCounter::Start`), 설명 문자열은 `Engine/Source/Runtime/Engine/Public/EngineStats.h:72-80` |
+| 클래스 타이머(`LabNpc`, `LabBuilding` 등)의 이름은 바뀌지 않는다. stat이 켜진 빌드의 `FScopeCycleCounterUObject`는 stat 수집이 꺼져 있으면 named events와 상관없이 객체의 `FName`으로 트레이스한다 | `Engine/Source/Runtime/CoreUObject/Public/UObject/UObjectBaseUtility.h:995-1015`, `UObjectBaseUtility.h:800-815`(`GetStatID`), `Engine/Source/Runtime/CoreUObject/Private/UObject/ObjectBaseUtility.cpp:146-165`. 실행: 두 트레이스의 클래스 타이머 이름이 같고 횟수가 비슷하다(`LabNpc` 15,765번과 15,759번, `LabCharacter` 2,736번과 2,768번) |
+| 클래스 타이머의 부모가 바뀐다. `GameNetDriver` 바로 아래가 아니라 `ServerReplicateActors Time` → `Process Prioritized Actors Time` → `Replicate Actor Time` 아래에 있다 | `NetDriver.cpp:6279, 5689`, `DataChannel.cpp:3608, 3624`. 실행: `tsmall-named-on1-r1`의 Callees |
+| `GameNetDriver` 위에 `NetDriver TickFlush`가 생긴다(`SCOPE_CYCLE_COUNTER(STAT_NetTickFlush)`이 `GameNetDriver` 범위보다 앞에 있다). `GameNetDriver`의 이름과 Incl은 그대로다 | `NetDriver.cpp:1173-1174`. 실행: 프레임당 Incl 0.344ms와 0.337ms |
+| `WorldTick` 타이머가 프레임을 감싸지 않는다. 프레임당 약 1µs이고 아래에 아무것도 없다. 프레임을 감싸는 것은 `World Tick Time`(`STAT_WorldTickTime`)이다. 원인은 확인하지 않았다(`WorldTick`은 `RHI_BREADCRUMB_EVENT_GAMETHREAD`가 만든다, `LevelTick.cpp:1520`) | 실행: `tsmall-named-on1-r1`의 `WorldTick` Incl 0.001초(측정 30초), `World Tick Time` 1.311초. 인자 없는 실행의 `WorldTick`은 1.313초 |
+| `GameNetDriver` Excl이 대부분 나뉜다. 작은 규모에서 Excl이 Incl의 70.4%에서 8.0%로 줄었다 | 실행: 0.242 ÷ 0.344, 0.027 ÷ 0.337(프레임당 ms) |
+| `TickCompletionEvents` 아래 `ProcessUntilTasksComplete`의 Excl도 나뉜다(물리 `[Scene] - StartFrame`, 플레이어 캐릭터의 애니메이션 `CharacterMesh0`, NPC 이동) | 실행: 인자 없는 실행에서 `ProcessUntilTasksComplete` Excl이 Incl의 49.2%, 켠 실행에서 3.2% |
+| 프로파일러가 붙으면 named events를 켜는 콘솔 변수 `stats.AutoEnableNamedEventsWhenProfiling`의 기본값은 꺼짐이다. 그래서 지금까지의 트레이스에는 stat 타이머가 없었다 | `Engine/Source/Runtime/Core/Private/Misc/CoreMisc.cpp:526` |
+
+결론: `run-scenario.ps1 -StatNamedEvents`로 잰 트레이스는 `export-insights.ps1`이 서버 로그의 명령줄을 보고 알아서 `GameNetDriver`를 뿌리로 내보내고, `GameNetDriver`와 `TickCompletionEvents` 아래 트리를 요약에 적는다. 이 실행의 수치는 이벤트가 더 기록되므로 다른 실행과 비교하지 않는다. 클래스별 값을 기본 트레이스와 같은 방식으로 읽으려면 `Replicate Actor Time` 아래를 본다. 평탄한 타이머 통계(`stats.csv`)의 클래스 타이머는 리플리케이션과 액터 틱(`LabNpc`는 둘 다 있다)이 섞인 값이다.
+
 ## 라. 계획 초안의 코드에서 바꾼 것 요약
 
 | 태스크 | 바꾼 것 | 이유 |
