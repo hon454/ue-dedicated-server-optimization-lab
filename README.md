@@ -59,6 +59,7 @@ xychart-beta horizontal
 | 5 | [테스트베드 확장과 새 기준선](Posts/05-expanded-testbed/README.md) | 플레이어를 모으고 건축물, 인벤토리, 상태 값을 더했다. 새 기준선도 CPU는 자원 노드가, 대역폭은 NPC가 쓴다 |
 | 6 | [1막의 세 최적화를 2막에 다시 적용](Posts/06-three-techniques-again/README.md) | 플레이어가 모이면 거리 판정으로 뺄 수 없는 액터가 늘어, Dormant 상태의 몫이 커진다 |
 | 7 | [네트워크 드라이버 자체 시간 나누기](Posts/07-net-driver-breakdown/README.md) | 남은 리플리케이션 시간의 대부분은 보낼지 따지는 일이었다. 따지는 액터는 대부분 Dormant 상태가 되지 못한 먼 자원 노드다 |
+| 8 | [자원 노드의 Net Update Frequency 낮추기](Posts/08-node-update-frequency/README.md) (작성 중) | 먼 자원 노드를 고려하는 간격을 늘리자 서버가 따지는 액터가 약 9분의 1이 됐다. 서버 프레임 시간은 절반이 됐다 |
 
 0\~4는 처음 테스트베드에서 쓴 글(1막)이고, 5부터는 넓힌 테스트베드에서 쓴 글(2막)이다. 2막은 새 기준선을 잡고 1막의 최적화를 다시 적용한 뒤 새 최적화를 하나씩 다룬다. 포스팅 폴더마다 본문 `README.md`와 측정 기록 `measurements.md`가 있다. 본문은 원리와 결과를 설명하고, 측정 기록은 그 수치의 근거를 담는다.
 
