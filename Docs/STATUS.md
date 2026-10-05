@@ -1,6 +1,6 @@
 # 현재 상태
 
-마지막 갱신: 2026-10-05
+마지막 갱신: 2026-10-06
 
 ## 단계
 
@@ -8,13 +8,14 @@
 
 - **2막 단계 1\~3(태스크 15\~21)이 끝났다(2026-10-04).** 기법 전환 인자, 확장 요소, 규모 확정, 포스팅 5(`post-05-expanded-testbed`)까지다. 빌드된 바이너리는 main의 소스와 같다(소스가 마지막으로 바뀐 커밋 `0f689c2`). 확정값은 아래 "확정할 값"의 2막 줄, 인자는 "명령"에 있고, 경위는 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)의 "태스크 15"부터 "태스크 15\~21: STATUS.md에서 옮긴 경위"까지에 있다.
 - **태스크 22(포스팅 6, `post-06-three-techniques-again`)가 끝났다(2026-10-05).** 구성별 `work_avg_ms` 중앙값은 213.555 → 35.674 → 19.536 → 16.732다([포스팅 6 측정 기록](../Posts/06-three-techniques-again/measurements.md) 3절). 경위는 [Worklog/06-three-techniques-again.md](Worklog/06-three-techniques-again.md)의 "태스크 22"에 있다.
+- **태스크 24(포스팅 7, `post-07-net-driver-breakdown`)가 끝났다(2026-10-06).** `GameNetDriver` Incl 가운데 `Prioritize Actors Time` 56.4%, `Consider Actors Time` 23.5%이고, 활성 목록 5,272개 가운데 자원 노드가 4,887개다. 경위는 [Worklog/07-net-driver-breakdown.md](Worklog/07-net-driver-breakdown.md)의 "태스크 24"에 있다.
 - **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
 - 다음 시각 자료 라벨은 `visual14`다(`visual13`은 README의 8개 창 화면, 2026-10-05).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 24(포스팅 7, `GameNetDriver` 자체 시간 나누기, 진단).** 순서는 [backlog.md](backlog.md) "우선순위 순"(태스크 23). [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 5의 주기에서 3, 4를 건너뛴다. 측정과 Insights 값까지 끝났다(2026-10-05): 기준 묶음 `act2-split-base1`(`work_avg_ms` 중앙값 17.358, 변동 폭 0.155)과 나누는 묶음 `act2-split1`(`-StatNamedEvents`, 17.703, 0.229). `GameNetDriver` Incl 가운데 `Prioritize Actors Time` 56.4%, `Consider Actors Time` 23.5%이고 활성 목록 5,272개 가운데 자원 노드가 4,887개다. 값과 의견은 [관찰 자료](../Posts/07-net-driver-breakdown/candidates.md). 해석은 사용자가 승인했고(2026-10-05) 본문과 [측정 기록](../Posts/07-net-driver-breakdown/measurements.md) 초안을 썼다. **[사람] 초안을 읽고 고칠 곳과 진단 포스팅의 틀(posting.md "틀")을 정한다.** 그 뒤 Insights 캡처 후보, 태그, Worklog 정리가 남았다. 대조 실행 `act2-split2`(18.472, 변동 폭 4.189)와 `act2-split-nodes2500-1`(`-Nodes 2500`, 12.479, 0.357)에서 따지는 두 단계가 실행마다의 빠르기를 지운 값으로 51.2% 남아 활성 목록 길이 비례(53.8%)와 가깝다(관찰 자료 6절).
+2. **[사람] 포스팅 8(액터를 Consider List에서 빼기)의 기법을 고른다.** 후보는 [backlog.md](backlog.md) "우선순위 순" 4번과 "자원 노드의 NetUpdateFrequency 낮추기"다.
 
 ## 포스팅 진행
 
