@@ -27,7 +27,7 @@
 | 4. AI NPC Net Update Frequency(업데이트 빈도) | 완료 | `post-04-update-frequency` |
 | 5. 테스트베드 확장과 새 기준선 | 완료 | `post-05-expanded-testbed` |
 | 6. 1막의 세 최적화를 2막에 다시 적용 | 완료 | `post-06-three-techniques-again` |
-| 7. 네트워크 드라이버 자체 시간 나누기 | 초안 | (태그 전) |
+| 7. 네트워크 드라이버 자체 시간 나누기 | 완료 | `post-07-net-driver-breakdown` |
 
 ## 명령
 
