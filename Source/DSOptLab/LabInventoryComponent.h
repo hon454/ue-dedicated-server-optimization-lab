@@ -16,6 +16,8 @@ struct FLabItem
 
 	UPROPERTY()
 	int32 Count = 0;
+
+	bool operator==(const FLabItem& Other) const { return ItemId == Other.ItemId && Count == Other.Count; }
 };
 
 /**
@@ -44,6 +46,7 @@ public:
 	void AddHarvest();
 
 	int32 GetNumItems() const { return Items.Num(); }
+	const TArray<FLabItem>& GetItems() const { return Items; }
 	int32 GetFirstItemId() const { return Items.IsEmpty() ? 0 : Items[0].ItemId; }
 
 private:

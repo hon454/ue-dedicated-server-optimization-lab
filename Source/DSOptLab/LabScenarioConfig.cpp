@@ -112,6 +112,7 @@ const FLabClientConfig& FLabClientConfig::Get()
 		C.bAutoHarvest = FParse::Param(Cmd, TEXT("LabAutoHarvest"));
 		C.bTopDown = FParse::Param(Cmd, TEXT("LabTopDown"));
 		C.bAutoScreenshot = FParse::Param(Cmd, TEXT("LabAutoScreenshot"));
+		C.bInventoryPanel = FParse::Param(Cmd, TEXT("LabInventoryPanel"));
 		return C;
 	}();
 	return Config;

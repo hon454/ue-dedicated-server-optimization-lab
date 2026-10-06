@@ -41,7 +41,10 @@
     # 2막의 기법. 자원 노드의 NetUpdateFrequency. 0이면 인자를 넘기지 않아 엔진 기본값(100)이다. 포스팅 8의 구성은 2다.
     [double]$NodeUpdateFrequency = 0,
     # 2막의 기법. 인벤토리의 칸을 그 캐릭터를 소유한 연결에만 보낸다(COND_OwnerOnly). 주지 않으면 모든 연결에 보낸다. 포스팅 9.
-    [switch]$InventoryOwnerOnly
+    [switch]$InventoryOwnerOnly,
+    # 이 번호의 클라이언트 화면에 인벤토리 패널(-LabInventoryPanel)을 그린다. -1이면 그리지 않는다.
+    # 측정 실행의 화면과 자동 스크린샷을 바꾸지 않도록 시각 자료 라벨(visualN)과 작은 규모 확인(tsmall-*)에서만 받는다.
+    [int]$InventoryPanelSlot = -1
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -53,6 +56,11 @@ if ($StatNamedEvents -and $NoTrace) {
 
 if ($ShowcaseNpc -and $Label -notmatch '^visual\d+$') {
     Write-Host "FAIL: -ShowcaseNpc adds an actor to the scenario, so it is only allowed with a visual-only label (visualN)."
+    exit 1
+}
+
+if ($InventoryPanelSlot -ge 0 -and $Label -notmatch '^(visual\d+|tsmall-.+)$') {
+    Write-Host "FAIL: -InventoryPanelSlot changes a client screen, so it is only allowed with a visual-only label (visualN) or a small check (tsmall-*)."
     exit 1
 }
 
@@ -136,6 +144,9 @@ function Start-LabClient([int]$Index, [string]$RunLabel) {
     }
     if ($Index -eq 1) {
         $ClientArgs += @("-LabTopDown", "-LabAutoScreenshot")
+    }
+    if ($Index -eq $InventoryPanelSlot) {
+        $ClientArgs += "-LabInventoryPanel"
     }
     $Client = Start-Process -FilePath $Editor -ArgumentList $ClientArgs -PassThru
     Set-LabJobAffinity $Client $ClientMask

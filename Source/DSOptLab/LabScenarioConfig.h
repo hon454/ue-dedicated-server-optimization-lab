@@ -75,6 +75,7 @@ struct FLabClientConfig
 	bool bAutoHarvest = false;    // -LabAutoHarvest (제자리에서 채집만 한다)
 	bool bTopDown = false;        // -LabTopDown
 	bool bAutoScreenshot = false; // -LabAutoScreenshot
+	bool bInventoryPanel = false; // -LabInventoryPanel (이 클라이언트가 받은 인벤토리를 칸 격자로 그린다. 시각 자료용)
 
 	static const FLabClientConfig& Get();
 };

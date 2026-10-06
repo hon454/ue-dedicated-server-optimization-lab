@@ -3,9 +3,11 @@
 #include "Camera/CameraActor.h"
 #include "Camera/PlayerCameraManager.h"
 #include "DrawDebugHelpers.h"
+#include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerState.h"
 #include "Misc/Paths.h"
 #include "LabBuilding.h"
 #include "LabCharacter.h"
@@ -36,6 +38,11 @@ void ALabHUD::Tick(float DeltaSeconds)
 	}
 
 	UpdateOverlay(*Controller, *ControlledPawn);
+
+	if (Config.bInventoryPanel)
+	{
+		UpdateInventoryPanel(*ControlledPawn);
+	}
 
 	// 스크린샷은 공통 시작 신호 이후에만 찍는다.
 	if (Config.bAutoScreenshot && Controller->IsScenarioStarted())
@@ -188,6 +195,11 @@ void ALabHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
+	if (FLabClientConfig::Get().bInventoryPanel)
+	{
+		DrawInventoryPanel();
+	}
+
 	if (OverlayLines.IsEmpty() || !GEngine)
 	{
 		return;
@@ -219,5 +231,167 @@ void ALabHUD::DrawHUD()
 		DrawText(Line, FLinearColor::Black, Margin + Padding + 1.f, Y + 1.f, Font, TextScale);
 		DrawText(Line, TextColor, Margin + Padding, Y, Font, TextScale);
 		Y += LineHeight;
+	}
+}
+
+void ALabHUD::UpdateInventoryPanel(const APawn& ControlledPawn)
+{
+	const double Now = GetWorld()->GetRealTimeSeconds();
+
+	PanelEntries.Reset();
+	for (TActorIterator<ALabCharacter> It(GetWorld()); It; ++It)
+	{
+		const ULabInventoryComponent* Inventory = It->FindComponentByClass<ULabInventoryComponent>();
+		if (!Inventory)
+		{
+			continue;
+		}
+		PanelEntries.Add({Inventory, *It == &ControlledPawn});
+
+		// 같은 자리의 값이 지난 틱과 다르면 그 칸을 번쩍이게 한다. 처음 칸이 채워질 때(초기 전송)는 번쩍이지 않는다.
+		FInventoryView& View = InventoryViews.FindOrAdd(Inventory);
+		const TArray<FLabItem>& Items = Inventory->GetItems();
+		View.FlashUntil.SetNumZeroed(FMath::Max(View.FlashUntil.Num(), Items.Num()));
+		if (View.bSeen)
+		{
+			for (int32 Index = 0; Index < Items.Num(); ++Index)
+			{
+				if (!View.Previous.IsValidIndex(Index) || !(View.Previous[Index] == Items[Index]))
+				{
+					View.FlashUntil[Index] = Now + FlashSeconds;
+				}
+			}
+		}
+		View.Previous = Items;
+		View.bSeen = Items.Num() > 0;
+	}
+
+	for (auto It = InventoryViews.CreateIterator(); It; ++It)
+	{
+		if (!It.Key().IsValid())
+		{
+			It.RemoveCurrent();
+		}
+	}
+
+	// 자기 인벤토리를 먼저, 다른 플레이어는 PlayerId 순서로 둔다(클라이언트마다 같은 순서다).
+	auto PlayerIdOf = [](const FPanelEntry& Entry)
+	{
+		const APawn* Pawn = Entry.Inventory.IsValid() ? Cast<APawn>(Entry.Inventory->GetOwner()) : nullptr;
+		const APlayerState* PlayerState = Pawn ? Pawn->GetPlayerState() : nullptr;
+		return PlayerState ? PlayerState->GetPlayerId() : MAX_int32;
+	};
+	PanelEntries.Sort([&PlayerIdOf](const FPanelEntry& A, const FPanelEntry& B)
+	{
+		return A.bOwn != B.bOwn ? A.bOwn : PlayerIdOf(A) < PlayerIdOf(B);
+	});
+}
+
+void ALabHUD::DrawInventoryPanel()
+{
+	if (PanelEntries.IsEmpty() || !Canvas || !GEngine)
+	{
+		return;
+	}
+
+	const double Now = GetWorld()->GetRealTimeSeconds();
+
+	// 640x360 창을 기준으로 잡고 창 크기에 맞춰 키운다.
+	const float Scale = Canvas->ClipY / 360.f;
+	const float OwnCell = 6.f * Scale;
+	const float OtherCell = 3.f * Scale;
+	const float Gap = 6.f * Scale;
+	const float Pad = Padding * Scale;
+	UFont* Font = GEngine->GetSmallFont();
+	const float LabelScale = 1.1f * Scale;
+
+	// 칸 수는 자기 인벤토리를 따른다. 받지 못한 인벤토리도 같은 크기의 빈 격자로 그린다.
+	int32 NumCells = 200;
+	if (PanelEntries[0].bOwn && PanelEntries[0].Inventory.IsValid() && PanelEntries[0].Inventory->GetNumItems() > 0)
+	{
+		NumCells = PanelEntries[0].Inventory->GetNumItems();
+	}
+	const int32 Rows = FMath::DivideAndRoundUp(NumCells, PanelColumns);
+
+	int32 NumOthers = 0;
+	int32 NumOthersReceived = 0;
+	for (const FPanelEntry& Entry : PanelEntries)
+	{
+		if (!Entry.bOwn)
+		{
+			++NumOthers;
+			NumOthersReceived += Entry.Inventory.IsValid() && Entry.Inventory->GetNumItems() > 0 ? 1 : 0;
+		}
+	}
+
+	const FString OwnLabel = TEXT("own inventory");
+	const FString OtherLabel = FString::Printf(TEXT("other players: %d of %d received"), NumOthersReceived, NumOthers);
+	float LabelWidth = 0.f;
+	float LabelHeight = 0.f;
+	GetTextSize(OtherLabel, LabelWidth, LabelHeight, Font, LabelScale);
+
+	// 왼쪽에 자기 인벤토리, 오른쪽에 다른 플레이어를 4열 2줄로 둔다.
+	const int32 OtherColumns = 4;
+	const float OwnWidth = OwnCell * PanelColumns;
+	const float OwnHeight = OwnCell * Rows;
+	const float OtherWidth = OtherCell * PanelColumns;
+	const float OtherHeight = OtherCell * Rows;
+	const float OthersWidth = FMath::Max(OtherColumns * OtherWidth + (OtherColumns - 1) * Gap, LabelWidth);
+	const float GridsHeight = FMath::Max(OwnHeight, 2.f * OtherHeight + Gap);
+	const float BoxWidth = Pad + OwnWidth + Gap * 2.f + OthersWidth + Pad;
+	const float BoxHeight = Pad + LabelHeight + Pad * 0.5f + GridsHeight + Pad;
+	const float BoxX = Margin * Scale;
+	const float BoxY = Canvas->ClipY - Margin * Scale - BoxHeight;
+
+	DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.6f), BoxX, BoxY, BoxWidth, BoxHeight);
+
+	const FLinearColor TextColor(FColor::Cyan);
+	const float LabelY = BoxY + Pad;
+	const float GridY = LabelY + LabelHeight + Pad * 0.5f;
+	const float OwnX = BoxX + Pad;
+	const float OthersX = OwnX + OwnWidth + Gap * 2.f;
+	DrawText(OwnLabel, TextColor, OwnX, LabelY, Font, LabelScale);
+	DrawText(OtherLabel, TextColor, OthersX, LabelY, Font, LabelScale);
+
+	int32 OtherIndex = 0;
+	for (const FPanelEntry& Entry : PanelEntries)
+	{
+		if (Entry.bOwn)
+		{
+			DrawInventoryGrid(Entry, OwnX, GridY, OwnCell, NumCells, Now);
+		}
+		else if (OtherIndex < OtherColumns * 2)
+		{
+			const float X = OthersX + (OtherIndex % OtherColumns) * (OtherWidth + Gap);
+			const float Y = GridY + (OtherIndex / OtherColumns) * (OtherHeight + Gap);
+			DrawInventoryGrid(Entry, X, Y, OtherCell, NumCells, Now);
+			++OtherIndex;
+		}
+	}
+}
+
+void ALabHUD::DrawInventoryGrid(const FPanelEntry& Entry, float X, float Y, float Cell, int32 NumCells, double Now)
+{
+	const TArray<FLabItem>* Items = Entry.Inventory.IsValid() ? &Entry.Inventory->GetItems() : nullptr;
+	const FInventoryView* View = InventoryViews.Find(Entry.Inventory);
+
+	// 칸 사이에 한 픽셀 틈을 두어 칸이 하나씩 보이게 한다.
+	const float Size = FMath::Max(1.f, Cell - 1.f);
+	for (int32 Index = 0; Index < NumCells; ++Index)
+	{
+		FLinearColor Color(0.25f, 0.25f, 0.25f, 0.9f);
+		if (Items && Items->IsValidIndex(Index))
+		{
+			if (View && View->FlashUntil.IsValidIndex(Index) && View->FlashUntil[Index] > Now)
+			{
+				Color = FLinearColor::White;
+			}
+			else
+			{
+				// 아이템 번호로 색상(hue)을 정한다. 같은 아이템은 어느 클라이언트에서나 같은 색이다.
+				Color = FLinearColor::MakeFromHSV8(static_cast<uint8>(((*Items)[Index].ItemId * 47) % 256), 170, 230);
+			}
+		}
+		DrawRect(Color, X + (Index % PanelColumns) * Cell, Y + (Index / PanelColumns) * Cell, Size, Size);
 	}
 }

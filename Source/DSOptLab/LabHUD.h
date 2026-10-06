@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "LabInventoryComponent.h"
 #include "LabHUD.generated.h"
 
 class ACameraActor;
@@ -36,6 +37,33 @@ private:
 
 	void UpdateTopDown(ALabPlayerController& Controller, const APawn& ControlledPawn);
 	void UpdateAutoScreenshot(float DeltaSeconds);
+
+	/** 인벤토리 패널(-LabInventoryPanel). 이 클라이언트에 있는 플레이어 캐릭터의 인벤토리를 칸 격자로 그린다.
+	 *  칸 색은 아이템 번호, 이 클라이언트에서 값이 바뀐 칸은 잠깐 흰색, 받지 못한 칸은 회색이다. */
+	void UpdateInventoryPanel(const APawn& ControlledPawn);
+	void DrawInventoryPanel();
+
+	/** 인벤토리 하나를 클라이언트가 지난 틱에 본 값과 비교하려고 기억한다. */
+	struct FInventoryView
+	{
+		TArray<FLabItem> Previous;
+		TArray<double> FlashUntil;
+		bool bSeen = false;
+	};
+
+	struct FPanelEntry
+	{
+		TWeakObjectPtr<const ULabInventoryComponent> Inventory;
+		bool bOwn = false;
+	};
+
+	void DrawInventoryGrid(const FPanelEntry& Entry, float X, float Y, float Cell, int32 NumCells, double Now);
+
+	static constexpr int32 PanelColumns = 20;
+	static constexpr double FlashSeconds = 0.4;
+
+	TMap<TWeakObjectPtr<const ULabInventoryComponent>, FInventoryView> InventoryViews;
+	TArray<FPanelEntry> PanelEntries;
 
 	UPROPERTY()
 	TObjectPtr<ACameraActor> TopDownCamera;
