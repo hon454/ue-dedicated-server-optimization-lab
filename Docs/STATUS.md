@@ -19,7 +19,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **포스팅 11(NPC 이동의 클라이언트 보간)을 시작한다.** [backlog.md](backlog.md) "우선순위 순" 7번. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)으로 승인됐다(2026-10-07, 표시 위치 오차와 표시 속도 오차, 포스팅 12, 13도 쓴다). 보간 기법의 후보는 [포스팅 11 관찰 자료](../Posts/11-npc-interpolation/candidates.md)에 있고 사용자의 선택을 기다린다. 기준 구성은 포스팅 10의 최종 구성(포스팅 9의 구성에 `-InventoryFastArray`)이고, 기준 구성과 적용 구성은 연달아 잰다.
+2. **포스팅 11(NPC 이동의 클라이언트 보간)을 시작한다.** [backlog.md](backlog.md) "우선순위 순" 7번. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)으로 승인됐다(2026-10-07, 표시 위치 오차와 표시 속도 오차, 포스팅 12, 13도 쓴다). 사용자가 서버 시각을 붙인 버퍼 보간(서버 프레임 번호 8비트, 보간 지연 150ms, 버퍼가 비면 멈춤)을 골랐다(2026-10-07, [포스팅 11 관찰 자료](../Posts/11-npc-interpolation/candidates.md) 5절). 순서: 모션 기록(`-MotionLog`)과 분석 스크립트 구현 → 보간 구현(기본값 끔) → 작은 규모 확인 → 확정 규모 측정(전에 사용자에게 알림). 기준 구성은 포스팅 10의 최종 구성(포스팅 9의 구성에 `-InventoryFastArray`)이고, 기준 구성과 적용 구성은 연달아 잰다.
 
 ## 포스팅 진행
 
@@ -131,4 +131,3 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 ## 사용자에게 요청한 일
 
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
-- **포스팅 11의 보간 기법 선택.** [관찰 자료](../Posts/11-npc-interpolation/candidates.md) 5절의 "정할 것"(기법, 보간 지연 D, 버퍼가 비었을 때의 동작).
