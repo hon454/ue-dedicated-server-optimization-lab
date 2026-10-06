@@ -112,19 +112,8 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | `act2-baseline1-r3` | 272 | 220.521 | 331.528 | 272 | 211.365 | 36324 | 5871 | 0.000 |
 | **중앙값** | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
 | **변동 폭** | 7 | 5.283 | 69.892 | 7 | 4.807 | 741 | 0 | 0.000 |
-| `act2-fastarr-base1-r1` | 1798 | 8.929 | 14.228 | 1 | 4.419 | 12364 | 77 | 0.000 |
-| `act2-fastarr-base1-r2` | 1786 | 8.748 | 12.680 | 1 | 4.346 | 12390 | 77 | 0.000 |
-| `act2-fastarr-base1-r3` | 1787 | 8.852 | 13.237 | 1 | 4.370 | 12387 | 77 | 0.000 |
-| **중앙값** | 1787 | 8.852 | 13.237 | 1 | 4.370 | 12387 | 77 | 0.000 |
-| **변동 폭** | 12 | 0.181 | 1.548 | 0 | 0.073 | 26 | 0 | 0.000 |
-| `act2-fastarr1-r1` | 1789 | 8.650 | 12.887 | 1 | 4.240 | 11807 | 77 | 0.000 |
-| `act2-fastarr1-r2` | 1797 | 8.586 | 13.355 | 1 | 4.181 | 11799 | 77 | 0.000 |
-| `act2-fastarr1-r3` | 1789 | 8.361 | 12.044 | 0 | 4.068 | 11828 | 77 | 0.000 |
-| **중앙값** | 1789 | 8.586 | 12.887 | 1 | 4.181 | 11807 | 77 | 0.000 |
-| **변동 폭** | 8 | 0.289 | 1.311 | 1 | 0.172 | 29 | 0 | 0.000 |
-| **`act2-fastarr-base1` 대비** | +2 | -0.266(-3.0%) | -0.350(-2.6%) | 0 | -0.189(-4.3%) | -580(-4.7%) | 0 | 0 |
 
-1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. `act2-fastarr-base1`(포스팅 9의 최종 구성)과 `act2-fastarr1`(`-InventoryFastArray`)은 2026-10-06 17:31\~17:47에 연달아 쟀고, Insights 값은 [포스팅 10 관찰 자료](../Posts/10-inventory-fastarray/candidates.md) 10절부터에 있다.
+1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다.
 
 ## 막힌 것
 
