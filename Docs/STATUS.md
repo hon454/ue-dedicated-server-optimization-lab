@@ -10,13 +10,14 @@
 - **태스크 22(포스팅 6, `post-06-three-techniques-again`)가 끝났다(2026-10-05).** 구성별 `work_avg_ms` 중앙값은 213.555 → 35.674 → 19.536 → 16.732다([포스팅 6 측정 기록](../Posts/06-three-techniques-again/measurements.md) 3절). 경위는 [Worklog/06-three-techniques-again.md](Worklog/06-three-techniques-again.md)의 "태스크 22"에 있다.
 - **태스크 24(포스팅 7, `post-07-net-driver-breakdown`)가 끝났다(2026-10-06).** `GameNetDriver` Incl 가운데 `Prioritize Actors Time` 56.4%, `Consider Actors Time` 23.5%이고, 활성 목록 5,272개 가운데 자원 노드가 4,887개다. 경위는 [Worklog/07-net-driver-breakdown.md](Worklog/07-net-driver-breakdown.md)의 "태스크 24"에 있다.
 - **태스크 25(포스팅 8, `post-08-node-update-frequency`)가 끝났다(2026-10-06).** 자원 노드의 Net Update Frequency를 2로 낮추자 `work_avg_ms` 중앙값이 18.060 → 8.615였다(`act2-nodeuf-base1`, `act2-nodeuf1`). 이제 `GameNetDriver`에서 가장 큰 것은 `Process Prioritized Actors Time`(45.8%)이다. 경위는 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 25"에 있다.
+- **태스크 26(포스팅 9, `post-09-inventory-owner-only`)이 끝났다(2026-10-06).** 인벤토리를 소유자의 연결에만 보내자(`-InventoryOwnerOnly`) `out_bytes_per_sec_per_conn` 중앙값이 16,635 → 12,421(-25.3%)이고 `work_avg_ms`는 구별되지 않았다(`act2-invown-base1`, `act2-invown1`). 소유자는 여전히 바뀔 때마다 200칸(18,190비트)을 받는다. 경위는 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 26"에 있다.
 - **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
 - 다음 시각 자료 라벨은 `visual16`이다(`visual14`, `visual15`는 포스팅 9의 인벤토리 패널 전후, 2026-10-06).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 26(포스팅 9, 인벤토리를 소유자에게만 보내기).** [backlog.md](backlog.md) "우선순위 순" 5번. [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 5의 주기를 돈다. 기준 구성은 포스팅 6의 최종 구성(2막 요소 인자)에 `-NodeUpdateFrequency 2`를 더한 것이다. [관찰 자료](../Posts/09-inventory-owner-only/candidates.md)(2026-10-06, 새 측정 없이 `act2-nodeuf1-r3`, `act2-nodeuf-split1-r3`을 다시 읽음): 인벤토리는 `Connection 0` 송신량의 28.6%(4,548바이트/초)이고, CPU는 `GameNetDriver`의 3.6%다. 바뀔 때마다 200칸을 모두 다시 보낸다. 사용자가 두 후보를 나누어 포스팅 9는 `COND_OwnerOnly`, 포스팅 10은 FastArray로 정했다(2026-10-06. 반대 순서면 뒤의 효과가 CSV 변동 폭 안이다, 관찰 자료 6절). 전환 인자 `-InventoryOwnerOnly`를 구현했다(2026-10-06, 인자는 "명령"). 조건은 `GetLifetimeReplicatedProps`가 서버 인자를 읽어 고르고, 클라이언트는 `COND_None`으로 둔 채 받는다. 작은 규모(클라이언트 2, 인벤토리 200칸, 4초)에서 화면 글자 `other items`가 200 → 0이고 `out_bytes_per_sec_per_conn`이 2,950 → 2,237, 2,265였다(`tsmall-invown-off1-r1`, `tsmall-invown-on1-r1`, `tsmall-invown-on2-r1`, 실행 한 번씩이라 방향만 본다). 오버레이 글자만으로는 독자가 알아보기 어렵다는 사용자 의견(2026-10-06)으로 인벤토리 패널을 만들었다(사용자가 2번 창에 띄우기로 정함, 인자는 "명령"). 클라이언트 8개의 작은 규모에서 0번 창에 띄워 확인했다: 끈 구성은 다른 플레이어 7명의 격자가 차 있고 하나가 통째로 번쩍였으며, 켠 구성은 7개 모두 빈 격자였다(`tsmall-invpanel-off1-r1`, `tsmall-invpanel-on1-r1`의 `tpp-01`. `out_bytes_per_sec_per_conn` 9,439 → 5,221). 사용자가 측정과 녹화 계획을 승인했다(2026-10-06). 측정이 끝났다: `act2-invown-base1`(포스팅 8의 최종 구성)과 `act2-invown1`(`-InventoryOwnerOnly`)을 12:05\~12:21에 연달아 3회씩, 본체 화면, 트레이스 켬. `out_bytes_per_sec_per_conn` 중앙값 16,635 → 12,421(-25.3%, 관찰 자료 5절의 예상 -25.0%), `work_avg_ms` 8.560 → 8.493(-0.067로 변동 폭 0.153보다 작아 구별하지 못함). 아래 "측정 결과". 패널을 `visual14`(기준), `visual15`(`-InventoryOwnerOnly`)에서 2번 창 영역 `1920,0,960,540`으로 10초씩 찍었다(`Posts/09-inventory-owner-only/images/inventory-panel-before.gif`, `-after.gif`, 각 약 5.9MB, 5.7MB. 영역이 맞음을 미리보기로 확인). Networking Insights(중앙값 실행 `r2`끼리, `Connection 0`)에서 연결당 송신량 15,864 → 11,832(-25.4%), 인벤토리 4,545 → 571바이트/초, 초당 패킷 35.5 → 30.5였다. 줄어든 몫의 98.6%가 인벤토리다. 값과 캡처 네 장은 [관찰 자료](../Posts/09-inventory-owner-only/candidates.md) 8\~14절. 사용자가 패널 GIF와 패킷 그래프 캡처를 골랐다(2026-10-06). 본문(2,900자 안팎)과 측정 기록 초안을 썼다. GIF는 본문 요약에, 패킷 그래프는 ADR-0015에 따라 측정 기록 4절에 넣었다. 사용자가 초안을 승인했고(2026-10-06) 루트 README 표의 "(작성 중)"을 빼고 태그 `post-09-inventory-owner-only`를 붙였다.
+2. **포스팅 10(인벤토리와 FastArray)을 시작한다.** [backlog.md](backlog.md) "우선순위 순" 6번. 기준 구성은 포스팅 9의 최종 구성(포스팅 8의 구성에 `-InventoryOwnerOnly`)이다. FastArray의 원리, 엔진 소스 위치, 구현 비용, 대가(클라이언트의 칸 순서가 `RemoveAtSwap`으로 서버와 달라진다)는 [포스팅 9 관찰 자료](../Posts/09-inventory-owner-only/candidates.md) 4절 A에 있다. 인벤토리 패널(`-InventoryPanelSlot`)로 바뀐 칸만 번쩍이는지 보일 수 있다.
 
 ## 포스팅 진행
 
@@ -106,17 +107,6 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | `act2-baseline1-r3` | 272 | 220.521 | 331.528 | 272 | 211.365 | 36324 | 5871 | 0.000 |
 | **중앙값** | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
 | **변동 폭** | 7 | 5.283 | 69.892 | 7 | 4.807 | 741 | 0 | 0.000 |
-| `act2-nodeuf-base1-r1` | 1789 | 17.418 | 26.867 | 1 | 13.141 | 16654 | 77 | 0.000 |
-| `act2-nodeuf-base1-r2` | 1785 | 18.830 | 30.673 | 9 | 14.313 | 16603 | 77 | 0.000 |
-| `act2-nodeuf-base1-r3` | 1789 | 18.060 | 26.008 | 1 | 13.605 | 16611 | 77 | 0.000 |
-| **중앙값** | 1789 | 18.060 | 26.867 | 1 | 13.605 | 16611 | 77 | 0.000 |
-| **변동 폭** | 4 | 1.412 | 4.665 | 8 | 1.172 | 51 | 0 | 0.000 |
-| `act2-nodeuf1-r1` | 1794 | 8.557 | 13.373 | 0 | 4.170 | 16570 | 77 | 0.000 |
-| `act2-nodeuf1-r2` | 1796 | 8.780 | 13.807 | 0 | 4.296 | 16659 | 77 | 0.000 |
-| `act2-nodeuf1-r3` | 1795 | 8.615 | 13.477 | 0 | 4.177 | 16569 | 77 | 0.000 |
-| **중앙값** | 1795 | 8.615 | 13.477 | 0 | 4.177 | 16570 | 77 | 0.000 |
-| **변동 폭** | 2 | 0.223 | 0.434 | 0 | 0.126 | 90 | 0 | 0.000 |
-| **`act2-nodeuf-base1` 대비** | +6 | -9.445(-52.3%) | -13.390(-49.8%) | -1 | -9.428(-69.3%) | -41(-0.2%) | 0 | 0 |
 | `act2-invown-base1-r1` | 1788 | 8.494 | 14.090 | 0 | 4.200 | 16637 | 77 | 0.000 |
 | `act2-invown-base1-r2` | 1796 | 8.560 | 13.187 | 1 | 4.157 | 16550 | 77 | 0.000 |
 | `act2-invown-base1-r3` | 1789 | 8.588 | 13.161 | 0 | 4.278 | 16635 | 77 | 0.000 |
@@ -129,7 +119,7 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | **변동 폭** | 11 | 0.153 | 0.695 | 1 | 0.093 | 33 | 0 | 0.000 |
 | **`act2-invown-base1` 대비** | +8 | -0.067(-0.8%) | +0.049(+0.4%) | +1 | -0.067(-1.6%) | -4,214(-25.3%) | 0 | 0 |
 
-1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. `act2-nodeuf-base1`(포스팅 6의 최종 구성)과 `act2-nodeuf1`(`-NodeUpdateFrequency 2`)은 2026-10-06에 연달아 쟀고, 타이머를 더 켠 두 묶음과 Insights 값은 [포스팅 8 관찰 자료](../Posts/08-node-update-frequency/candidates.md) 6절부터에 있다.
+1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. `act2-invown-base1`(포스팅 8의 최종 구성)과 `act2-invown1`(`-InventoryOwnerOnly`)은 2026-10-06에 연달아 쟀고, Insights 값은 [포스팅 9 관찰 자료](../Posts/09-inventory-owner-only/candidates.md) 8절부터에 있다.
 
 ## 막힌 것
 

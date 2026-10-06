@@ -282,6 +282,20 @@
 
 결론: `run-scenario.ps1 -StatNamedEvents`로 잰 트레이스는 `export-insights.ps1`이 서버 로그의 명령줄을 보고 알아서 `GameNetDriver`를 뿌리로 내보내고, `GameNetDriver`와 `TickCompletionEvents` 아래 트리를 요약에 적는다. 이 실행의 수치는 이벤트가 더 기록되므로 다른 실행과 비교하지 않는다. 클래스별 값을 기본 트레이스와 같은 방식으로 읽으려면 `Replicate Actor Time` 아래를 본다. 평탄한 타이머 통계(`stats.csv`)의 클래스 타이머는 리플리케이션과 액터 틱(`LabNpc`는 둘 다 있다)이 섞인 값이다.
 
+## 카. 리플리케이션 조건과 FastArray (2026-10-06, 태스크 26)
+
+5.8.3 소스에서 읽었고, 조건은 실행으로도 확인했다. 쓰이는 곳은 [포스팅 9](../../Posts/09-inventory-owner-only/README.md)와 포스팅 10(FastArray)이다. 자세한 위치는 [포스팅 9 관찰 자료](../../Posts/09-inventory-owner-only/candidates.md) 4절에 있다.
+
+| 사실 | 소스 위치 또는 실행 |
+| --- | --- |
+| 리플리케이션 조건은 비교 뒤에 연결마다 확인한다. 비교는 객체마다 프레임에 한 번이고, 조건이 꺼진 연결은 바뀐 목록에서 그 프로퍼티를 뺀다. 그래서 조건은 보내는 바이트와 직렬화만 줄이고 비교는 줄이지 않는다 | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1275-1331`(비교), `2047`, `2660-2680`(`FilterChangeListToActive`). 실행: `act2-invown1`에서 `work_avg_ms`는 구별되지 않았다 |
+| 캐릭터의 소유자 연결은 컨트롤러의 연결이다. 액터 채널은 연결마다 `bNetOwner`를 정한다 | `Pawn.cpp:753-760`(`APawn::GetNetConnection`), `DataChannel.cpp:3809-3812` |
+| 조건을 `GetLifetimeReplicatedProps`에서 서버 인자로 고르고, 클라이언트는 `COND_None`으로 등록해도 클라이언트가 받는다 | 실행: `tsmall-invown-on1-r1`, `act2-invown1`(화면 글자의 자기 인벤토리 칸 수 200). 받는 쪽 코드를 끝까지 따라가지는 않았다 |
+| 한 패킷에 다 들어가지 않는 큰 묶음은 여러 패킷에 나뉘어 간다(Networking Insights에 `PartialInitial`로 보인다) | 실행: `act2-invown-base1-r2`의 패킷 16,384(인벤토리 18,190비트, `Actor` 줄 7,630비트) |
+| FastArray는 칸마다 `ReplicationID`와 `ReplicationKey`를 두고, 연결마다 지난번에 보낸 표와 비교해 키가 바뀐 칸과 없어진 번호만 보낸다. 배열 키가 그대로면 칸을 보지 않는다 | `Engine/Source/Runtime/Net/Core/Classes/Net/Serialization/FastArraySerializer.h:298-332`, `819-853`, `896-975` |
+| FastArray의 칸 안 델타 직렬화는 생성자 기본값이 꺼짐이다(`SetDeltaSerializationEnabled`로 켠다). 헤더 주석은 기본으로 켜져 있다고 적었지만 생성자는 `None`이다 | `FastArraySerializer.h:220, 549-566`, `Net/Core/Private/Net/Serialization/FastArraySerializer.cpp:33` |
+| FastArray의 클라이언트는 지운 칸을 `RemoveAtSwap`으로 지운다. 클라이언트의 칸 순서가 서버와 달라진다 | `FastArraySerializer.h:1193` |
+
 ## 라. 계획 초안의 코드에서 바꾼 것 요약
 
 | 태스크 | 바꾼 것 | 이유 |
