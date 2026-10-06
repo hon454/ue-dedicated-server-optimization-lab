@@ -21,7 +21,8 @@ struct FLabItem
 /**
  * 플레이어 캐릭터의 인벤토리. 2막의 확장 요소다(-LabInventoryItems=).
  * 서버가 캐릭터에 실행 중에 붙인다. 인자를 주지 않으면 만들지 않으므로 1막의 캐릭터는 그대로다.
- * 일반 TArray 프로퍼티이고 조건 없이 리플리케이트한다. 캐릭터가 고려될 때마다 모든 칸을 비교한다.
+ * 일반 TArray 프로퍼티이고 캐릭터가 고려될 때마다 모든 칸을 비교한다.
+ * 기본은 조건 없이 모든 연결에 보내고, -LabInventoryOwnerOnly를 주면 소유자의 연결에만 보낸다(포스팅 9).
  */
 UCLASS()
 class DSOPTLAB_API ULabInventoryComponent : public UActorComponent

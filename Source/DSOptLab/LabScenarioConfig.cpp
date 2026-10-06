@@ -39,6 +39,7 @@ const FLabServerConfig& FLabServerConfig::Get()
 		FParse::Value(Cmd, TEXT("LabBuildInterval="), C.BuildIntervalSeconds);
 		FParse::Value(Cmd, TEXT("LabNpcsNearPlayers="), C.NpcsPerCluster);
 		FParse::Value(Cmd, TEXT("LabNodeUpdateFrequency="), C.NodeUpdateFrequency);
+		C.bInventoryOwnerOnly = FParse::Param(Cmd, TEXT("LabInventoryOwnerOnly"));
 		return C;
 	}();
 	return Config;
@@ -92,6 +93,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (NodeUpdateFrequency != Defaults.NodeUpdateFrequency)
 	{
 		Parts.Add(FString::Printf(TEXT("NodeUpdateFrequency=%g"), NodeUpdateFrequency));
+	}
+	if (bInventoryOwnerOnly != Defaults.bInventoryOwnerOnly)
+	{
+		Parts.Add(TEXT("InventoryOwnerOnly"));
 	}
 	return Parts.IsEmpty() ? TEXT("default") : FString::Join(Parts, TEXT(";"));
 }

@@ -1,5 +1,6 @@
 #include "LabInventoryComponent.h"
 
+#include "LabScenarioConfig.h"
 #include "Net/UnrealNetwork.h"
 
 ULabInventoryComponent::ULabInventoryComponent()
@@ -11,7 +12,12 @@ ULabInventoryComponent::ULabInventoryComponent()
 void ULabInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ULabInventoryComponent, Items);
+
+	// 클래스마다 한 번 불리고 서버와 클라이언트에서 모두 돈다. 인자는 서버에만 주므로 클라이언트에서는 COND_None이다.
+	// 조건은 보내는 쪽(서버)이 연결마다 바뀐 목록을 거르는 데만 쓴다(RepLayout.cpp의 FilterChangeListToActive).
+	FDoRepLifetimeParams Params;
+	Params.Condition = FLabServerConfig::Get().bInventoryOwnerOnly ? COND_OwnerOnly : COND_None;
+	DOREPLIFETIME_WITH_PARAMS(ULabInventoryComponent, Items, Params);
 }
 
 FLabItem ULabInventoryComponent::MakeItem()

@@ -71,6 +71,7 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 	int32 NumInventories = 0;
 	int32 NumOwnItems = 0;
 	int32 OwnFirstItemId = 0;
+	int32 NumOtherItems = 0; // 다른 플레이어의 인벤토리에서 받은 칸 수의 합. 소유자에게만 보내면 0이다
 
 	int32 NumBuildings = 0;
 	for (TActorIterator<ALabBuilding> It(World); It; ++It)
@@ -107,6 +108,10 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 				NumOwnItems = Inventory->GetNumItems();
 				OwnFirstItemId = Inventory->GetFirstItemId();
 			}
+			else
+			{
+				NumOtherItems += Inventory->GetNumItems();
+			}
 		}
 		if (Config.bTopDown)
 		{
@@ -131,7 +136,8 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 	// 맨 앞 칸의 아이템 번호는 인벤토리의 앞 칸이 지워질 때마다 바뀐다.
 	if (NumStates > 0 || NumInventories > 0 || NumBuildings > 0)
 	{
-		OverlayLines.Add(FString::Printf(TEXT("buildings=%d states=%d inventories=%d | own items=%d first id=%d"), NumBuildings, NumStates, NumInventories, NumOwnItems, OwnFirstItemId));
+		OverlayLines.Add(FString::Printf(TEXT("buildings=%d states=%d inventories=%d"), NumBuildings, NumStates, NumInventories));
+		OverlayLines.Add(FString::Printf(TEXT("own items=%d first id=%d | other items=%d"), NumOwnItems, OwnFirstItemId, NumOtherItems));
 	}
 }
 

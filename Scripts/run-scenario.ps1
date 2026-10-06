@@ -39,7 +39,9 @@
     # 플레이어가 있는 곳마다 NPC를 이 수만큼 더 놓는다(반지름 40m 원 안). 맵 전체에 놓는 -Npcs와 따로다. 0이면 놓지 않는다.
     [int]$NpcsNearPlayers = 0,
     # 2막의 기법. 자원 노드의 NetUpdateFrequency. 0이면 인자를 넘기지 않아 엔진 기본값(100)이다. 포스팅 8의 구성은 2다.
-    [double]$NodeUpdateFrequency = 0
+    [double]$NodeUpdateFrequency = 0,
+    # 2막의 기법. 인벤토리의 칸을 그 캐릭터를 소유한 연결에만 보낸다(COND_OwnerOnly). 주지 않으면 모든 연결에 보낸다. 포스팅 9.
+    [switch]$InventoryOwnerOnly
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -204,6 +206,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($NodeUpdateFrequency -gt 0) {
         $ServerArgs += "-LabNodeUpdateFrequency=$NodeUpdateFrequency"
+    }
+    if ($InventoryOwnerOnly) {
+        $ServerArgs += "-LabInventoryOwnerOnly"
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")

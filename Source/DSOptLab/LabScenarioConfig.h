@@ -58,6 +58,8 @@ struct FLabServerConfig
 	// 2막의 기법. 인자를 주지 않으면 끈 상태다.
 	// 자원 노드의 NetUpdateFrequency. 기본값은 엔진 기본값 100이다(Actor.cpp의 AActor 생성자). 포스팅 8에서 2로 낮춘다.
 	float NodeUpdateFrequency = 100.f; // -LabNodeUpdateFrequency=
+	// 인벤토리의 칸(ULabInventoryComponent의 Items)을 그 캐릭터를 소유한 연결에만 보낸다(COND_OwnerOnly). 포스팅 9.
+	bool bInventoryOwnerOnly = false;  // -LabInventoryOwnerOnly
 
 	/** 수치 CSV의 config 열에 적는 값. 기본값과 다른 인자를 ';'로 잇고, 모두 기본값이면 "default"다. */
 	FString GetConfigName() const;
