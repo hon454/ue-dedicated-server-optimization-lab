@@ -16,7 +16,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 26(포스팅 9, 인벤토리).** [backlog.md](backlog.md) "우선순위 순" 5번. [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 5의 주기를 돈다. 기준 구성은 포스팅 6의 최종 구성(2막 요소 인자)에 `-NodeUpdateFrequency 2`를 더한 것이다. [관찰 자료](../Posts/09-inventory/candidates.md)를 준비했다(2026-10-06, 새 측정 없이 `act2-nodeuf1-r3`, `act2-nodeuf-split1-r3`을 다시 읽음): 인벤토리는 `Connection 0` 송신량의 28.6%(4,548바이트/초)이고, CPU는 `GameNetDriver`의 3.6%다. 바뀔 때마다 200칸을 모두 다시 보낸다. 후보는 A FastArray(추천), B `COND_OwnerOnly`다. **[사람] 기법을 하나 고른다.** 고르지 않은 후보는 [backlog.md](backlog.md)에 적는다. 폴더 이름 `09-inventory`는 임시다.
+2. **태스크 26(포스팅 9, 인벤토리를 소유자에게만 보내기).** [backlog.md](backlog.md) "우선순위 순" 5번. [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) 단계 5의 주기를 돈다. 기준 구성은 포스팅 6의 최종 구성(2막 요소 인자)에 `-NodeUpdateFrequency 2`를 더한 것이다. [관찰 자료](../Posts/09-inventory-owner-only/candidates.md)(2026-10-06, 새 측정 없이 `act2-nodeuf1-r3`, `act2-nodeuf-split1-r3`을 다시 읽음): 인벤토리는 `Connection 0` 송신량의 28.6%(4,548바이트/초)이고, CPU는 `GameNetDriver`의 3.6%다. 바뀔 때마다 200칸을 모두 다시 보낸다. 사용자가 두 후보를 나누어 포스팅 9는 `COND_OwnerOnly`, 포스팅 10은 FastArray로 정했다(2026-10-06. 반대 순서면 뒤의 효과가 CSV 변동 폭 안이다, 관찰 자료 6절). 다음은 `ULabInventoryComponent`의 `Items`에 `COND_OwnerOnly`를 거는 전환 인자를 구현하고(기본값은 끔) 작은 규모로 확인하는 것이다.
 
 ## 포스팅 진행
 
@@ -125,4 +125,3 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 ## 사용자에게 요청한 일
 
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
-- **포스팅 9의 기법 선택.** 위 "다음 할 일" 2번.
