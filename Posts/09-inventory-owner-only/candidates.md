@@ -1,6 +1,6 @@
-# 포스팅 9 관찰 자료 (`act2-nodeuf1-r3`, `act2-nodeuf-split1-r3`)
+# 포스팅 9 관찰 자료 (`act2-nodeuf1-r3`, `act2-nodeuf-split1-r3`, `act2-invown-base1`, `act2-invown1`)
 
-2막 구현 계획 태스크 26의 자료다. 1\~7절은 기법을 고르기 전에 쓴 후보 비교다. 사용자가 두 후보를 두 포스팅으로 나누어 포스팅 9에서 B(`COND_OwnerOnly`), 포스팅 10에서 A(FastArray)를 다루기로 정했다(2026-10-06). 포스팅 10은 4절 A의 자료를 다시 쓴다.
+2막 구현 계획 태스크 26의 자료다. 1\~7절은 기법을 고르기 전에 쓴 후보 비교이고, 8절부터는 B를 구현한 뒤의 측정이다. 사용자가 두 후보를 두 포스팅으로 나누어 포스팅 9에서 B(`COND_OwnerOnly`), 포스팅 10에서 A(FastArray)를 다루기로 정했다(2026-10-06). 포스팅 10은 4절 A의 자료를 다시 쓴다.
 
 - 새로 측정하지 않았다. 기준 구성의 실행이 이미 있어서 [포스팅 8](../08-node-update-frequency/candidates.md)의 트레이스를 다시 읽었다. 바이트는 `act2-nodeuf1-r3`(기본 트레이스)를 Networking Insights 창에서 읽었고(2026-10-06), CPU는 `act2-nodeuf-split1-r3`(`-StatNamedEvents`)의 `Saved/InsightsExport/act2-nodeuf-split1-r3/summary.txt`에서 읽었다.
 - 엔진 소스는 5.8.3(`G:\Epic Games\UE_Source`)에서 읽었다. 경로는 `Engine/Source/Runtime/` 기준이다.
@@ -140,3 +140,108 @@ B(포스팅 9)는 한 줄로 연결당 송신량을 약 25% 줄이고, "다른 �
 - FastArray가 연결마다 번호 표를 만드는 CPU 비용.
 - 다른 연결(`Connection 1`\~`7`)의 인벤토리 몫. 모든 연결이 여덟 인벤토리를 받으므로 같다고 보았다.
 - 기본 트레이스(`act2-nodeuf1-r3`)에서 인벤토리의 CPU. 기본 트레이스에는 `LabInventoryComponent` 타이머가 없다(`LabCharacter` 0.548ms에 들어 있다).
+
+## 8. 측정 조건
+
+사용자가 B(`COND_OwnerOnly`)를 포스팅 9로 정한 뒤의 측정이다(2026-10-06).
+
+- 구현: 실행 인자 `-InventoryOwnerOnly`(서버 `-LabInventoryOwnerOnly`). `ULabInventoryComponent::GetLifetimeReplicatedProps`가 서버 설정을 읽어 `Items`의 조건을 `COND_OwnerOnly`로 고른다. 클라이언트는 인자를 받지 않아 `COND_None`인 채로 받는다. 커밋 `730f247`.
+- 구성: 1절의 기준 구성. 클라이언트 8, 자원 노드 5,000과 검증용 1, 맵 전체의 NPC 300, 준비 30초, 측정 60초, 서버 논리 프로세서 2\~7, 연결당 송신 한도 350,000바이트/초, 트레이스 켬.
+- 두 묶음을 세 번씩 연달아 쟀다. 2026-10-06 12:05\~12:21, 본체 화면, 실행 중 PC 조작 없음. 6회 모두 종료 코드 0이고, 시작 신호 전 클라이언트 재시작과 측정 구간의 선호도 재설정이 없었다.
+
+| 묶음 | 본문의 이름 | 더한 인자 | 중앙값 실행(`work_avg_ms`) |
+| --- | --- | --- | --- |
+| `act2-invown-base1` | 적용 전 | 없음 | `r2` |
+| `act2-invown1` | 적용 후 | `-InventoryOwnerOnly` | `r2` |
+
+- 서버 로그는 여섯 실행이 같았다: `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`, 준비 구간 끝의 `open_actor_channels_per_conn` 77\~79, `lab_consider_list avg_per_frame` 411.9\~415.5.
+
+## 9. CSV
+
+| 라벨 | frames | work_avg_ms | work_p99_ms | over_budget_frames | netflush_avg_ms | out_bytes_per_sec_per_conn |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `act2-invown-base1-r1` | 1788 | 8.494 | 14.090 | 0 | 4.200 | 16637 |
+| `act2-invown-base1-r2` | 1796 | 8.560 | 13.187 | 1 | 4.157 | 16550 |
+| `act2-invown-base1-r3` | 1789 | 8.588 | 13.161 | 0 | 4.278 | 16635 |
+| `act2-invown1-r1` | 1787 | 8.551 | 13.236 | 1 | 4.183 | 12421 |
+| `act2-invown1-r2` | 1797 | 8.493 | 12.756 | 0 | 4.133 | 12441 |
+| `act2-invown1-r3` | 1798 | 8.398 | 13.451 | 1 | 4.090 | 12408 |
+
+- `out_bytes_per_sec_per_conn` 중앙값 16,635 → 12,421(-4,214, -25.3%). 변동 폭은 87과 33이다. 5절의 예상은 -25.0%였다.
+- `work_avg_ms` 중앙값 8.560 → 8.493(-0.067). 두 변동 폭 0.094, 0.153 가운데 큰 쪽보다 작아 구별하지 못했다(measurement.md "차이의 판단").
+- `open_actor_channels_per_conn`은 모두 77, `saturated_ratio`는 모두 0.000이다.
+
+## 10. Networking Insights (`Connection 0`, `Outgoing`, 중앙값 실행 `r2`끼리)
+
+2.1절과 같은 방법으로 측정 구간의 첫 막대와 끝 막대를 골랐다. 적용 후 트레이스는 패킷이 적어 한 막대에 패킷 세 개가 들고, 첫 막대(Largest Packet 프레임 2,343)가 측정 시작 프레임(2,339)보다 몇 프레임 늦을 수 있다. 창 이미지는 [images/act2-invown-base1-r2-netstats-connection0.png](images/act2-invown-base1-r2-netstats-connection0.png), [images/act2-invown1-r2-netstats-connection0.png](images/act2-invown1-r2-netstats-connection0.png)다.
+
+| 항목 | 적용 전 | 적용 후 |
+| --- | --- | --- |
+| 측정 구간(`export-insights.ps1`) | 90.903\~150.918초, `WorldTick` 1,796 | 90.841\~150.855초, `WorldTick` 1,797 |
+| 첫 막대 / 끝 막대(Engine Frame Number) | 2,338 / 4,134 | 2,343 / 4,136 |
+| 고른 범위 | 2,130패킷, 60.015초 | 1,824패킷, 59.886초 |
+
+| Net Stats 줄(Count / Incl 비트) | 적용 전 | 적용 후 |
+| --- | ---: | ---: |
+| `Actor` | 36,215 / 7,424,325 | 35,934 / 5,501,213 |
+| `LabNpc` | 25,190 / 2,550,189 | 25,161 / 2,547,334 |
+| `LabInventoryComponent` | 127 / 2,182,034 | 22 / 273,676 |
+| 그 아래 `ItemId` | 24,000 / 1,090,560 | 3,000 / 136,320 |
+| `BP_LabCharacter_C` | 9,790 / 1,478,785 | 9,779 / 1,477,192 |
+| `LabStateComponent` | 750 / 64,156 | 746 / 63,884 |
+| `LabBuilding` | 136 / 5,576 | 126 / 5,166 |
+| `PacketHeaderAndInfo`(`Actor` 밖) | 2,130 / 192,286 | 1,824 / 167,478 |
+
+| 계산한 값 | 적용 전 | 적용 후 | 변화 |
+| --- | ---: | ---: | --- |
+| 연결당 송신량(바이트/초) | 15,864 | 11,832 | -4,032(-25.4%) |
+| CSV(`r2`)와의 차이 | -4.1%(16,550) | -4.9%(12,441) | |
+| 인벤토리(바이트/초) | 4,545 | 571 | -3,974(-87.4%) |
+| 인벤토리 ÷ 연결당 송신량 | 28.6% | 4.8% | |
+| NPC(바이트/초) | 5,312 | 5,317 | 그대로 |
+| 플레이어 캐릭터(바이트/초) | 3,080 | 3,083 | 그대로 |
+| 그 밖(바이트/초) | 2,928 | 2,861 | -67 |
+| 초당 패킷 수 | 35.49 | 30.46 | -14.2% |
+
+- 식은 2.1절과 같다. "그 밖"은 연결당 송신량에서 인벤토리, NPC, 플레이어 캐릭터를 뺀 값이다.
+- 연결당 송신량이 준 몫의 98.6%가 인벤토리다(3,974 ÷ 4,032).
+- 적용 후 `LabInventoryComponent` 22번은 자기 인벤토리가 바뀐 15번과 채집 7번이다. `ItemId` 3,000은 15번 × 200칸이다. 소유자는 여전히 바뀔 때마다 200칸을 받는다.
+- 패킷 수가 준 것은 인벤토리 한 번(18,190비트)이 한 패킷(최대 약 7,630비트의 `Actor` 줄)에 다 들어가지 않아 여러 패킷으로 나뉘어 갔기 때문으로 보인다. 아래 캡처에서 그 덩어리가 `PartialInitial` 묶음으로 실린다.
+
+### 10.1 패킷 그래프 (약 120패킷, 약 3.5초)
+
+- 적용 전([images/act2-invown-base1-r2-packets-zoom.png](images/act2-invown-base1-r2-packets-zoom.png), 패킷 2,736\~2,858): 약 7,600비트짜리 패킷이 약 18패킷(약 0.5초)마다 몰려 나온다. 그 하나(Find Packet 16,384)를 고르면 `Actor ChannelId:18 | PartialInitial` 안에 다른 플레이어 캐릭터(NetId 1510)의 `LabInventoryComponent` 18,190비트, `ItemId` 200개와 `Count` 198개가 있다.
+- 적용 후([images/act2-invown1-r2-packets-zoom.png](images/act2-invown1-r2-packets-zoom.png), 패킷 2,032\~2,156): 같은 폭에서 큰 패킷이 한 번 나온다. 그 하나(17,626)는 자기 캐릭터의 채널(`ChannelId:4`)이고 같은 18,190비트다.
+- 전체 구간 그래프에서도 적용 후에는 큰 패킷이 약 4초 간격으로만 보인다.
+
+## 11. Timing Insights (중앙값 실행, 프레임당 ms)
+
+`Saved/InsightsExport/act2-invown-base1-r2/summary.txt`, `Saved/InsightsExport/act2-invown1-r2/summary.txt`다. 프레임 수는 `WorldTick` Count가 CSV `frames`와 같았다.
+
+| 타이머 | 적용 전 | 적용 후 |
+| --- | ---: | ---: |
+| 서버 프레임 시간 평균 / P99 | 8.835 / 13.671 | 8.774 / 13.206 |
+| `GameNetDriver` Incl / Excl | 3.908 / 2.347 | 3.885 / 2.370 |
+| `LabCharacter`(횟수, Incl) | 49.2번, 0.537 | 49.3번, 0.480 |
+| `LabNpc`(횟수, Incl) | 114.5번, 0.844 | 114.4번, 0.852 |
+
+- `LabCharacter`는 0.057ms(-10.6%) 줄었다. 인벤토리를 다른 연결에 직렬화하지 않은 몫으로 보인다. 실행 하나끼리의 값이라 변동 폭은 모른다.
+- 서버 프레임 시간과 `GameNetDriver` Incl의 차이는 0.1ms 아래다. CSV에서도 구별하지 못했다(9절).
+
+## 12. 시각 자료
+
+- 인벤토리 패널(`-InventoryPanelSlot 2`, 커밋 `92dc93e`): 2번 클라이언트(3인칭 이동) 화면 왼쪽 아래에 자기 인벤토리와 다른 플레이어 일곱의 칸 격자를 그린다. 칸 색은 아이템 번호, 이 클라이언트에서 값이 바뀐 칸은 0.4초 흰색, 받지 못한 칸은 회색이다.
+- `visual14`(적용 전 구성)과 `visual15`(적용 후)에서 측정 구간에 10초씩 찍었다([images/inventory-panel-before.gif](images/inventory-panel-before.gif), [images/inventory-panel-after.gif](images/inventory-panel-after.gif)). 적용 전에는 다른 플레이어의 격자가 모두 차 있고 하나씩 통째로 번쩍인다. 적용 후에는 "other players: 0 of 7 received"이고 일곱 격자가 회색이다. 자기 격자는 두 영상 모두 바뀔 때 200칸이 통째로 번쩍인다. 두 실행의 수치는 쓰지 않는다.
+- 자동 스크린샷의 화면 글자: 0번 클라이언트(t=30초)의 `other items`가 적용 전 1400, 적용 후 0이다(`act2-invown1-r2-tpp-01`).
+
+## 13. 에이전트 의견
+
+- **예상한 만큼 줄었다.** 연결당 송신량이 25.4% 줄었고(CSV 25.3%), 그 거의 전부가 인벤토리다. 다른 클래스의 바이트는 그대로다.
+- **서버 프레임 시간은 줄지 않았다.** 비교는 객체마다 한 번 하므로 그대로이고, 줄어든 것은 연결마다의 직렬화(`LabCharacter` -0.057ms)뿐이다. 본문의 "결과"는 연결당 송신 대역폭과 초당 패킷 수를 중심으로, 서버 프레임 시간은 "구별하지 못했다"로 쓰는 것이 맞다고 본다.
+- **포스팅 10으로 넘어가는 근거가 화면에 있다.** 적용 후에도 자기 격자는 바뀔 때마다 200칸이 통째로 번쩍이고, Networking Insights에서도 한 번에 18,190비트다.
+
+## 14. 확인하지 않은 것
+
+- 0번이 아닌 연결의 값. 모든 연결이 여덟 인벤토리를 받으므로 같다고 보았다.
+- 초당 패킷 수가 준 까닭이 인벤토리의 큰 묶음이 여러 패킷으로 나뉘었기 때문인지(패킷 하나씩 세지 않았다).
+- `LabCharacter` 타이머 차이의 변동 폭(세 실행을 모두 내보내지 않았다).
