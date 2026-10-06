@@ -283,7 +283,7 @@
 
 결론: `run-scenario.ps1 -StatNamedEvents`로 잰 트레이스는 `export-insights.ps1`이 서버 로그의 명령줄을 보고 알아서 `GameNetDriver`를 뿌리로 내보내고, `GameNetDriver`와 `TickCompletionEvents` 아래 트리를 요약에 적는다. 이 실행의 수치는 이벤트가 더 기록되므로 다른 실행과 비교하지 않는다. 클래스별 값을 기본 트레이스와 같은 방식으로 읽으려면 `Replicate Actor Time` 아래를 본다. 평탄한 타이머 통계(`stats.csv`)의 클래스 타이머는 리플리케이션과 액터 틱(`LabNpc`는 둘 다 있다)이 섞인 값이다.
 
-## 10. 리플리케이션 조건과 FastArray (2026-10-06, 태스크 26)
+## 10. 리플리케이션 조건과 FastArray (2026-10-06, 태스크 26, 27)
 
 5.8.3 소스에서 읽었고, 조건은 실행으로도 확인했다. 쓰이는 곳은 [포스팅 9](../../Posts/09-inventory-owner-only/README.md)와 포스팅 10(FastArray)이다. 자세한 위치는 [포스팅 9 관찰 자료](../../Posts/09-inventory-owner-only/candidates.md) 4절에 있다.
 
@@ -296,6 +296,10 @@
 | FastArray는 칸마다 `ReplicationID`와 `ReplicationKey`를 두고, 연결마다 지난번에 보낸 표와 비교해 키가 바뀐 칸과 없어진 번호만 보낸다. 배열 키가 그대로면 칸을 보지 않는다 | `Engine/Source/Runtime/Net/Core/Classes/Net/Serialization/FastArraySerializer.h:298-332`, `819-853`, `896-975` |
 | FastArray의 칸 안 델타 직렬화는 생성자 기본값이 꺼짐이다(`SetDeltaSerializationEnabled`로 켠다). 헤더 주석은 기본으로 켜져 있다고 적었지만 생성자는 `None`이다 | `FastArraySerializer.h:220, 549-566`, `Net/Core/Private/Net/Serialization/FastArraySerializer.cpp:33` |
 | FastArray의 클라이언트는 지운 칸을 `RemoveAtSwap`으로 지운다. 클라이언트의 칸 순서가 서버와 달라진다 | `FastArraySerializer.h:1193` |
+| FastArray의 클라이언트는 처음 보는 번호의 칸을 배열 맨 뒤에 더하고, 지우기는 마지막에 한다. 맨 앞 칸을 지우고 맨 뒤에 더하면 새 칸이 지운 칸의 자리로 옮겨 와, 클라이언트에서는 새 칸이 앞에서부터 차례로 들어간다 | `FastArraySerializer.h:1524`(`AddDefaulted_GetRef`), `1186-1197`. 실행: `tsmall-fastarr-all1-r1`의 인벤토리 패널에서 맨 윗줄의 한 칸만 번쩍였다 |
+| FastArray 같은 사용자 정의 델타 프로퍼티는 객체마다 하는 비교에 들어가지 않는다. 연결마다 리플리케이트할 때 `ReplicateCustomDeltaProperties`가 조건을 확인하고 보낼지 정한다 | `RepLayout.cpp:5848-5855`(`IsCustomDelta`), `6318-6321`, `1424-1431`, `DataReplication.cpp:1646, 1719` |
+| FastArray는 바뀌었을 때만 쓴다. 앞 칸을 지운 한 번은 바뀐 칸 하나와 지운 번호 하나다 | 실행: `tsmall-fastarr-on2-r1`의 서버 로그(`LogNetFastTArray Log`)에 `NumChange: 1. NumDel: 1` 100줄, 채집 6줄, 처음 200칸 8줄뿐이다 |
+| `FFastArraySerializer`를 쓰는 모듈은 `NetCore`에 의존해야 한다. 빠지면 `FFastArraySerializer` 생성자 등에서 링크 오류가 난다 | `Net/Core/Classes/Net/Serialization/FastArraySerializer.h`(`NETCORE_API`). 2026-10-06 빌드 |
 
 ## 11. 계획 초안의 코드에서 바꾼 것 요약
 
