@@ -9,6 +9,7 @@
 :root {
 	--bg: #0d1117; --card: #151b24; --line: #2b3442; --text: #e6edf3; --muted: #9aa7b5;
 	--green: #3fb950; --kept: #2f8f6f; --red: #ff6b61; --amber: #f0b429; --off: #465061; --blue: #58a6ff;
+	--orange: #f78c3c; --orange-kept: #9c5a2a;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text); }
@@ -20,14 +21,22 @@ h2 { font-size: 17px; margin: 0 0 4px; }
 p { margin: 0 0 10px; }
 .lead { max-width: 720px; margin-bottom: 4px; }
 .source { color: var(--muted); font-size: 13px; }
-.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 22px 0 10px; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0; }
+.acts button {
+	font: inherit; color: var(--text); background: transparent; border: 1px solid var(--line); border-radius: 999px;
+	padding: 6px 16px; cursor: pointer;
+}
+.acts button small { color: var(--muted); margin-left: 6px; }
+.acts button[aria-pressed="true"] { background: var(--card); border-color: var(--blue); }
+.actnote { color: var(--muted); font-size: 13px; margin: 8px 0 0; max-width: 820px; }
+.steps { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 8px; margin: 14px 0 10px; }
 .steps button {
 	font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-	padding: 10px 12px; text-align: left; cursor: pointer;
+	padding: 10px 12px; text-align: left; cursor: pointer; min-width: 0;
 }
 .steps button small { display: block; color: var(--muted); font-size: 12px; }
 .steps button[aria-pressed="true"] { border-color: var(--amber); background: #221d10; }
-.steps button:focus-visible, .speed button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.steps button:focus-visible, .speed button:focus-visible, .acts button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .steps button .no { color: var(--amber); font-weight: 700; }
 .result { display: grid; grid-template-columns: 1.3fr 1fr auto; gap: 14px 22px; align-items: center; margin-bottom: 14px; }
 .result .what p { margin: 0 0 8px; }
@@ -59,7 +68,8 @@ canvas { display: block; width: 100%; border-radius: 8px; background: #10151c; }
 .row .bar span { display: block; height: 100%; width: 0; background: var(--blue); border-radius: 4px; transition: width .25s; }
 .row.work .bar span { background: var(--amber); }
 .row .meas { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.row .meas:empty { display: none; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-top: 10px; }
 .stat { background: #10151c; border-radius: 8px; padding: 8px 10px; }
 .stat span { display: block; font-size: 12px; color: var(--muted); }
 .stat b { font-size: 18px; font-variant-numeric: tabular-nums; }
@@ -72,12 +82,16 @@ canvas { display: block; width: 100%; border-radius: 8px; background: #10151c; }
 .budget span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--red); border-radius: 5px; transition: width .25s; }
 .budget span.ok { background: var(--green); }
 .budget em { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); }
-.speed { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); margin-top: 14px; }
+.speed { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); margin-top: 14px; }
 .speed button { font: inherit; font-size: 13px; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
 .speed button[aria-pressed="true"] { border-color: var(--amber); }
 footer { margin-top: 22px; color: var(--muted); font-size: 13px; }
 footer ul { margin: 6px 0 0; padding-left: 18px; }
 .wide { grid-column: 1 / -1; }
+[hidden] { display: none !important; }
+@media (max-width: 1000px) {
+	.steps { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
 @media (max-width: 820px) {
 	.grid { grid-template-columns: 1fr; }
 	.steps { grid-template-columns: 1fr 1fr; }
@@ -92,6 +106,8 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 	<p class="lead">최적화가 없는 서버에서 시작해 기법을 하나씩 켠다. 단계마다 서버의 일이 얼마나 줄어드는지 지도와 숫자로 볼 수 있다.</p>
 	<p class="source"><a href="https://github.com/hon454/ue-dedicated-server-optimization-lab">UE5 Dedicated Server 최적화 실험실</a>의 측정을 바탕으로 만들었다.</p>
 
+	<div class="acts" id="acts" role="group" aria-label="테스트베드"></div>
+	<p class="actnote" id="actNote"></p>
 	<div class="steps" id="steps" role="group" aria-label="최적화 단계"></div>
 	<section class="card result" aria-live="polite">
 		<div class="what">
@@ -111,12 +127,14 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 	<div class="grid">
 		<section class="card">
 			<h2>서버가 보는 지도</h2>
-			<div class="sub">맵 2km × 2km, 클라이언트 8개, 자원 노드 5,001개, NPC 300명</div>
+			<div class="sub" id="mapSub"></div>
 			<canvas id="serverMap" width="600" height="600" aria-label="서버가 각 클라이언트에게 보내는 액터를 표시한 지도"></canvas>
 			<div class="legend">
 				<span><i style="background:var(--green)"></i>채널이 열린 자원 노드</span>
 				<span><i style="background:var(--kept)"></i>채널 없이 클라이언트에 남은 자원 노드</span>
 				<span><i style="background:var(--red)"></i>채널이 열린 NPC</span>
+				<span data-act="2"><i style="background:var(--orange)"></i>채널이 열린 건축물</span>
+				<span data-act="2"><i style="background:var(--orange-kept)"></i>채널 없이 클라이언트에 남은 건축물</span>
 				<span><i style="background:var(--off)"></i>아무에게도 보내지 않는 액터</span>
 				<span><i style="background:#fff"></i>플레이어와 150m 원</span>
 			</div>
@@ -141,6 +159,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 			<div class="stats">
 				<div class="stat"><span>자원 노드</span><b id="cNodes">0</b></div>
 				<div class="stat"><span>NPC</span><b id="cNpcs">0</b></div>
+				<div class="stat" data-act="2"><span>건축물</span><b id="cBuildings">0</b></div>
 				<div class="stat"><span>열린 액터 채널</span><b id="cChans">0</b></div>
 			</div>
 		</section>
@@ -158,16 +177,28 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 			<div class="sub">같은 시나리오를 세 번 실행한 중앙값이다.</div>
 			<div class="measured" id="measured"></div>
 		</section>
+
+		<section class="card wide" data-act="2">
+			<h2>인벤토리 한 번이 가는 길</h2>
+			<div class="sub">플레이어 여덟 명의 인벤토리 200칸이다. 서버는 0.5초마다 한 사람의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다. 흰 칸은 그 변경으로 연결에 보내는 칸이고, 아래 칸은 그것을 받는 연결이다.</div>
+			<canvas id="invCanvas" width="1000" height="340" aria-label="플레이어 여덟 명의 인벤토리와 변경을 받는 연결"></canvas>
+			<div class="stats">
+				<div class="stat"><span>바뀐 인벤토리를 받는 연결</span><b id="iConns">0</b></div>
+				<div class="stat"><span>연결 하나에 보내는 칸</span><b id="iCells">0</b></div>
+				<div class="stat"><span>한 번의 최대 크기(측정)</span><b id="iBits">-</b></div>
+				<div class="stat"><span>인벤토리 송신량(연결 하나, 측정)</span><b id="iRate">-</b></div>
+			</div>
+		</section>
 	</div>
 
 	<footer>
 		<strong>이 페이지의 숫자를 읽는 법</strong>
 		<ul>
 			<li>"측정"이라고 적힌 값만 실제 서버에서 측정했다. 근거는 각 글의 측정 기록에 있다.</li>
-			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 2단계의 적용 후 값과 3단계의 적용 전 값이 조금 다르다.</li>
+			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 한 단계의 적용 후 값과 다음 단계의 적용 전 값이 조금 다르다. 2막의 루트 README는 일곱 구성을 하루에 연달아 잰 다른 묶음이라 값이 다르다.</li>
 			<li>지도와 흐름의 숫자는 이 브라우저에서 도는 모형이 센 값이다. 모형은 엔진의 기본 리플리케이션 순서를 따른다.</li>
-			<li>맵 크기, 액터 수, 플레이어의 자리와 경로, 150m는 실제 값이다. 자원 노드와 NPC의 위치는 예시다.</li>
-			<li>모형은 서버 프레임 간격을 측정값에서 가져온다. 기준선의 서버는 30Hz를 지키지 못해서 지도가 느리게 움직인다.</li>
+			<li>맵 크기, 액터 수, 플레이어의 자리와 경로, 150m는 실제 값이다. 자원 노드와 NPC, 건축물의 위치는 예시다.</li>
+			<li>모형은 서버 프레임 간격을 측정값에서 가져온다. 틱 예산을 넘는 단계의 서버는 30Hz를 지키지 못해서 지도가 느리게 움직인다.</li>
 			<li>모형은 플레이어 같은 다른 액터, 우선순위 정렬, 패킷 조립을 다루지 않는다.</li>
 		</ul>
 	</footer>
@@ -176,44 +207,109 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 <script>
 'use strict';
 // 엔진의 레거시 리플리케이션(UNetDriver::ServerReplicateActors)의 순서를 따르는 개념 모형이다.
-// 실제 값: 맵, 액터 수, 플레이어 자리와 경로, Net Cull Distance 150m, 서버 틱, Net Update Frequency의 스케줄링 식.
-// 예시 값: 자원 노드와 NPC의 위치, NPC의 배회 경로.
+// 실제 값: 맵, 액터 수, 플레이어 자리와 경로, Net Cull Distance 150m, 서버 틱, Net Update Frequency의 스케줄링 식,
+//          2막의 무리 중심과 건축물, 주변 NPC가 놓이는 반지름.
+// 예시 값: 자원 노드, NPC, 건축물의 위치, NPC의 배회 경로, 인벤토리의 아이템.
 
 const REPO = 'https://github.com/hon454/ue-dedicated-server-optimization-lab/blob/main/';
 // 단계마다 그 글이 비교한 두 묶음의 측정값을 쓴다(before는 적용 전, m은 적용 후). 다른 날 잰 묶음끼리는 비교하지 않는다.
 // indistinct는 변화가 실행 사이의 변동 폭보다 작아 구별되지 않은 지표다.
-const STEPS = [
+const STEPS1 = [
 	{ name: '기준선', hint: '모든 액터를 모두에게', post: 'Posts/01-baseline/README.md',
 		desc: '엔진의 거리 판정을 일부러 끈 서버다. 서버는 모든 액터를 모든 클라이언트에게 보낸다.',
 		code: 'bAlwaysRelevant = true;',
 		alwaysRelevant: true, dormancy: false, npcFreq: 100, tick: 0.198,
-		m: { frame: 198.43, repl: 188.97, bw: 28048, chan: 5314, nodes: 5001 }, workMeasured: '42,408' },
+		m: { frame: 198.43, repl: 188.97, bw: 28048, chan: 5314, nodes: 5001 }, flowMeasured: { work: '42,408' } },
 	{ name: 'Relevancy', hint: '150m 안의 액터만', post: 'Posts/02-relevancy/README.md',
 		desc: '서버가 150m보다 먼 액터를 보내지 않는다. 값싼 거리 검사가 비싼 처리를 걸러 낸다.',
 		code: 'bAlwaysRelevant = true; 삭제',
 		alwaysRelevant: false, dormancy: false, npcFreq: 100, tick: 1 / 30,
 		before: { frame: 198.43, repl: 188.97, bw: 28048, chan: 5314, nodes: 5001 }, indistinct: [],
-		m: { frame: 17.64, repl: 13.14, bw: 2897, chan: 118, nodes: 114 }, workMeasured: '647~821' },
+		m: { frame: 17.64, repl: 13.14, bw: 2897, chan: 118, nodes: 114 }, flowMeasured: { work: '647~821' } },
 	{ name: 'Dormancy', hint: '바뀌지 않는 액터를 재운다', post: 'Posts/03-dormancy/README.md',
 		desc: '서버가 자원 노드를 Dormant 상태로 재워 둔다. 채널을 닫고 프로퍼티 비교를 건너뛴다.',
 		code: 'NetDormancy = DORM_DormantAll;',
 		alwaysRelevant: false, dormancy: true, npcFreq: 100, tick: 1 / 30,
 		before: { frame: 17.64, repl: 13.14, bw: 2897, chan: 118, nodes: 114 }, indistinct: ['bw'],
-		m: { frame: 14.69, repl: 10.17, bw: 2772, chan: 20, nodes: 301 }, workMeasured: '약 44' },
+		m: { frame: 14.69, repl: 10.17, bw: 2772, chan: 20, nodes: 301 }, flowMeasured: { work: '약 44' } },
 	{ name: 'Net Update Frequency', hint: 'NPC를 덜 자주 고려한다', post: 'Posts/04-update-frequency/README.md',
 		desc: '서버가 NPC를 고려하는 간격을 늘린다. 대역폭이 줄고 NPC는 끊겨 움직인다.',
 		code: 'SetNetUpdateFrequency(10.f);',
 		alwaysRelevant: false, dormancy: true, npcFreq: 10, tick: 1 / 30,
 		before: { frame: 13.60, repl: 9.35, bw: 2793, chan: 20, nodes: 301 }, indistinct: ['frame'], remeasured: true,
-		m: { frame: 13.16, repl: 8.73, bw: 1303, chan: 20, nodes: 301 }, workMeasured: '약 14' },
+		m: { frame: 13.16, repl: 8.73, bw: 1303, chan: 20, nodes: 301 }, flowMeasured: { work: '약 14' } },
+];
+const STEPS2 = [
+	{ name: '기준선', hint: '모든 액터를 모두에게', post: 'Posts/05-expanded-testbed/README.md',
+		desc: '플레이어 여덟 명이 모여 있고 곁에 건축물 500개와 NPC 50명이 더 있다. 서버는 모든 액터를 모든 클라이언트에게 보낸다.',
+		code: 'bAlwaysRelevant = true;',
+		alwaysRelevant: true, dormancy: false, npcFreq: 100, nodeFreq: 100, inv: 'all', tick: 0.214,
+		m: { frame: 213.713, repl: 204.327, bw: 36449, chan: 5871 } },
+	{ name: '① 거리 판정', short: '거리 판정', hint: '150m 안의 액터만', post: 'Posts/06-three-techniques-again/README.md',
+		desc: '서버가 150m보다 먼 액터를 보내지 않는다. 플레이어 곁의 건축물 500개는 모두 150m 안이라 그대로 남는다.',
+		code: 'bAlwaysRelevant = true; 삭제',
+		alwaysRelevant: false, dormancy: false, npcFreq: 100, nodeFreq: 100, inv: 'all', tick: 0.0359,
+		before: { frame: 213.713, repl: 204.327, bw: 36449, chan: 5871 }, indistinct: [],
+		m: { frame: 35.904, repl: 30.934, bw: 30055, chan: 695 } },
+	{ name: '② Dormant 상태', short: 'Dormant 상태', hint: '바뀌지 않는 액터를 재운다', post: 'Posts/06-three-techniques-again/README.md',
+		desc: '서버가 자원 노드와 건축물을 Dormant 상태로 둔다. 무리에서 먼 자원 노드는 채널이 열린 적이 없어 Dormant 상태가 되지 못한다.',
+		code: 'NetDormancy = DORM_DormantAll;',
+		alwaysRelevant: false, dormancy: true, npcFreq: 100, nodeFreq: 100, inv: 'all', tick: 1 / 30,
+		before: { frame: 35.904, repl: 30.934, bw: 30055, chan: 695 }, indistinct: ['bw'],
+		m: { frame: 19.814, repl: 14.744, bw: 30254, chan: 77 } },
+	{ name: '③ NPC 업데이트 빈도', short: 'NPC 업데이트 빈도', hint: 'NPC를 덜 자주 고려한다', post: 'Posts/06-three-techniques-again/README.md',
+		desc: '서버가 NPC를 고려하는 간격을 늘린다. 대역폭이 절반 가까이 준다.',
+		code: 'SetNetUpdateFrequency(10.f);',
+		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 100, inv: 'all', tick: 1 / 30,
+		before: { frame: 19.814, repl: 14.744, bw: 30254, chan: 77 }, indistinct: ['frame', 'repl'],
+		m: { frame: 17.022, repl: 11.967, bw: 15926, chan: 77 }, flowMeasured: { active: '5,272', considered: '3,887' } },
+	{ name: '④ 자원 노드 업데이트 빈도', short: '자원 노드 빈도', hint: '먼 자원 노드를 드물게 따진다', post: 'Posts/08-node-update-frequency/README.md',
+		desc: '서버가 자원 노드를 고려하는 간격을 0.5초로 늘린다. 활성 목록에 남은 먼 자원 노드가 16프레임에 한 번만 Consider List에 든다.',
+		code: 'SetNetUpdateFrequency(2.f);',
+		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'all', tick: 1 / 30,
+		before: { frame: 18.347, repl: 13.339, bw: 16611, chan: 77, consider: 3887 }, indistinct: ['bw'], remeasured: true,
+		m: { frame: 8.895, repl: 3.929, bw: 16570, chan: 77, consider: 413 }, flowMeasured: { active: '5,271', considered: '413' } },
+	{ name: '⑤ 인벤토리를 소유자에게만', short: '소유자에게만', hint: '인벤토리는 주인만 받는다', post: 'Posts/09-inventory-owner-only/README.md',
+		desc: '서버가 인벤토리를 그 캐릭터를 조종하는 플레이어의 연결에만 보낸다. 다른 일곱 연결은 받지 않는다.',
+		code: 'Params.Condition = COND_OwnerOnly;',
+		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'owner', tick: 1 / 30,
+		before: { frame: 8.835, repl: 3.908, bw: 15864, chan: 77, invRate: 4545 }, indistinct: ['frame', 'repl'], remeasured: true,
+		m: { frame: 8.774, repl: 3.885, bw: 11832, chan: 77, invRate: 571 }, flowMeasured: { active: '5,272', considered: '413' } },
+	{ name: '⑥ 인벤토리 FastArray', short: '인벤토리 FastArray', hint: '바뀐 칸만 보낸다', post: 'Posts/10-inventory-fastarray/README.md',
+		desc: '서버가 인벤토리의 칸에 번호를 붙이고 연결마다 번호로 비교한다. 앞 칸을 지워도 당겨진 칸은 보내지 않는다.',
+		code: 'struct FLabFastItemArray : FFastArraySerializer',
+		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'fast', tick: 1 / 30,
+		before: { frame: 9.133, repl: 4.112, bw: 11827, chan: 77, invRate: 571, invBits: 18190 }, indistinct: ['frame'], remeasured: true,
+		m: { frame: 8.866, repl: 3.933, bw: 11241, chan: 77, invRate: 14.8, invBits: 345 }, flowMeasured: { active: '5,272', considered: '413' } },
+];
+const SHOW = {
+	repl: ['리플리케이션 시간', v => `${v.toFixed(2)}ms`],
+	bw: ['연결당 송신 대역폭', v => `${v.toLocaleString('ko-KR')}바이트/초`],
+	chan: ['연결당 열린 액터 채널 수', v => v.toLocaleString('ko-KR')],
+	nodes: ['클라이언트에 존재하는 자원 노드', v => `${v.toLocaleString('ko-KR')}개`],
+	consider: ['Consider List 길이', v => `${v.toLocaleString('ko-KR')}개/프레임`],
+	invRate: ['인벤토리 송신량(연결 하나)', v => `${v.toLocaleString('ko-KR')}바이트/초`],
+	invBits: ['인벤토리 한 번의 최대 크기', v => `${v.toLocaleString('ko-KR')}비트`],
+};
+const ACTS = [
+	{ name: '1막', sub: '흩어진 플레이어', steps: STEPS1, nNode: 5001, nNpcMap: 300, nNpcNear: 0, nBuild: 0, cluster: false,
+		mapSub: '맵 2km × 2km, 클라이언트 8개, 자원 노드 5,001개, NPC 300명',
+		note: '플레이어 여덟 명이 반지름 500m 원 위에 흩어져 각자 한 변 100m 정사각형을 돈다. 포스팅 1~4의 테스트베드다.' },
+	{ name: '2막', sub: '모인 플레이어', steps: STEPS2, nNode: 5001, nNpcMap: 300, nNpcNear: 50, nBuild: 500, cluster: true,
+		mapSub: '맵 2km × 2km, 클라이언트 8개, 자원 노드 5,001개, NPC 350명, 건축물 500개',
+		note: '플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 한 변 70m 정사각형을 돈다. 곁에 건축물 500개가 있고 1초마다 하나를 새로 짓는다. 포스팅 5~10의 테스트베드다.' },
 ];
 const TICK_BUDGET = 33.3;
 
 // 월드의 고정 치수(m).
 const HALF = 950, CULL = 150, CULL2 = CULL * CULL, RELEVANT_TIMEOUT = 5;
-const N_CONN = 8, N_NODE = 5001, N_NPC = 300, N = N_NODE + N_NPC;
+const N_CONN = 8;
 const SERVER_TICK = 1 / 30;   // RandDelay의 상한. 실제 프레임 간격과 상관없이 1 ÷ NetServerMaxTickRate다.
 const VIEW = 1;               // 클라이언트 화면으로 보여 주는 연결(걸어 다니는 1번).
+// 2막의 배치(LabGameMode.cpp의 GetSlotLocation, BuildPlayerClusters, LabGameMode.h, LabPlayerController.h).
+const SPACING_STEP = 3 / Math.SQRT2, ROUTE_SIDE = 70, CLUSTER_X = 35, CLUSTER_Y = 35;
+const BUILD_RADIUS = 80, BUILD_ROUTE_CLEARANCE = 6, NPC_NEAR_RADIUS = 40, NPC_WANDER = 30;
+const INV_ITEMS = 200, INV_CHURN = 4 / N_CONN, BUILD_INTERVAL = 1;
 
 function mulberry32(seed) {
 	return function () {
@@ -223,58 +319,122 @@ function mulberry32(seed) {
 		return ((t ^ t >>> 14) >>> 0) / 4294967296;
 	};
 }
-const rand = mulberry32(20261003);
 
-// 액터: 앞의 N_NODE개가 자원 노드, 뒤의 N_NPC개가 NPC다.
-const ax = new Float32Array(N), ay = new Float32Array(N);
-const nextUpdate = new Float64Array(N);
-const version = new Uint16Array(N).fill(1);      // 자원 노드의 상태가 바뀌면 오른다.
-const heading = new Float32Array(N_NPC), turnAt = new Float32Array(N_NPC);
-const chanCount = new Uint8Array(N), existCount = new Uint8Array(N);
-
-// 연결(클라이언트)마다의 상태.
-const conn = [];
-for (let c = 0; c < N_CONN; c++) {
-	conn.push({
-		homeX: Math.cos(2 * Math.PI * c / 16) * 500, homeY: Math.sin(2 * Math.PI * c / 16) * 500, x: 0, y: 0,
-		chan: new Uint8Array(N), dormant: new Uint8Array(N), exists: new Uint8Array(N),
-		lastRelevant: new Float32Array(N), sent: new Uint16Array(N),
-	});
-}
-const rxX = new Float32Array(N_NPC), rxY = new Float32Array(N_NPC);   // VIEW 연결이 받은 NPC의 위치
-
-// 0번 자원 노드는 0번 플레이어가 채집하는 검증용 노드다.
-ax[0] = conn[0].homeX + 3; ay[0] = conn[0].homeY;
-for (let i = 1; i < N_NODE; i++) { ax[i] = (rand() * 2 - 1) * HALF; ay[i] = (rand() * 2 - 1) * HALF; }
-for (let i = 0; i < N_NPC; i++) {
-	ax[N_NODE + i] = (rand() * 2 - 1) * HALF; ay[N_NODE + i] = (rand() * 2 - 1) * HALF;
-	heading[i] = rand() * Math.PI * 2; turnAt[i] = rand() * 4;
-}
-
-// 왕복하는 NPC 하나. 흐름의 숫자에는 넣지 않는다.
-const showcase = { server: 0, client: 0, next: 0, lastSend: 0, gaps: [] };
-
-let step = 0, time = 0, depleted = false;
+// ---- 월드 상태(막을 바꾸면 새로 만든다) ----
+let act, STEPS, rand, N_NODE, N_NPC, N_BUILD, NPC0, BUILD0, N;
+let ax, ay, nextUpdate, version, chanCount, existCount, dormCount, considered;
+let heading, turnAt, homeX, homeY, tgtX, tgtY, rxX, rxY;
+let conn, showcase, inv;
+let step = 0, time = 0, depleted = false, nextRebuild = 0, rebuildIndex = 0;
 let speed = 1, accumulator = 0;
-const considered = new Int32Array(N);
-const HISTORY = 30;
-const history = [];   // 최근 프레임의 횟수
+// 빈도 2인 자원 노드는 16프레임마다 몰려서 고려되므로, 16의 배수만큼 평균한다.
+const HISTORY = 96;
+const history = [];
+
+const isNode = a => a < NPC0, isNpc = a => a >= NPC0 && a < BUILD0, isBuilding = a => a >= BUILD0;
+
+function slotHome(c) {
+	if (!act.cluster) return [Math.cos(2 * Math.PI * c / 16) * 500, Math.sin(2 * Math.PI * c / 16) * 500];
+	const offset = (c - 0.5 * (N_CONN - 1)) * SPACING_STEP;
+	return [offset, offset];
+}
+
+function corner(k) { k &= 3; return [k === 1 || k === 2 ? ROUTE_SIDE : 0, k >= 2 ? ROUTE_SIDE : 0]; }
+
+function distanceToRoute(x, y, ox, oy) {
+	const X = x - ox, Y = y - oy, S = ROUTE_SIDE;
+	const outX = Math.max(-X, 0, X - S), outY = Math.max(-Y, 0, Y - S);
+	if (outX > 0 || outY > 0) return Math.hypot(outX, outY);
+	return Math.min(X, S - X, Y, S - Y);
+}
+
+function placeBuilding(a) {
+	for (let attempt = 0; attempt < 100; attempt++) {
+		const d = BUILD_RADIUS * Math.sqrt(rand()), t = 2 * Math.PI * rand();
+		ax[a] = CLUSTER_X + Math.cos(t) * d; ay[a] = CLUSTER_Y + Math.sin(t) * d;
+		if (!conn.some(p => distanceToRoute(ax[a], ay[a], p.homeX, p.homeY) < BUILD_ROUTE_CLEARANCE)) break;
+	}
+}
+
+function pickNpcTarget(i) {
+	tgtX[i] = homeX[i] + (rand() * 2 - 1) * NPC_WANDER; tgtY[i] = homeY[i] + (rand() * 2 - 1) * NPC_WANDER;
+}
+
+function buildWorld(index) {
+	act = ACTS[index]; STEPS = act.steps;
+	rand = mulberry32(20261003);
+	N_NODE = act.nNode; N_NPC = act.nNpcMap + act.nNpcNear; N_BUILD = act.nBuild;
+	NPC0 = N_NODE; BUILD0 = N_NODE + N_NPC; N = BUILD0 + N_BUILD;
+	ax = new Float32Array(N); ay = new Float32Array(N);
+	nextUpdate = new Float64Array(N);
+	version = new Uint16Array(N).fill(1);        // 상태가 바뀌면 오른다(자원 노드, 건축물).
+	chanCount = new Uint8Array(N); existCount = new Uint8Array(N); dormCount = new Uint8Array(N);
+	considered = new Int32Array(N);
+	heading = new Float32Array(N_NPC); turnAt = new Float32Array(N_NPC);
+	homeX = new Float32Array(N_NPC); homeY = new Float32Array(N_NPC); tgtX = new Float32Array(N_NPC); tgtY = new Float32Array(N_NPC);
+	rxX = new Float32Array(N_NPC); rxY = new Float32Array(N_NPC);   // VIEW 연결이 받은 NPC의 위치
+
+	conn = [];
+	for (let c = 0; c < N_CONN; c++) {
+		const [hx, hy] = slotHome(c);
+		// 2막: 짝수 자리는 꼭짓점에서 정방향, 홀수 자리는 변의 가운데에서 반대 방향으로 출발한다(LabGameMode.cpp의 PlaceAndStart).
+		const quarter = (c >> 1) % 4, reverse = act.cluster && c % 2 === 1;
+		const start = act.cluster ? ROUTE_SIDE * quarter + (reverse ? ROUTE_SIDE / 2 : 0) : 0;
+		conn.push({
+			homeX: hx, homeY: hy, x: hx, y: hy, start, reverse,
+			chan: new Uint8Array(N), dormant: new Uint8Array(N), exists: new Uint8Array(N),
+			lastRelevant: new Float32Array(N), sent: new Uint16Array(N),
+		});
+	}
+
+	// 0번 자원 노드는 0번 플레이어가 채집하는 검증용 노드다.
+	ax[0] = conn[0].homeX + 3; ay[0] = conn[0].homeY;
+	for (let i = 1; i < N_NODE; i++) { ax[i] = (rand() * 2 - 1) * HALF; ay[i] = (rand() * 2 - 1) * HALF; }
+	for (let i = 0; i < N_NPC; i++) {
+		const a = NPC0 + i;
+		if (i < act.nNpcMap) { ax[a] = (rand() * 2 - 1) * HALF; ay[a] = (rand() * 2 - 1) * HALF; }
+		else { const d = NPC_NEAR_RADIUS * Math.sqrt(rand()), t = 2 * Math.PI * rand(); ax[a] = CLUSTER_X + Math.cos(t) * d; ay[a] = CLUSTER_Y + Math.sin(t) * d; }
+		homeX[i] = ax[a]; homeY[i] = ay[a]; pickNpcTarget(i);
+		heading[i] = rand() * Math.PI * 2; turnAt[i] = rand() * 4;
+	}
+	for (let a = BUILD0; a < N; a++) placeBuilding(a);
+
+	// 왕복하는 NPC 하나. 흐름의 숫자에는 넣지 않는다.
+	showcase = { server: 0, client: 0, next: 0, lastSend: 0, gaps: [] };
+	inv = act.cluster ? {
+		items: Array.from({ length: N_CONN }, () => Array.from({ length: INV_ITEMS }, () => Math.floor(rand() * 1000))),
+		flash: Array.from({ length: N_CONN }, () => new Float32Array(INV_ITEMS)),
+		connFlash: new Float32Array(N_CONN), next: INV_CHURN, who: 0, lastWho: -1,
+	} : null;
+
+	step = 0; time = 0; depleted = false; nextRebuild = BUILD_INTERVAL; rebuildIndex = 0; harvest.stage = 0;
+	history.length = 0;
+	movePlayers();
+}
 
 function movePlayers() {
 	for (let c = 0; c < N_CONN; c++) {
 		const p = conn[c];
 		if (c === 0) { p.x = p.homeX; p.y = p.homeY; continue; }   // 0번은 제자리에서 채집한다.
-		const s = (time * 5) % 400;                                 // 걷기 500cm/s, 한 변 100m 정사각형
-		if (s < 100) { p.x = p.homeX + s; p.y = p.homeY; }
-		else if (s < 200) { p.x = p.homeX + 100; p.y = p.homeY + (s - 100); }
-		else if (s < 300) { p.x = p.homeX + 300 - s; p.y = p.homeY + 100; }
-		else { p.x = p.homeX; p.y = p.homeY + 400 - s; }
+		const side = act.cluster ? ROUTE_SIDE : 100, per = side * 4;    // 걷기 500cm/s
+		let s = (p.start + (p.reverse ? -1 : 1) * time * 5) % per; if (s < 0) s += per;
+		const k = Math.floor(s / side), f = s - k * side;
+		const [x0, y0] = act.cluster ? corner(k) : [[0, 0], [100, 0], [100, 100], [0, 100]][k];
+		const [x1, y1] = act.cluster ? corner(k + 1) : [[100, 0], [100, 100], [0, 100], [0, 0]][k];
+		p.x = p.homeX + x0 + (x1 - x0) * f / side; p.y = p.homeY + y0 + (y1 - y0) * f / side;
 	}
 }
 
 function moveNpcs(dt) {
 	for (let i = 0; i < N_NPC; i++) {
-		const a = N_NODE + i;
+		const a = NPC0 + i;
+		if (act.cluster) {
+			// 2막: 집에서 ±30m 안의 목표로 걷는다(LabNpc.cpp의 PickTarget).
+			const dx = tgtX[i] - ax[a], dy = tgtY[i] - ay[a], d = Math.hypot(dx, dy), stepLen = 3 * dt;
+			if (d <= stepLen) { ax[a] = tgtX[i]; ay[a] = tgtY[i]; pickNpcTarget(i); }
+			else { ax[a] += dx / d * stepLen; ay[a] += dy / d * stepLen; }
+			continue;
+		}
 		if (time > turnAt[i]) { heading[i] = rand() * Math.PI * 2; turnAt[i] = time + 2 + rand() * 4; }
 		let x = ax[a] + Math.cos(heading[i]) * 3 * dt, y = ay[a] + Math.sin(heading[i]) * 3 * dt;   // 300cm/s
 		if (x < -HALF || x > HALF || y < -HALF || y > HALF) { heading[i] += Math.PI; x = ax[a]; y = ay[a]; }
@@ -282,6 +442,11 @@ function moveNpcs(dt) {
 	}
 	const s = (time * 3) % 20;
 	showcase.server = s < 10 ? s : 20 - s;
+}
+
+function wake(a) {
+	// FlushNetDormancy: 모든 연결에서 깨운다. 모든 연결에서 Dormant 상태였다면 활성 목록으로 돌아온다.
+	for (const p of conn) if (p.dormant[a]) { p.dormant[a] = 0; dormCount[a]--; }
 }
 
 function harvest() {
@@ -292,29 +457,64 @@ function harvest() {
 	harvest.stage = stage;
 	depleted = stage === 3;
 	version[0]++;
-	if (STEPS[step].dormancy) for (let c = 0; c < N_CONN; c++) conn[c].dormant[0] = 0;   // FlushNetDormancy
+	if (STEPS[step].dormancy) { wake(0); nextUpdate[0] = 0; }
 }
 harvest.stage = 0;
 
+function removeFromClient(p, a) { if (p.exists[a]) { p.exists[a] = 0; existCount[a]--; } }
+
 function closeChannel(p, a, keepOnClient) {
 	p.chan[a] = 0; chanCount[a]--;
-	if (!keepOnClient && p.exists[a]) { p.exists[a] = 0; existCount[a]--; }
+	if (!keepOnClient) removeFromClient(p, a);
+}
+
+function rebuild() {
+	// 가장 오래된 건축물을 허물고 새로 하나를 짓는다(LabGameMode.cpp의 RebuildOne). 새 액터라 모든 연결에서 처음부터 다시 보낸다.
+	const a = BUILD0 + rebuildIndex++ % N_BUILD;
+	for (const p of conn) {
+		if (p.chan[a]) closeChannel(p, a, false);
+		removeFromClient(p, a);
+		if (p.dormant[a]) { p.dormant[a] = 0; dormCount[a]--; }
+		p.sent[a] = 0;
+	}
+	placeBuilding(a);
+	version[a]++; nextUpdate[a] = 0;
+}
+
+function churnInventory() {
+	// 한 사람의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다(LabInventoryComponent.cpp의 Churn).
+	const cfg = STEPS[step], who = inv.who;
+	inv.who = (inv.who + 1) % N_CONN;
+	const items = inv.items[who];
+	items.shift(); items.push(Math.floor(rand() * 1000));
+	const flash = inv.flash[who];
+	for (let i = 0; i < INV_ITEMS - 1; i++) flash[i] = flash[i + 1];
+	// 일반 배열은 같은 자리끼리 비교해 당겨진 칸이 모두 바뀐 칸이 된다. FastArray는 새 칸만 보낸다.
+	if (cfg.inv === 'fast') flash[INV_ITEMS - 1] = 1;
+	else flash.fill(1);
+	for (let c = 0; c < N_CONN; c++) if (cfg.inv === 'all' || c === who) inv.connFlash[c] = 1;
+	inv.lastWho = who;
 }
 
 function tick() {
 	const cfg = STEPS[step];
 	time += cfg.tick;
 	movePlayers(); moveNpcs(cfg.tick); harvest();
+	if (N_BUILD && time > nextRebuild) { nextRebuild += BUILD_INTERVAL; rebuild(); }
+	if (inv) while (time > inv.next) { inv.next += INV_CHURN; churnInventory(); }
 
-	// ① 고려할 시각이 된 액터만 Consider List에 넣는다.
-	let n = 0;
+	// ① 활성 목록에서 고려할 시각이 된 액터만 Consider List에 넣는다.
+	// 모든 연결에서 Dormant 상태인 액터는 활성 목록에서 빠진다(NetworkObjectList.cpp의 MarkDormant).
+	let n = 0, active = 0;
 	for (let a = 0; a < N; a++) {
+		if (dormCount[a] === N_CONN) continue;
+		active++;
 		if (time <= nextUpdate[a]) continue;
 		considered[n++] = a;
-		const freq = a < N_NODE ? 100 : cfg.npcFreq;
+		const freq = isNode(a) ? (cfg.nodeFreq || 100) : isNpc(a) ? cfg.npcFreq : 100;
 		nextUpdate[a] = time + rand() * SERVER_TICK + 1 / freq;
 	}
-	const count = { considered: n, culled: 0, dormant: 0, work: 0, sent: 0 };
+	const count = { active, considered: n, culled: 0, dormant: 0, work: 0, sent: 0 };
 
 	for (let c = 0; c < N_CONN; c++) {
 		const p = conn[c];
@@ -335,12 +535,12 @@ function tick() {
 			}
 
 			count.work++;                                                // ④ 프로퍼티 비교와 직렬화
-			if (a < N_NODE) {
+			if (!isNpc(a)) {
 				if (p.sent[a] !== version[a]) { p.sent[a] = version[a]; count.sent++; }
-				if (cfg.dormancy) { p.dormant[a] = 1; closeChannel(p, a, true); }   // 재운다. 클라이언트의 액터는 남는다.
+				if (cfg.dormancy) { p.dormant[a] = 1; dormCount[a]++; closeChannel(p, a, true); }   // 재운다. 클라이언트의 액터는 남는다.
 			} else {
 				count.sent++;                                            // NPC는 프레임마다 위치가 바뀐다.
-				if (c === VIEW) { rxX[a - N_NODE] = ax[a]; rxY[a - N_NODE] = ay[a]; }
+				if (c === VIEW) { rxX[a - NPC0] = ax[a]; rxY[a - NPC0] = ay[a]; }
 			}
 		}
 	}
@@ -360,13 +560,25 @@ function setStep(next) {
 	const wasDormant = STEPS[step].dormancy;
 	step = next;
 	if (wasDormant && !STEPS[step].dormancy) {
-		// Dormancy를 끄면 채널 없이 남아 있던 자원 노드를 클라이언트에서 지운다(모형의 단순화).
-		for (const p of conn) for (let a = 0; a < N_NODE; a++) {
-			p.dormant[a] = 0;
-			if (!p.chan[a] && p.exists[a]) { p.exists[a] = 0; existCount[a]--; }
+		// Dormancy를 끄면 채널 없이 남아 있던 자원 노드와 건축물을 클라이언트에서 지운다(모형의 단순화).
+		for (const p of conn) for (let a = 0; a < N; a++) {
+			if (isNpc(a)) continue;
+			if (p.dormant[a]) { p.dormant[a] = 0; dormCount[a]--; }
+			if (!p.chan[a]) removeFromClient(p, a);
 		}
 	}
 	history.length = 0; showcase.gaps.length = 0; showcase.lastSend = time;
+	renderStep();
+}
+
+function setAct(index) {
+	buildWorld(index);
+	for (const b of $('acts').children) b.setAttribute('aria-pressed', +b.dataset.act === index);
+	for (const el of document.querySelectorAll('[data-act]')) if (el.parentElement.id !== 'acts') el.hidden = +el.dataset.act !== index + 1;
+	$('actNote').textContent = act.note;
+	$('mapSub').textContent = act.mapSub;
+	$('steps').style.setProperty('--n', STEPS.length);
+		$('steps').innerHTML = STEPS.map((s, i) => `<button data-step="${i}" aria-pressed="false"><span class="no">${i}단계</span> ${s.short || s.name}<small>${s.hint}</small></button>`).join('');
 	renderStep();
 }
 
@@ -374,7 +586,7 @@ function setStep(next) {
 const $ = id => document.getElementById(id);
 const fmt = v => v >= 100 ? Math.round(v).toLocaleString('ko-KR') : v >= 10 ? v.toFixed(0) : v === 0 ? '0' : v.toFixed(1);
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-const COLOR = { green: css('--green'), kept: css('--kept'), red: css('--red'), off: css('--off') };
+const COLOR = { green: css('--green'), kept: css('--kept'), red: css('--red'), off: css('--off'), orange: css('--orange'), orangeKept: css('--orange-kept') };
 
 const FLOW = [
 	{ key: 'active', label: '활성 목록의 액터', cls: '' },
@@ -384,9 +596,11 @@ const FLOW = [
 	{ key: 'work', label: '<b>④</b>프로퍼티를 비교한 쌍', cls: 'work' },
 	{ key: 'sent', label: '보낸 갱신', cls: '' },
 ];
-$('flow').innerHTML = FLOW.map(r => `<div class="row ${r.cls}"><div class="label">${r.label}</div><div class="num"><span id="n-${r.key}">0</span> <small>/프레임</small></div><div class="bar"><span id="b-${r.key}"></span></div>${r.key === 'work' ? '<div class="meas" id="workMeasured"></div>' : ''}</div>`).join('');
+const FLOW_MEASURED = { active: v => `측정: ${v}개(플레이어 같은 다른 액터 포함)`, considered: v => `측정: Consider List 프레임당 ${v}개`, work: v => `측정: 프레임당 ${v}쌍` };
+$('flow').innerHTML = FLOW.map(r => `<div class="row ${r.cls}"><div class="label">${r.label}</div><div class="num"><span id="n-${r.key}">0</span> <small>/프레임</small></div><div class="bar"><span id="b-${r.key}"></span></div><div class="meas" id="m-${r.key}"></div></div>`).join('');
 
-$('steps').innerHTML = STEPS.map((s, i) => `<button data-step="${i}" aria-pressed="false"><span class="no">${i}단계</span> ${s.name}<small>${s.hint}</small></button>`).join('');
+$('acts').innerHTML = ACTS.map((a, i) => `<button data-act="${i}" aria-pressed="false">${a.name}<small>${a.sub}</small></button>`).join('');
+$('acts').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setAct(+b.dataset.act); });
 $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setStep(+b.dataset.step); });
 $('nextStep').addEventListener('click', () => setStep((step + 1) % STEPS.length));
 document.querySelector('.speed').addEventListener('click', e => {
@@ -401,7 +615,7 @@ function renderStep() {
 	$('stepDesc').textContent = s.desc;
 	$('stepCode').textContent = s.code;
 	$('stepPost').href = REPO + s.post;
-	$('workMeasured').textContent = `측정: 프레임당 ${s.workMeasured}쌍`;
+	for (const r of FLOW) $('m-' + r.key).textContent = s.flowMeasured && s.flowMeasured[r.key] ? FLOW_MEASURED[r.key](s.flowMeasured[r.key]) : '';
 	const delta = key => !prev ? '출발점' : s.m[key] === prev[key] ? '적용 전과 같음' : `적용 전보다 ${s.m[key] < prev[key] ? '-' : '+'}${Math.abs((s.m[key] - prev[key]) / prev[key] * 100).toFixed(1)}%${unclear.includes(key) ? '. 실행 사이의 차이보다 작아 구별되지 않는다' : ''}`;
 	// 단계의 결과: 서버 프레임 시간 평균을 앞 단계와 나란히 보이고, 틱 예산과 견준다.
 	const ms = v => `${v >= 100 ? v.toFixed(0) : v.toFixed(1)}ms`;
@@ -409,12 +623,23 @@ function renderStep() {
 	$('frameNow').innerHTML = `${prev ? `<span class="prev">${ms(prev.frame)} →</span> ` : ''}${ms(s.m.frame)}`;
 	$('frameBar').innerHTML = `<span class="${within ? 'ok' : ''}" style="width:${Math.min(100, s.m.frame / 220 * 100)}%"></span><em style="left:${TICK_BUDGET / 220 * 100}%" title="틱 예산"></em>`;
 	$('frameNote').textContent = `${within ? `틱 예산 ${TICK_BUDGET}ms 안이다` : `틱 예산 ${TICK_BUDGET}ms의 ${(s.m.frame / TICK_BUDGET).toFixed(1)}배다`}. 세로선이 틱 예산이다. ${delta('frame')}.${s.remeasured ? ' 적용 전 값은 이 단계와 연달아 다시 측정했다.' : ''}`;
-	$('nextStep').textContent = step + 1 < STEPS.length ? `다음 단계: ${STEPS[step + 1].name} →` : '처음부터 다시';
+	$('nextStep').textContent = step + 1 < STEPS.length ? `다음 단계: ${STEPS[step + 1].short || STEPS[step + 1].name} →` : '처음부터 다시';
 
-	const show = { repl: v => `${v.toFixed(2)}ms`, bw: v => `${v.toLocaleString('ko-KR')}바이트/초`, chan: v => v.toLocaleString('ko-KR'), nodes: v => `${v.toLocaleString('ko-KR')}개` };
-	const rows = [['리플리케이션 시간', 'repl'], ['연결당 송신 대역폭', 'bw'], ['연결당 열린 액터 채널 수', 'chan'], ['클라이언트에 존재하는 자원 노드', 'nodes']]
-		.map(([label, key]) => [label, `${prev && prev[key] !== s.m[key] ? `<span class="prev">${show[key](prev[key])} →</span> ` : ''}${show[key](s.m[key])}`, delta(key)]);
-	$('measured').innerHTML = rows.map(r => `<div class="metric"><div>${r[0]}</div><div class="v">${r[1]}</div><div class="d">측정. ${r[2]}</div></div>`).join('');
+	const keys = Object.keys(s.m).filter(k => k !== 'frame');
+	$('measured').innerHTML = keys.map(key => {
+		const [label, show] = SHOW[key];
+		const value = `${prev && prev[key] !== undefined && prev[key] !== s.m[key] ? `<span class="prev">${show(prev[key])} →</span> ` : ''}${show(s.m[key])}`;
+		return `<div class="metric"><div>${label}</div><div class="v">${value}</div><div class="d">측정. ${prev && prev[key] === undefined ? '출발점' : delta(key)}</div></div>`;
+	}).join('');
+
+	if (inv) {
+		const all = s.inv === 'all';
+		$('iConns').textContent = all ? '8개' : '1개(소유자)';
+		$('iCells').textContent = s.inv === 'fast' ? '새 칸 1개' : '200칸 모두';
+		$('iBits').textContent = s.inv === 'fast' ? '345비트' : '18,190비트';
+		const rate = s.m.invRate !== undefined ? s.m.invRate : step === 4 ? 4545 : null;
+		$('iRate').textContent = rate === null ? '측정하지 않음' : `${rate.toLocaleString('ko-KR')}바이트/초`;
+	}
 }
 
 function fit(canvas) {
@@ -435,7 +660,11 @@ function drawServerMap() {
 		g.fillStyle = color;
 		for (let a = 0; a < N_NODE; a++) if (test(a)) g.fillRect(px(ax[a]) - d / 2, px(ay[a]) - d / 2, d, d);
 	}
-	for (let a = N_NODE; a < N; a++) {
+	for (let a = BUILD0; a < N; a++) {
+		g.fillStyle = chanCount[a] ? COLOR.orange : existCount[a] ? COLOR.orangeKept : COLOR.off;
+		g.fillRect(px(ax[a]) - dot / 2, px(ay[a]) - dot / 2, dot, dot);
+	}
+	for (let a = NPC0; a < BUILD0; a++) {
 		g.fillStyle = chanCount[a] ? COLOR.red : COLOR.off;
 		g.fillRect(px(ax[a]) - dot, px(ay[a]) - dot, dot * 2.2, dot * 2.2);
 	}
@@ -451,7 +680,7 @@ function drawClientMap() {
 	const p = conn[VIEW], scale = w / 700, dot = Math.max(2, w / 220);
 	const sx = x => (x - p.x) * scale + w / 2, sy = y => (y - p.y) * scale + h / 2;
 	g.clearRect(0, 0, w, h);
-	let nodes = 0, npcs = 0, chans = 0;
+	let nodes = 0, npcs = 0, buildings = 0, chans = 0;
 	g.fillStyle = COLOR.green;
 	for (let a = 0; a < N_NODE; a++) {
 		if (p.chan[a]) chans++;
@@ -459,9 +688,16 @@ function drawClientMap() {
 		nodes++;
 		g.fillRect(sx(ax[a]) - dot / 2, sy(ay[a]) - dot / 2, dot, dot);
 	}
+	g.fillStyle = COLOR.orange;
+	for (let a = BUILD0; a < N; a++) {
+		if (p.chan[a]) chans++;
+		if (!p.exists[a]) continue;
+		buildings++;
+		g.fillRect(sx(ax[a]) - dot / 2, sy(ay[a]) - dot / 2, dot, dot);
+	}
 	g.fillStyle = COLOR.red;
 	for (let i = 0; i < N_NPC; i++) {
-		const a = N_NODE + i;
+		const a = NPC0 + i;
 		if (p.chan[a]) chans++;
 		if (!p.exists[a]) continue;
 		npcs++;
@@ -472,6 +708,7 @@ function drawClientMap() {
 	g.fillStyle = '#fff'; g.beginPath(); g.arc(w / 2, h / 2, dot * 1.2, 0, 7); g.fill();
 	$('cNodes').textContent = nodes.toLocaleString('ko-KR');
 	$('cNpcs').textContent = npcs.toLocaleString('ko-KR');
+	$('cBuildings').textContent = buildings.toLocaleString('ko-KR');
 	$('cChans').textContent = chans.toLocaleString('ko-KR');
 }
 
@@ -488,9 +725,42 @@ function drawNpcStrip() {
 	$('sRate').textContent = avg ? `${(1 / avg).toFixed(1)}번` : '-';
 }
 
+function drawInventory(dt) {
+	if (!inv) return;
+	const canvas = $('invCanvas'), g = fit(canvas), w = canvas.width, h = canvas.height;
+	g.clearRect(0, 0, w, h);
+	const cols = 20, rows = INV_ITEMS / cols, gap = w * .012, panelW = (w - gap * 5) / 4;
+	const label = Math.max(10, h * .045), cell = Math.min(panelW / cols, (h * .74 / 2 - label * 1.6) / rows);
+	g.font = `${Math.round(label)}px sans-serif`; g.textBaseline = 'top';
+	for (let c = 0; c < N_CONN; c++) {
+		const ox = gap + (c % 4) * (panelW + gap), oy = (c < 4 ? 0 : 1) * (rows * cell + label * 1.6) + h * .01;
+		g.fillStyle = c === inv.lastWho ? '#fff' : css('--muted');
+		g.fillText(`플레이어 ${c}`, ox, oy);
+		const items = inv.items[c], flash = inv.flash[c];
+		for (let i = 0; i < INV_ITEMS; i++) {
+			const fl = flash[i];
+			g.fillStyle = fl > 0 ? `rgba(255,255,255,${0.35 + 0.65 * fl})` : `hsl(${items[i] * 137.5 % 360}, 35%, 34%)`;
+			g.fillRect(ox + (i % cols) * cell, oy + label * 1.3 + Math.floor(i / cols) * cell, Math.max(1, cell - 1), Math.max(1, cell - 1));
+			if (fl > 0) flash[i] = Math.max(0, fl - dt / 0.4);
+		}
+	}
+	// 연결 여덟 개. 마지막 변경을 받은 연결이 켜진다.
+	const y = h * .84, bw = (w - gap * 9) / 8, bh = h * .12;
+	for (let c = 0; c < N_CONN; c++) {
+		const x = gap + c * (bw + gap), fl = inv.connFlash[c];
+		g.fillStyle = fl > 0 ? `rgba(88,166,255,${0.25 + 0.75 * fl})` : '#1c2430';
+		g.fillRect(x, y, bw, bh);
+		g.fillStyle = fl > 0.4 ? '#0d1117' : css('--muted');
+		g.textBaseline = 'middle'; g.textAlign = 'center';
+		g.fillText(`연결 ${c}`, x + bw / 2, y + bh / 2);
+		g.textAlign = 'left'; g.textBaseline = 'top';
+		if (fl > 0) inv.connFlash[c] = Math.max(0, fl - dt / 0.4);
+	}
+}
+
 function drawFlow() {
 	if (!history.length) return;
-	const sum = { active: N * history.length, considered: 0, culled: 0, dormant: 0, work: 0, sent: 0 };
+	const sum = { active: 0, considered: 0, culled: 0, dormant: 0, work: 0, sent: 0 };
 	for (const c of history) for (const k in c) sum[k] += c[k];
 	const max = Math.log10(N * N_CONN + 1);
 	for (const r of FLOW) {
@@ -502,18 +772,18 @@ function drawFlow() {
 
 let last = performance.now(), frameCount = 0;
 function frame(now) {
-	accumulator += Math.min(0.1, (now - last) / 1000) * speed; last = now;
+	const real = Math.min(0.1, (now - last) / 1000); last = now;
+	accumulator += real * speed;
 	const interval = STEPS[step].tick;
 	let guard = 0;
 	while (accumulator >= interval && guard++ < 24) { tick(); accumulator -= interval; }
 	if (guard >= 24) accumulator = 0;
-	drawServerMap(); drawClientMap(); drawNpcStrip();
+	drawServerMap(); drawClientMap(); drawNpcStrip(); drawInventory(real * Math.max(speed, 1));
 	if (frameCount++ % 6 === 0) drawFlow();
 	requestAnimationFrame(frame);
 }
 
-movePlayers();
-renderStep();
+setAct(0);
 requestAnimationFrame(frame);
 </script>
 </body>
