@@ -38,13 +38,18 @@
 | 연결마다 지난번에 보낸 번호와 바뀐 횟수의 표를 기억한다 | 연결마다의 상태 `FNetFastTArrayBaseState::IDToCLMap`을 `OldState`로 받아 새 표 `NewIDToKeyMap`을 만든다(`FastArraySerializer.h:1420-1440`) | 엔진 소스 |
 | 바뀐 칸, 새 번호, 사라진 번호만 보낸다. 당겨진 칸은 보내지 않는다 | `BuildChangedAndDeletedBuffers`(`FastArraySerializer.h:896-975`), "Stayed the same, it might have moved but we dont care" | 엔진 소스 |
 | 배열이 통째로 그대로면 칸을 보지 않는다 | `ConditionalCreateNewDeltaState`가 배열 키와 기준 키가 같으면 거짓을 돌려 쓰지 않고 끝낸다(`FastArraySerializer.h:819-853`, `1426-1430`). 실행: `tsmall-fastarr-on2-r1`의 서버 로그에서 바뀌지 않았을 때 쓴 줄이 없다 | 엔진 소스, 관찰 자료 8.2절 |
-| 머리는 128비트, 배열의 바뀐 횟수와 지운 칸 수 같은 값 | `WriteDeltaHeader`가 `ArrayReplicationKey`, `BaseReplicationKey`, 지운 수, 바뀐 수의 `int32` 넷을 쓴다(`FastArraySerializer.h:979-1008`) | 엔진 소스 |
+| 받은 묶음마다 머리 128비트, 배열의 바뀐 횟수와 지운 칸 수 같은 값 | `WriteDeltaHeader`가 `ArrayReplicationKey`, `BaseReplicationKey`, 지운 수, 바뀐 수의 `int32` 넷을 쓴다(`FastArraySerializer.h:979-1008`). 델타 경로에서도 같은 함수로 쓴다(`FastArraySerializer.h:1645` 이하의 `Helper.WriteDeltaHeader`) | 엔진 소스 |
+| 새 칸은 프로퍼티를 모두, 바뀐 칸은 바뀐 프로퍼티만 보낸다. 서버가 칸 안까지 비교하고, 기본으로 켜져 있다 | 생성자가 `SetDeltaSerializationEnabled(true)`를 부른다(`Engine/Source/Runtime/Net/Core/Private/Net/Serialization/FastArraySerializer.cpp:24-36`). `net.SupportFastArrayDelta` 기본 1(`DataReplication.cpp:68`). 칸마다 `CompareProperties_r`로 바뀐 프로퍼티 목록을 만들고(`RepLayout.cpp:7878-7930`), 새 칸은 `net.DeltaInitialFastArrayElements`(기본 0, `RepLayout.cpp:110`)라서 비교를 실패시켜 모두 보낸다(`7883`) | 엔진 소스, 관찰 자료 17절 |
+| 원리의 표: 삭제 32, 추가 121, 변경 81비트 | 칸마다 번호 32 + 1비트 + 바뀐 프로퍼티마다 핸들 8과 값 32 + 끝 핸들 8(`RepLayout.cpp:8031-8086`, 핸들은 `SerializeIntPacked`로 작은 값이 8비트, `1922-1935`). 추가 32 + 1 + 2 × 40 + 8 = 121, 변경 32 + 1 + 40 + 8 = 81. 삭제는 머리 뒤의 번호 32(`FastArraySerializer.h:1003-1008`) | 엔진 소스, 계산 |
+| 원리의 표: 클라이언트가 부르는 함수 | 지운 칸 `PreReplicatedRemove`, 새 칸 `PostReplicatedAdd`, 바뀐 칸 `PostReplicatedChange`(`FastArraySerializer.h:1078-1203`의 `PostReceiveCleanup`, 델타 경로의 콜백 `1657-1680`) | 엔진 소스 |
+| 배열 구조체에 `PostReplicatedReceive`가 있으면 묶음 끝에 한 번 | `CallPostReplicatedReceiveOrNot`가 정의돼 있을 때만 부른다(`FastArraySerializer.h:699-707`). 이 테스트베드의 구조체는 정의하지 않았다 | 엔진 소스 |
 | 클라이언트는 지운 자리에 맨 뒤 칸을 옮겨 채운다 | 새 칸은 맨 뒤에 더하고(`FastArraySerializer.h:1524`, `AddDefaulted_GetRef`), 지운 칸은 마지막에 `RemoveAtSwap`으로 지운다(`1186-1197`) | 엔진 소스, engine-notes.md 10절 |
 | 일반 배열의 비교는 객체마다 프레임에 한 번, FastArray는 연결마다 확인한다 | 비교: `RepLayout.cpp:1275-1331`. FastArray 같은 사용자 정의 델타 프로퍼티는 `IsLifetime`을 받지 않아 비교에서 빠지고(`RepLayout.cpp:5848-5855`, `6318-6321`, `1424-1431`), 연결마다 `ReplicateCustomDeltaProperties`가 돈다(`Engine/Source/Runtime/Engine/Private/DataReplication.cpp:1646, 1719`) | 엔진 소스, 관찰 자료 3.2절 |
 | 예상: 앞 칸 지우기 약 340비트, 256비트에 덧붙는 비트 | 머리 128 + 지운 번호 32 + 새 칸(번호 32 + `ItemId` 32 + `Count` 32) = 256. 덧붙는 비트는 일반 배열의 채집 118비트에서 `Count` 32비트를 뺀 86비트를 바탕으로 약 80비트로 짐작했다 | 관찰 자료 5.1절 |
 | 예상: 인벤토리 약 15바이트/초, 연결당 송신 대역폭 약 4.5% 감소 | (15 × 340 + 7 × 300) ÷ 8 ÷ 59.886 = 15.0. CSV 12,421 − 15 × (18,190 − 340) ÷ 8 ÷ 60 = 11,863, -4.5%(포스팅 9의 `act2-invown1`에서 계산) | 관찰 자료 5.1절 |
 | 예상: 인벤토리의 CPU는 조금 준다 | 비교 0.024ms가 빠지고 연결마다의 확인과 번호 표가 생긴다. 합은 프레임당 0.01\~0.02ms 감소로 짐작했다 | 관찰 자료 5.2절 |
 | 적용의 코드 | `Source/DSOptLab/LabInventoryFastArrayComponent.h`, `LabInventoryFastArrayComponent.cpp`(커밋 `243be3d`). 본문은 줄여 옮겼다 | 프로젝트 소스 |
+| 원리의 표로 계산한 비트가 측정과 비트 단위까지 맞았다 | `ChangedElement` 2,382비트 = 15 × 121 + 7 × 81, `Inventory` 6,096비트 = 15 × 300 + 7 × 228(앞 칸 지우기 128 + 32 + 121 + 19, 채집 128 + 81 + 19), `ItemId` 15번, `Count` 22번(`act2-fastarr1-r2`) | 관찰 자료 17절 |
 | 결과 표의 예상 약 11,300 | Insights 연결당 송신량 11,826.6 − 약 556(인벤토리 571 − 15) = 약 11,270 | 계산 |
 | 차트의 값 | 18,190, 345(I.Max) | 관찰 자료 12절 |
 | 줄어든 송신량의 95%가 인벤토리 | (571.26 − 14.77) ÷ (11,826.6 − 11,240.7) = 556.49 ÷ 585.9 = 95.0% | 계산 |
@@ -56,7 +61,7 @@
 | 한 칸만 흰색, 오른쪽으로 한 칸씩 | `visual19-panel.mp4`에서 자기 격자의 흰 칸이 한 칸(약 36픽셀)이고 12프레임(30fps, 0.4초) 이어지며, 121프레임(4.03초) 간격으로 x = 121 → 130 → 139px(한 칸 9px)로 옮겨 간다 | 관찰 자료 14절 |
 | 가장 최근에 더한 칸의 아이템 번호가 적용 전과 같은 순서로 바뀌었다 | 화면 글자 "newest id"가 `visual18`과 `visual19` 모두 368 → 628 → 880(`Saved/Screenshots/Lab/visual18-panel-preview.png`, `visual19-panel-preview.png`). 같은 시드로 같은 아이템을 만든다 | 시각 자료 실행 |
 | 인벤토리는 연결 하나가 받는 데이터의 0.1% | 7,086 ÷ (5,227,069 + 165,232) = 0.131%(`act2-fastarr1-r2`) | 계산 |
-| 한 칸의 값만 바뀌면 FastArray가 오히려 크다 | 일반 배열의 채집 약 118비트(위). FastArray는 머리 128비트에 칸 하나(번호와 내용 96비트)가 더해진다 | 계산, 엔진 소스 |
+| FastArray도 바뀐 프로퍼티만 보내지만 머리가 붙어, 수량 하나의 변경은 일반 배열의 약 두 배 | 일반 배열의 채집 약 118비트(위), FastArray의 채집 228비트(`Inventory` 줄, 128 + 81 + 19). 228 ÷ 118 = 1.93 | 관찰 자료 17절 |
 
 ## 3. 서버가 남긴 CSV
 
@@ -92,7 +97,7 @@
 ## 5. 확인하지 않은 것
 
 - 0번이 아닌 연결의 값. 모든 연결이 자기 인벤토리만 받으므로 비슷하다고 보았다.
-- 적용 후 채집 한 번의 비트. 최대 345와 평균 322만 보았고, 앞 칸 지우기와 채집을 패킷마다 고르지 않았다.
-- 적용 후 `ItemId`가 15번, `Count`가 22번 나온 까닭. 채집은 `Count`만 보낸 것으로 보이지만, 칸 안의 바뀐 프로퍼티만 보내는 기능은 꺼져 있다(`FastArraySerializer.cpp:33`).
+- 적용 후 채집 한 번의 비트는 패킷마다 고르지 않았다. 228비트(`Inventory` 줄)는 합계가 맞는 것으로 계산한 값이다(관찰 자료 17절).
+- `Inventory` 줄의 묶음마다 19비트, 컴포넌트 줄의 45비트가 각각 무엇인지.
 - CPU 차이의 변동 폭. `-StatNamedEvents` 실행은 구성마다 한 번만 쟀다.
 - 클라이언트가 FastArray를 받는 데 드는 CPU.

@@ -39,7 +39,8 @@
 - 연결마다 지난번에 보낸 번호와 키의 표를 기억한다. 배열 키가 표의 키와 같으면 칸을 보지 않고 끝낸다(`FastArraySerializer.h:1420-1431`, `819-853`).
 - 다르면 칸을 모두 돌며 새 표(`NewIDToKeyMap`)를 만들고, 키가 바뀐 칸과 새 칸, 표에서 사라진 번호를 고른다. 자리가 당겨진 칸은 번호와 키가 그대로라 보내지 않는다(`FastArraySerializer.h:896-975`).
 - 보내는 것은 머리(배열 키, 기준 키, 지운 수, 바뀐 수의 `int32` 넷), 지운 번호(`int32`), 바뀐 칸마다 번호(`uint32`)와 칸 전체다(`FastArraySerializer.h:979-1008`, `1466-1485`).
-- 칸 전체는 칸의 프로퍼티를 차례로 직렬화한다(`Engine/Private/RepLayout.cpp:7170-7185`, `SerializePropertiesForStruct`). 칸 안의 바뀐 프로퍼티만 보내는 기능은 생성자 기본값이 꺼짐이다(`Net/Core/Private/Net/Serialization/FastArraySerializer.cpp:33`). 칸이 `int32` 둘이라 켜지 않는다.
+- (측정 전에 적은 것, 틀림) 칸 전체는 칸의 프로퍼티를 차례로 직렬화한다(`Engine/Private/RepLayout.cpp:7170-7185`, `SerializePropertiesForStruct`). 칸 안의 바뀐 프로퍼티만 보내는 기능은 생성자 기본값이 꺼짐이다(`Net/Core/Private/Net/Serialization/FastArraySerializer.cpp:33`). 칸이 `int32` 둘이라 켜지 않는다.
+- (정정 2026-10-06) 칸 안 델타 직렬화는 기본으로 켜져 있다. 33행은 초기화 목록이고, 생성자 본문(35행)이 `SetDeltaSerializationEnabled(true)`를 부른다. 전역 스위치 `net.SupportFastArrayDelta`도 기본 1이다(`Engine/Private/DataReplication.cpp:68`). 그래서 실제 경로는 `FastArrayDeltaSerialize_DeltaSerializeStructs`(`FastArraySerializer.h:1645`)이고, 칸은 `FRepLayout::DeltaSerializeFastArrayProperty`(`RepLayout.cpp:8031-8086`)가 쓴다. 경우마다 가는 것은 17절에 있다.
 
 ### 3.2 일반 배열과 다른 처리
 
@@ -245,7 +246,7 @@
 - 연결당 송신량이 준 몫의 95%가 인벤토리다(556 ÷ 585).
 - 한 번 바뀔 때의 최대는 18,190 → 345비트(약 53분의 1)다. 5.1절의 예상(앞 칸 지우기 약 340비트)과 맞는다. 60초 합 7,086비트도 예상(약 7,200)과 맞는다.
 - `Actor` 줄의 최대가 7,630 → 669비트다. 한 패킷에 다 들어가지 않아 여러 패킷으로 나뉘던 큰 묶음이 없어졌다. 그래프에서도 약 4초마다 솟던 막대가 사라졌다(창 이미지).
-- 적용 후 `ItemId`가 15번, `Count`가 22번이다. 앞 칸 지우기 15번은 새 칸의 두 값을, 채집 7번은 `Count`만 보낸 것으로 보인다. 칸 안의 바뀐 프로퍼티만 보내는 기능은 꺼져 있으므로(3.1절) 이렇게 나뉘는 까닭은 확인하지 않았다.
+- 적용 후 `ItemId`가 15번, `Count`가 22번이다. 앞 칸 지우기 15번은 새 칸의 두 값을, 채집 7번은 `Count`만 보냈다. 칸 안 델타 직렬화가 기본으로 켜져 있기 때문이다(3.1절 정정, 17절).
 
 ## 13. Timing Insights (프레임당 ms)
 
@@ -292,6 +293,35 @@
 ## 16. 확인하지 않은 것 (측정 뒤)
 
 - 0번이 아닌 연결의 값.
-- 적용 후 `ItemId`가 15번만 나온 까닭(12절).
+- (해결, 17절) 적용 후 `ItemId`가 15번만 나온 까닭(12절).
 - CPU 차이의 변동 폭(`-StatNamedEvents` 실행을 한 번씩만 쟀다).
-- 채집 한 번의 FastArray 비트(최대 345와 평균 322만 보았고, 앞 칸 지우기와 채집을 따로 고르지 않았다).
+- (17절에서 계산으로 해결) 채집 한 번의 FastArray 비트(최대 345와 평균 322만 보았고, 앞 칸 지우기와 채집을 따로 고르지 않았다).
+
+## 17. 경우마다 가는 것과 클라이언트의 함수 (2026-10-06)
+
+사용자가 "클라이언트에서 불리는 함수에 따라 실제 델타 변경량이 다르다"는 점을 글에 넣기를 원했다. 엔진 소스로 확인하고, 12절의 측정과 맞춰 보았다.
+
+| 경우 | 클라이언트가 부르는 함수 | 칸 하나에 가는 것 | 비트(계산) |
+| --- | --- | --- | ---: |
+| 삭제 | `PreReplicatedRemove`, 그다음 `RemoveAtSwap` | 머리 뒤 목록의 번호 | 32 |
+| 추가 | `PostReplicatedAdd` | 번호 32 + 1비트 + 프로퍼티 모두(핸들 8 + 값 32, 둘) + 끝 핸들 8 | 121 |
+| 변경 | `PostReplicatedChange` | 번호 32 + 1비트 + 바뀐 프로퍼티만(`Count`의 핸들 8 + 값 32) + 끝 핸들 8 | 81 |
+| 묶음마다 | 배열 구조체에 있으면 `PostReplicatedReceive` 한 번 | 머리(`int32` 넷) | 128 |
+
+- 쓰는 순서: 칸마다 `Writer << ID`, `WriteBit(bAnythingToSend)`, 바뀐 프로퍼티(`SendProperties_r`, 핸들은 `SerializeIntPacked`), 끝 핸들 `WritePropertyHandle(Writer, 0)`(`RepLayout.cpp:8031-8086`, `1922-1935`).
+- 새 칸이 모두 보내는 까닭: `net.DeltaInitialFastArrayElements`의 기본값이 꺼짐이라(`RepLayout.cpp:110-111`), 새 칸은 비교를 일부러 실패시켜(`bForceFail`, `7883`) 프로퍼티를 모두 바뀐 것으로 둔다.
+- 칸 안 비교의 결과(변경 이력)는 프레임마다 한 번 만들어 연결들이 함께 쓴다(`RepLayout.cpp:7700-7720`의 `ChangeHistoryUpdated`). 엔진 주석은 이 방식이 "비교 때문에 CPU를 더 쓸 수 있지만 대역폭은 덜 든다"고 적었다(`FastArraySerializer.h:717-720`).
+- 클라이언트 함수의 순서: 지운 칸 → 새 칸 → 바뀐 칸 순으로 부르고, 지우기는 함수를 부른 뒤 마지막에 한다(`FastArraySerializer.h:1078-1203`, `PostReceiveCleanup`). 묶음 끝의 `PostReplicatedReceive`는 정의돼 있을 때만 부른다(`699-707`). 이 테스트베드의 칸 구조체는 이 함수들을 정의하지 않았다.
+
+측정(`act2-fastarr1-r2`, `Connection 0`, 12절)과의 대조:
+
+| Net Stats 줄 | 측정 | 계산 |
+| --- | --- | --- |
+| `ChangedElement` | 22번, 2,382비트, 최대 121 | 15 × 121 + 7 × 81 = 1,815 + 567 = 2,382 |
+| `ItemId`, `Count` | 15번, 22번 | 새 칸 15개만 `ItemId`를 보내고, 22번 모두 `Count`를 보낸다 |
+| `Inventory` Excl | 3,318비트 | 머리 22 × 128 + 지운 번호 15 × 32 + 22 = 3,318(묶음마다 1비트가 더 있다. 무엇인지는 보지 않았다) |
+| `Inventory` | 22번, 6,096비트, 최대 300 | 앞 칸 지우기 300(128 + 32 + 121 + 19), 채집 228(128 + 81 + 19). 15 × 300 + 7 × 228 = 6,096. 19비트는 `Inventory` 아래의 나머지 몫이다 |
+| `LabInventoryFastArrayComponent` | 22번, 7,086비트, 최대 345 | 앞 칸 지우기 345, 채집 (7,086 − 15 × 345) ÷ 7 = 273. 컴포넌트 단위로 45비트가 더 붙는다 |
+
+- 채집 한 번은 일반 배열 약 118비트(2절), FastArray 228비트(`Inventory` 줄)다. 수량 하나의 변경은 FastArray가 약 1.9배 크다.
+- 5.1절의 예상(앞 칸 지우기 약 340비트)은 새 칸을 96비트, 덧붙는 비트를 약 80비트로 둔 값이다. 실제는 새 칸 121비트, 덧붙는 비트 64비트(19 + 45)로, 합 345가 우연히 가까웠다.
