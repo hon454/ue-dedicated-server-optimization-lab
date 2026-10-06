@@ -16,6 +16,7 @@
 #include "Net/NetworkMetricsDefs.h"
 #include "ProfilingDebugging/MiscTrace.h"
 #include "LabGameMode.h"
+#include "LabMotionLogSubsystem.h"
 #include "LabPlayerController.h"
 #include "LabScenarioConfig.h"
 
@@ -231,6 +232,10 @@ void ULabMetricsSubsystem::HandleEndFrame()
 			}
 
 			TRACE_BOOKMARK(TEXT("Lab_MeasureStart"));
+			if (ULabMotionLogSubsystem* MotionLog = GetWorld()->GetSubsystem<ULabMotionLogSubsystem>())
+			{
+				MotionLog->MarkMeasureStart();
+			}
 			UE_LOG(LogLabMetrics, Display, TEXT("Measuring %.0fs"), Config.MeasureSeconds);
 		}
 		break;
@@ -244,6 +249,10 @@ void ULabMetricsSubsystem::HandleEndFrame()
 		if (Now - PhaseStartTime >= Config.MeasureSeconds)
 		{
 			TRACE_BOOKMARK(TEXT("Lab_MeasureEnd"));
+			if (ULabMotionLogSubsystem* MotionLog = GetWorld()->GetSubsystem<ULabMotionLogSubsystem>())
+			{
+				MotionLog->MarkMeasureEndAndWrite();
+			}
 
 			if (!WriteSummary(Sample, Now - PhaseStartTime))
 			{

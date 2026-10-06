@@ -8,7 +8,10 @@ const FLabScenarioConfig& FLabScenarioConfig::Get()
 	static const FLabScenarioConfig Config = []()
 	{
 		FLabScenarioConfig C;
-		FParse::Value(FCommandLine::Get(), TEXT("LabLabel="), C.Label);
+		const TCHAR* Cmd = FCommandLine::Get();
+		FParse::Value(Cmd, TEXT("LabLabel="), C.Label);
+		C.bMotionLog = FParse::Param(Cmd, TEXT("LabMotionLog"));
+		FParse::Value(Cmd, TEXT("LabNpcInterpDelay="), C.NpcInterpDelayMs);
 		return C;
 	}();
 	return Config;
@@ -103,6 +106,16 @@ FString FLabServerConfig::GetConfigName() const
 	{
 		Parts.Add(TEXT("InventoryFastArray"));
 	}
+	// 서버와 클라이언트가 함께 쓰는 값. 모션 기록은 기법이 아니지만 켠 묶음과 끈 묶음을 구별하려고 적는다(ADR-0020).
+	const FLabScenarioConfig& Shared = FLabScenarioConfig::Get();
+	if (Shared.NpcInterpDelayMs > 0.f)
+	{
+		Parts.Add(FString::Printf(TEXT("NpcInterpDelay=%g"), Shared.NpcInterpDelayMs));
+	}
+	if (Shared.bMotionLog)
+	{
+		Parts.Add(TEXT("MotionLog"));
+	}
 	return Parts.IsEmpty() ? TEXT("default") : FString::Join(Parts, TEXT(";"));
 }
 
@@ -118,6 +131,7 @@ const FLabClientConfig& FLabClientConfig::Get()
 		C.bTopDown = FParse::Param(Cmd, TEXT("LabTopDown"));
 		C.bAutoScreenshot = FParse::Param(Cmd, TEXT("LabAutoScreenshot"));
 		C.bInventoryPanel = FParse::Param(Cmd, TEXT("LabInventoryPanel"));
+		FParse::Value(Cmd, TEXT("LabMotionLogSeconds="), C.MotionLogSeconds);
 		return C;
 	}();
 	return Config;

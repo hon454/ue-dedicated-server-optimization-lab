@@ -17,6 +17,13 @@ struct FLabScenarioConfig
 
 	FString Label = TEXT("unlabeled"); // -LabLabel=
 
+	// NPC 움직임의 품질 지표를 위해 서버와 클라이언트가 NPC 위치를 기록한다(ADR-0020, ULabMotionLogSubsystem).
+	bool bMotionLog = false;           // -LabMotionLog
+
+	// 0보다 크면 클라이언트가 NPC를 서버 시각 기준으로 이 시간(ms)만큼 늦게 보간해 그린다(포스팅 11).
+	// 서버는 NPC의 서버 프레임 번호(ALabNpc::ServerFrame)를 함께 보낸다. 0이면 받은 위치를 바로 적용한다(엔진 기본 동작).
+	float NpcInterpDelayMs = 0.f;      // -LabNpcInterpDelay=
+
 	static const FLabScenarioConfig& Get();
 };
 
@@ -78,6 +85,7 @@ struct FLabClientConfig
 	bool bTopDown = false;        // -LabTopDown
 	bool bAutoScreenshot = false; // -LabAutoScreenshot
 	bool bInventoryPanel = false; // -LabInventoryPanel (이 클라이언트가 받은 인벤토리를 칸 격자로 그린다. 시각 자료용)
+	float MotionLogSeconds = 0.f; // -LabMotionLogSeconds= (-LabMotionLog일 때 시작 신호 뒤 이 시간(초)만큼 기록하고 파일로 쓴다)
 
 	static const FLabClientConfig& Get();
 };

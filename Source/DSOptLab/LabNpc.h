@@ -18,24 +18,54 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker) override;
+	virtual void PostNetReceiveLocationAndRotation() override;
 
 	/** 서버 전용. 공통 시작 신호에서 호출한다. 그 전에는 움직이지 않는다. */
 	void StartWandering();
 
+	/** 화면에 그려지는 위치(메시의 월드 위치). 품질 지표가 기록하는 위치다(ADR-0020). */
+	FVector GetVisualLocation() const;
+
 protected:
 	static constexpr float MoveSpeed = 300.f;
+
+	/** 서버 전용. 프레임마다 위치를 옮긴다. */
+	virtual void TickMovement(float DeltaSeconds);
 
 private:
 	static constexpr float WanderRadius = 3000.f;
 
+	/** 클라이언트에서 받은 위치 하나. ServerTime은 서버 프레임 번호로 정한 서버 시각(초)이다. */
+	struct FSnapshot
+	{
+		double ServerTime = 0.0;
+		FVector Location = FVector::ZeroVector;
+		FQuat Rotation = FQuat::Identity;
+	};
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
+	/**
+	 * 이 위치를 정한 서버 프레임 번호의 아래 8비트(30Hz에서 8.5초마다 한 바퀴).
+	 * 서버가 프레임마다 바꾸므로 NPC가 리플리케이트될 때마다 ReplicatedMovement와 함께 간다.
+	 * 클라이언트가 받은 위치를 서버 시각축에 놓는 데 쓴다. 보간을 끈 실행에서는 보내지 않는다(COND_Never).
+	 */
+	UPROPERTY(Replicated)
+	uint8 ServerFrame = 0;
+
 	void PickTarget();
+	void TickInterpolation();
+	static bool IsInterpolating();
 
 	FVector Home = FVector::ZeroVector;
 	FVector Target = FVector::ZeroVector;
 	FRandomStream Rng;
+
+	// 클라이언트에서 쓰는 상태(보간). 서버 시각 순서로 쌓인다.
+	TArray<FSnapshot> Snapshots;
 };
 
 /**
@@ -48,10 +78,11 @@ class DSOPTLAB_API ALabShowcaseNpc : public ALabNpc
 	GENERATED_BODY()
 
 public:
-	virtual void Tick(float DeltaSeconds) override;
-
 	/** 서버 전용. 왕복할 두 점을 정한다. 시작 신호 전에 호출한다. */
 	void SetPatrol(const FVector& Start, const FVector& End);
+
+protected:
+	virtual void TickMovement(float DeltaSeconds) override;
 
 private:
 	FVector PatrolStart = FVector::ZeroVector;

@@ -46,7 +46,12 @@
     [switch]$InventoryFastArray,
     # 이 번호의 클라이언트 화면에 인벤토리 패널(-LabInventoryPanel)을 그린다. -1이면 그리지 않는다.
     # 측정 실행의 화면과 자동 스크린샷을 바꾸지 않도록 시각 자료 라벨(visualN)과 작은 규모 확인(tsmall-*)에서만 받는다.
-    [int]$InventoryPanelSlot = -1
+    [int]$InventoryPanelSlot = -1,
+    # 서버와 클라이언트가 NPC 위치를 기록한다(ADR-0020). 파일은 Saved\LabMotion\<라벨>-rN\에 남고 Scriptsnalyze-motion.ps1이 읽는다.
+    # 포스팅 11~13의 측정은 기준 구성과 적용 구성 모두 켠다. 켠 묶음과 끈 묶음은 비교하지 않는다.
+    [switch]$MotionLog,
+    # 2막의 기법. 0보다 크면 클라이언트가 NPC를 서버 시각 기준으로 이 시간(ms)만큼 늦게 보간해 그린다. 포스팅 11의 구성은 150이다.
+    [int]$NpcInterpDelay = 0
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -90,6 +95,16 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     foreach ($Existing in @("$LogDir\server-$Label-r$Run.log", "$TraceDir\$Label-r$Run.utrace")) {
         if (Test-Path $Existing) {
             Write-Host "FAIL: label '$Label' was already used ($Existing exists). Use a new label."
+            exit 1
+        }
+    }
+}
+
+$MotionDir = "$ProjectDir\Saved\LabMotion"
+if ($MotionLog) {
+    for ($Run = 1; $Run -le $Runs; $Run++) {
+        if (Test-Path "$MotionDir\$Label-r$Run") {
+            Write-Host "FAIL: label '$Label' was already used ($MotionDir\$Label-r$Run exists). Use a new label."
             exit 1
         }
     }
@@ -149,6 +164,13 @@ function Start-LabClient([int]$Index, [string]$RunLabel) {
     }
     if ($Index -eq $InventoryPanelSlot) {
         $ClientArgs += "-LabInventoryPanel"
+    }
+    # 클라이언트는 측정 구간이 언제 끝나는지 모르므로 시작 신호 뒤 준비 구간 + 측정 구간 + 2초를 기록하고 파일을 쓴다.
+    if ($MotionLog) {
+        $ClientArgs += @("-LabMotionLog", "-LabMotionLogSeconds=$($Warmup + $Measure + 2)")
+    }
+    if ($NpcInterpDelay -gt 0) {
+        $ClientArgs += "-LabNpcInterpDelay=$NpcInterpDelay"
     }
     $Client = Start-Process -FilePath $Editor -ArgumentList $ClientArgs -PassThru
     Set-LabJobAffinity $Client $ClientMask
@@ -226,6 +248,12 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     if ($InventoryFastArray) {
         $ServerArgs += "-LabInventoryFastArray"
     }
+    if ($MotionLog) {
+        $ServerArgs += "-LabMotionLog"
+    }
+    if ($NpcInterpDelay -gt 0) {
+        $ServerArgs += "-LabNpcInterpDelay=$NpcInterpDelay"
+    }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")
         if ($StatNamedEvents) {
@@ -300,6 +328,18 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
 
         $MeasureStart = Get-ServerLogTime $ServerLog "Measuring"
 
+        # 클라이언트가 모션 기록을 다 쓸 때까지 기다린 뒤에 끝낸다(finally의 Stop-Process). 서버 파일은 서버가 끝나기 전에 쓴다.
+        $MissingMotion = @()
+        if ($MotionLog -and $DeadIndex -lt 0 -and $Server.HasExited -and $Server.ExitCode -eq 0) {
+            $Expected = @("$MotionDir\$RunLabel\server.bin") + @(0..($Clients - 1) | ForEach-Object { "$MotionDir\$RunLabel\client$_.bin" })
+            $MotionDeadline = (Get-Date).AddSeconds(30)
+            do {
+                $MissingMotion = @($Expected | Where-Object { -not (Test-Path $_) })
+                if ($MissingMotion.Count -eq 0) { break }
+                Start-Sleep -Seconds 1
+            } while ((Get-Date) -lt $MotionDeadline)
+        }
+
         if ($DeadIndex -ge 0) {
             Write-Host "FAIL: client$DeadIndex exited before the server finished. See Saved\Logs\client$DeadIndex-$RunLabel.log"
         }
@@ -317,6 +357,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
         }
         elseif ($LastAffinityFix -gt $MeasureStart) {
             Write-Host "FAIL: processor affinity was re-applied at $($LastAffinityFix.ToString('HH:mm:ss')), after measuring started at $($MeasureStart.ToString('HH:mm:ss'))"
+        }
+        elseif ($MissingMotion.Count -gt 0) {
+            Write-Host "FAIL: motion log files are missing: $($MissingMotion -join ', ')"
         }
         elseif (-not $NoTrace -and (-not (Test-Path $TraceFile) -or (Get-Item $TraceFile).Length -eq 0)) {
             Write-Host "FAIL: trace file is missing or empty: $TraceFile"
