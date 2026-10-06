@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 540" width="900" height="540" role="img" aria-label="FastArray의 추가, 삭제, 변경. 서버는 번호로 바뀐 칸과 지운 번호만 보낸다. 클라이언트는 새 칸을 맨 뒤에 붙이고, 지운 자리에 맨 뒤 칸을 옮기고, 바뀐 칸을 덮어쓴다.">
+<style>
+text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#e6edf3}
+.bg{fill:#0f141b}
+.title{font-size:17px;font-weight:700}
+.note{font-size:13px;fill:#c9d4df}
+.panel{fill:#151b24;stroke:#2b3442}
+.head{font-size:16px;font-weight:700}
+.sub{font-size:12px;fill:#9aa7b5}
+.label{font-size:12px;fill:#9aa7b5}
+.cell{stroke:#0f141b;stroke-width:1}
+.mark{stroke:#ffffff;stroke-width:3}
+.ghost{fill:none;stroke:#7d8896;stroke-width:1.2;stroke-dasharray:4 3}
+.cid{font-size:13px;font-weight:700;text-anchor:middle;fill:#0f141b}
+.gid{fill:#7d8896}
+.cross{stroke:#ff6b61;stroke-width:2.5;fill:none}
+.wire{fill:#2a2110;stroke:#f08c00}
+.wtext{font-size:13px;fill:#ffe8b0}
+.plain{font-size:12px;fill:#7d8896}
+.move{fill:none;stroke:#ffffff;stroke-width:1.5}
+.act{font-size:13px}
+.cb{font-size:12px;font-family:Consolas,'Courier New',monospace;fill:#9aa7b5}
+</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ffffff"/></marker></defs>
+<rect width="900" height="540" class="bg"/>
+<text x="20" y="34" class="title">FastArray가 보내는 것과 클라이언트가 하는 일</text>
+<text x="20" y="56" class="note">칸마다 번호(#)가 붙는다. 서버는 자리가 아니라 번호로 바뀐 것을 찾는다. 흰 테두리가 바뀐 칸이다.</text>
+<rect x="20" y="70" width="280" height="390" rx="8" class="panel"/>
+<text x="34" y="98" class="head">추가</text>
+<text x="34" y="118" class="sub">서버가 맨 뒤에 새 칸 #6을 더한다</text>
+<text x="30" y="146" class="label">서버 배열</text>
+<rect x="30" y="154" width="38" height="38" rx="4" class="cell" fill="#4dabf7"/><text x="49" y="179" class="cid">#1</text>
+<rect x="72" y="154" width="38" height="38" rx="4" class="cell" fill="#69db7c"/><text x="91" y="179" class="cid">#2</text>
+<rect x="114" y="154" width="38" height="38" rx="4" class="cell" fill="#ffd43b"/><text x="133" y="179" class="cid">#3</text>
+<rect x="156" y="154" width="38" height="38" rx="4" class="cell" fill="#da77f2"/><text x="175" y="179" class="cid">#4</text>
+<rect x="198" y="154" width="38" height="38" rx="4" class="cell" fill="#ff8787"/><text x="217" y="179" class="cid">#5</text>
+<rect x="240" y="154" width="38" height="38" rx="4" class="cell mark" fill="#63e6be"/><text x="259" y="179" class="cid">#6</text>
+<text x="30" y="218" class="label">가는 것</text>
+<rect x="30" y="226" width="252" height="52" rx="6" class="wire"/>
+<text x="40" y="247" class="wtext">머리 128비트</text>
+<text x="40" y="268" class="wtext">#6 번호 32 + 내용 64</text>
+<text x="30" y="296" class="plain">일반 배열이면: 새 칸 하나와 배열 길이</text>
+<text x="30" y="330" class="label">클라이언트 배열</text>
+<rect x="30" y="338" width="38" height="38" rx="4" class="cell" fill="#4dabf7"/><text x="49" y="363" class="cid">#1</text>
+<rect x="72" y="338" width="38" height="38" rx="4" class="cell" fill="#69db7c"/><text x="91" y="363" class="cid">#2</text>
+<rect x="114" y="338" width="38" height="38" rx="4" class="cell" fill="#ffd43b"/><text x="133" y="363" class="cid">#3</text>
+<rect x="156" y="338" width="38" height="38" rx="4" class="cell" fill="#da77f2"/><text x="175" y="363" class="cid">#4</text>
+<rect x="198" y="338" width="38" height="38" rx="4" class="cell" fill="#ff8787"/><text x="217" y="363" class="cid">#5</text>
+<rect x="240" y="338" width="38" height="38" rx="4" class="cell mark" fill="#63e6be"/><text x="259" y="363" class="cid">#6</text>
+<text x="30" y="428" class="act">맨 뒤에 붙인다</text>
+<text x="30" y="448" class="cb">PostReplicatedAdd</text>
+<rect x="315" y="70" width="280" height="390" rx="8" class="panel"/>
+<text x="329" y="98" class="head">삭제</text>
+<text x="329" y="118" class="sub">서버가 맨 앞 칸 #1을 지운다. 뒤 칸이 당겨진다</text>
+<text x="325" y="146" class="label">서버 배열</text>
+<rect x="325" y="154" width="38" height="38" rx="4" class="ghost"/><text x="344" y="179" class="cid gid">#1</text>
+<rect x="367" y="154" width="38" height="38" rx="4" class="cell" fill="#69db7c"/><text x="386" y="179" class="cid">#2</text>
+<rect x="409" y="154" width="38" height="38" rx="4" class="cell" fill="#ffd43b"/><text x="428" y="179" class="cid">#3</text>
+<rect x="451" y="154" width="38" height="38" rx="4" class="cell" fill="#da77f2"/><text x="470" y="179" class="cid">#4</text>
+<rect x="493" y="154" width="38" height="38" rx="4" class="cell" fill="#ff8787"/><text x="512" y="179" class="cid">#5</text>
+<path d="M331 160 l26 26 M357 160 l-26 26" class="cross"/>
+<text x="325" y="218" class="label">가는 것</text>
+<rect x="325" y="226" width="252" height="52" rx="6" class="wire"/>
+<text x="335" y="247" class="wtext">머리 128비트</text>
+<text x="335" y="268" class="wtext">지운 번호 #1 32</text>
+<text x="325" y="296" class="plain">일반 배열이면: 당겨진 네 칸 모두와 배열 길이</text>
+<text x="325" y="330" class="label">클라이언트 배열</text>
+<rect x="325" y="338" width="38" height="38" rx="4" class="cell mark" fill="#ff8787"/><text x="344" y="363" class="cid">#5</text>
+<rect x="367" y="338" width="38" height="38" rx="4" class="cell" fill="#69db7c"/><text x="386" y="363" class="cid">#2</text>
+<rect x="409" y="338" width="38" height="38" rx="4" class="cell" fill="#ffd43b"/><text x="428" y="363" class="cid">#3</text>
+<rect x="451" y="338" width="38" height="38" rx="4" class="cell" fill="#da77f2"/><text x="470" y="363" class="cid">#4</text>
+<rect x="493" y="338" width="38" height="38" rx="4" class="ghost"/><text x="512" y="363" class="cid gid">#5</text>
+<path d="M512 382 C512 410 344 410 344 380" class="move" marker-end="url(#arrow)"/>
+<text x="325" y="428" class="act">맨 뒤 칸을 지운 자리로 옮긴다</text>
+<text x="325" y="448" class="cb">PreReplicatedRemove, RemoveAtSwap</text>
+<rect x="610" y="70" width="280" height="390" rx="8" class="panel"/>
+<text x="624" y="98" class="head">변경</text>
+<text x="624" y="118" class="sub">서버가 #3의 수량을 늘린다(채집)</text>
+<text x="620" y="146" class="label">서버 배열</text>
+<rect x="620" y="154" width="38" height="38" rx="4" class="cell" fill="#4dabf7"/><text x="639" y="179" class="cid">#1</text>
+<rect x="662" y="154" width="38" height="38" rx="4" class="cell" fill="#69db7c"/><text x="681" y="179" class="cid">#2</text>
+<rect x="704" y="154" width="38" height="38" rx="4" class="cell mark" fill="#ffd43b"/><text x="723" y="179" class="cid">#3</text>
+<rect x="746" y="154" width="38" height="38" rx="4" class="cell" fill="#da77f2"/><text x="765" y="179" class="cid">#4</text>
+<rect x="788" y="154" width="38" height="38" rx="4" class="cell" fill="#ff8787"/><text x="807" y="179" class="cid">#5</text>
+<text x="620" y="218" class="label">가는 것</text>
+<rect x="620" y="226" width="252" height="52" rx="6" class="wire"/>
+<text x="630" y="247" class="wtext">머리 128비트</text>
+<text x="630" y="268" class="wtext">#3 번호 32 + 내용 64</text>
+<text x="620" y="296" class="plain">일반 배열이면: 그 칸 하나</text>
+<text x="620" y="330" class="label">클라이언트 배열</text>
+<rect x="620" y="338" width="38" height="38" rx="4" class="cell" fill="#4dabf7"/><text x="639" y="363" class="cid">#1</text>
+<rect x="662" y="338" width="38" height="38" rx="4" class="cell" fill="#69db7c"/><text x="681" y="363" class="cid">#2</text>
+<rect x="704" y="338" width="38" height="38" rx="4" class="cell mark" fill="#ffd43b"/><text x="723" y="363" class="cid">#3</text>
+<rect x="746" y="338" width="38" height="38" rx="4" class="cell" fill="#da77f2"/><text x="765" y="363" class="cid">#4</text>
+<rect x="788" y="338" width="38" height="38" rx="4" class="cell" fill="#ff8787"/><text x="807" y="363" class="cid">#5</text>
+<text x="620" y="428" class="act">같은 칸을 덮어쓴다</text>
+<text x="620" y="448" class="cb">PostReplicatedChange</text>
+<text x="20" y="494" class="note">이 테스트베드의 "앞 칸 지우기"는 삭제와 추가가 한 번에 간다: 머리, 지운 번호, 새 칸으로 256비트다.</text>
+<text x="20" y="516" class="note">그래서 클라이언트에서는 새 칸이 지운 자리로 들어가, 칸 순서가 서버와 달라진다. 칸 다섯 개는 예시이고 실제는 200칸이다.</text>
+</svg>

@@ -17,8 +17,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **[사람과 논의] FastArray의 추가, 삭제, 변경에서 일어나는 일을 글에서 자세히 보일지.** 사용자 의견(2026-10-06). 에이전트 안(도식 하나와 작은 표)은 [포스팅 10 관찰 자료](../Posts/10-inventory-fastarray/candidates.md) 9절. 정해지면 3번의 초안에 반영한다.
-3. **태스크 27(포스팅 10, 인벤토리와 FastArray): 초안.** [backlog.md](backlog.md) "우선순위 순" 6번. 구현, 측정, Insights 값, 패널 영상이 끝났다(2026-10-06). 연결당 송신량은 12,387 → 11,807(-4.7%)이고, `Connection 0`의 인벤토리는 한 번 바뀔 때 최대 18,190 → 345비트, 60초에 273,676 → 7,086비트다. `work_avg_ms`는 구별되지 않았고(8.852 → 8.586, 변동 폭 0.289), 인벤토리의 CPU는 줄지 않았다(프레임당 0.104 → 0.117ms, 실행 하나씩). 값과 계산은 관찰 자료 10절부터에 있다. 본문의 "문제", "원리"는 에이전트 초안을 사용자가 승인한다(AGENTS.md "사람에게 넘기는 일").
+2. **[사람] 태스크 27(포스팅 10, 인벤토리와 FastArray): 초안 확인.** [backlog.md](backlog.md) "우선순위 순" 6번. 초안은 [본문](../Posts/10-inventory-fastarray/README.md)과 [측정 기록](../Posts/10-inventory-fastarray/measurements.md)이다(2026-10-06). FastArray의 추가, 삭제, 변경은 사용자가 고른 대로 도식 하나(`Scripts/make-fastarray-cases.ps1`)로 보였다. "문제", "원리"는 에이전트 초안이라 사용자가 승인한다. 승인되면 루트 README 행의 "(작성 중)"을 빼고, 2막 결과 표와 [Posts/measurements.md](../Posts/measurements.md)를 갱신하고, 태그 `post-10-inventory-fastarray`를 붙인다. 구현, 측정, Insights 값, 패널 영상이 끝났다(2026-10-06). 연결당 송신량은 12,387 → 11,807(-4.7%)이고, `Connection 0`의 인벤토리는 한 번 바뀔 때 최대 18,190 → 345비트, 60초에 273,676 → 7,086비트다. `work_avg_ms`는 구별되지 않았고(8.852 → 8.586, 변동 폭 0.289), 인벤토리의 CPU는 줄지 않았다(프레임당 0.104 → 0.117ms, 실행 하나씩). 값과 계산은 관찰 자료 10절부터에 있다. 본문의 "문제", "원리"는 에이전트 초안을 사용자가 승인한다(AGENTS.md "사람에게 넘기는 일").
 
 ## 포스팅 진행
 
