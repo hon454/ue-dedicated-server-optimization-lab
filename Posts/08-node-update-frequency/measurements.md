@@ -60,6 +60,8 @@
 | ③도 14% 줄었다, 처리한 액터 수는 같았다 | 2.181 → 1.868(-14.4%). `Replicate Actor Time` 프레임당 184.2번과 184.2번. 기본 트레이스의 `LabNpc` 0.981 → 0.853(-13.0%), `LabCharacter` 0.633 → 0.548(-13.4%) | 관찰 자료 9.1절, 9.2절 |
 | 열린 액터 채널 수는 바뀌지 않았다 | CSV `open_actor_channels_per_conn` 77과 77 | 관찰 자료 7절 |
 | 검증용 자원 노드는 30초에 있고 45초에 고갈되어 사라졌다 | `act2-nodeuf-base1-r3-tpp-01`(t=30초), `-02`(t=45초), `act2-nodeuf1-r3-tpp-01`, `-02` | 자동 스크린샷 |
+| 배운 것: 엔진 기본값 100은 서버 틱 30Hz보다 크다, 거의 매 프레임 고려한다 | 1 ÷ 100 = 10ms가 프레임 간격 33.3ms보다 짧다. 평균 1.3프레임마다다(위 "빈도 100" 줄) | 엔진 소스(`Actor.cpp:295`, `BaseEngine.ini:1867`), engine-notes.md |
+| 배운 것: NPC에서는 대역폭이, 자원 노드에서는 따지는 시간이 줄었다 | NPC: 연결당 송신 대역폭 -53%([AI NPC Net Update Frequency 측정 기록](../04-update-frequency/measurements.md)). 자원 노드: ①+② -83.5%, 대역폭 -0.2% | 관찰 자료 7절, 9.2절 |
 | 인벤토리는 보낸 액터 데이터의 약 30% | 29.5%(`act2-update-frequency1-r1`) | [포스팅 6 관찰 자료](../06-three-techniques-again/candidates.md) 6절 |
 
 ## 3. 서버가 남긴 CSV
