@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" width="900" height="330" role="img" aria-label="버퍼 보간. 클라이언트는 받은 위치를 쌓아 두고, 지금보다 150ms 앞선 순간을 끼는 두 위치 사이를 이어 그린다. 보간 없음의 NPC는 받을 때마다 건너뛰고, 150ms 보간의 NPC는 서버의 NPC와 같은 속도로 늦게 따라간다.">
+<style>
+text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#e6edf3}
+.bg{fill:#0f141b}
+.title{font-size:17px;font-weight:700}
+.label{font-size:14px;fill:#c9d4df}
+.note{font-size:12px;fill:#9aa7b5}
+.axis{stroke:#7d8896;stroke-width:1.5}
+.frame{stroke:#4a5563;stroke-width:1}
+.track{stroke:#2b3442;stroke-width:1}
+.snap{fill:#f08c00}
+.pair{fill:#1f4d5c;stroke:#3bc9db;stroke-width:1.5}
+.now{stroke:#f08c00;stroke-width:2}
+.render{stroke:#3bc9db;stroke-width:2;stroke-dasharray:6 4}
+.npc{fill:#ff6b61}
+.server{fill:#9aa7b5}
+.leg{font-size:13px}
+</style>
+<rect width="900" height="330" class="bg"/>
+<text x="20" y="32" class="title">받은 위치 두 개 사이에서 150ms 전 순간을 그린다</text>
+<line x1="560" y1="44" x2="590" y2="44" class="now"/><text x="596" y="49" class="leg">지금</text>
+<line x1="650" y1="44" x2="680" y2="44" class="render"/><text x="686" y="49" class="leg">그리는 순간(지금 - 150ms)</text>
+<text x="20" y="101" class="label">받은 위치</text>
+<text x="20" y="165" class="label">서버의 NPC</text>
+<text x="20" y="219" class="label">보간 없음</text>
+<text x="20" y="273" class="label">150ms 보간</text>
+<line x1="170" y1="92" x2="170" y2="100" class="frame"/>
+<line x1="200" y1="92" x2="200" y2="100" class="frame"/>
+<line x1="230" y1="92" x2="230" y2="100" class="frame"/>
+<line x1="260" y1="92" x2="260" y2="100" class="frame"/>
+<line x1="290" y1="92" x2="290" y2="100" class="frame"/>
+<line x1="320" y1="92" x2="320" y2="100" class="frame"/>
+<line x1="350" y1="92" x2="350" y2="100" class="frame"/>
+<line x1="380" y1="92" x2="380" y2="100" class="frame"/>
+<line x1="410" y1="92" x2="410" y2="100" class="frame"/>
+<line x1="440" y1="92" x2="440" y2="100" class="frame"/>
+<line x1="470" y1="92" x2="470" y2="100" class="frame"/>
+<line x1="500" y1="92" x2="500" y2="100" class="frame"/>
+<line x1="530" y1="92" x2="530" y2="100" class="frame"/>
+<line x1="560" y1="92" x2="560" y2="100" class="frame"/>
+<line x1="590" y1="92" x2="590" y2="100" class="frame"/>
+<line x1="620" y1="92" x2="620" y2="100" class="frame"/>
+<line x1="650" y1="92" x2="650" y2="100" class="frame"/>
+<line x1="680" y1="92" x2="680" y2="100" class="frame"/>
+<line x1="710" y1="92" x2="710" y2="100" class="frame"/>
+<line x1="740" y1="92" x2="740" y2="100" class="frame"/>
+<line x1="770" y1="92" x2="770" y2="100" class="frame"/>
+<line x1="800" y1="92" x2="800" y2="100" class="frame"/>
+<line x1="830" y1="92" x2="830" y2="100" class="frame"/>
+<line x1="860" y1="92" x2="860" y2="100" class="frame"/>
+<line x1="890" y1="92" x2="890" y2="100" class="frame"/>
+<line x1="170" y1="96" x2="890" y2="96" class="axis"/>
+<line x1="170" y1="160" x2="890" y2="160" class="track"/>
+<line x1="170" y1="214" x2="890" y2="214" class="track"/>
+<line x1="170" y1="268" x2="890" y2="268" class="track"/>
+<rect y="87" width="120" height="18" rx="4" class="pair" x="170"><animate attributeName="x" values="170;290;410;530;650" keyTimes="0;0.354;0.521;0.688;0.854" calcMode="discrete" dur="5s" repeatCount="indefinite"/></rect>
+<circle cx="170" cy="96" r="6" class="snap"></circle>
+<circle cx="290" cy="96" r="6" class="snap"><animate attributeName="opacity" values="0;1" keyTimes="0;0.167" calcMode="discrete" dur="5s" repeatCount="indefinite"/></circle>
+<circle cx="410" cy="96" r="6" class="snap"><animate attributeName="opacity" values="0;1" keyTimes="0;0.333" calcMode="discrete" dur="5s" repeatCount="indefinite"/></circle>
+<circle cx="530" cy="96" r="6" class="snap"><animate attributeName="opacity" values="0;1" keyTimes="0;0.5" calcMode="discrete" dur="5s" repeatCount="indefinite"/></circle>
+<circle cx="650" cy="96" r="6" class="snap"><animate attributeName="opacity" values="0;1" keyTimes="0;0.667" calcMode="discrete" dur="5s" repeatCount="indefinite"/></circle>
+<circle cx="770" cy="96" r="6" class="snap"><animate attributeName="opacity" values="0;1" keyTimes="0;0.833" calcMode="discrete" dur="5s" repeatCount="indefinite"/></circle>
+<circle cx="890" cy="96" r="6" class="snap"><animate attributeName="opacity" values="0;1" keyTimes="0;1" calcMode="discrete" dur="5s" repeatCount="indefinite"/></circle>
+<line x1="170" y1="62" x2="170" y2="292" class="now"><animate attributeName="x1" from="170" to="890" dur="5s" repeatCount="indefinite"/><animate attributeName="x2" from="170" to="890" dur="5s" repeatCount="indefinite"/></line>
+<line x1="170" y1="62" x2="170" y2="292" class="render"><animate attributeName="x1" values="170;170;755" keyTimes="0;0.188;1" dur="5s" repeatCount="indefinite"/><animate attributeName="x2" values="170;170;755" keyTimes="0;0.188;1" dur="5s" repeatCount="indefinite"/></line>
+<circle cx="170" cy="160" r="9" class="npc server"><animate attributeName="cx" from="170" to="890" dur="5s" repeatCount="indefinite"/></circle>
+<circle cx="170" cy="214" r="9" class="npc"><animate attributeName="cx" values="170;290;410;530;650;770" keyTimes="0;0.167;0.333;0.5;0.667;0.833" calcMode="discrete" dur="5s" repeatCount="indefinite"/></circle>
+<circle cx="170" cy="268" r="9" class="npc"><animate attributeName="cx" values="170;170;755" keyTimes="0;0.188;1" dur="5s" repeatCount="indefinite"/></circle>
+<text x="20" y="318" class="note">예시: 갱신 간격 133ms(서버 프레임 4개), 전달 시간 0. 가로축은 서버 시각이자 NPC의 위치다(일정한 속도). 실제보다 약 6배 느리게 재생한다.</text>
+</svg>

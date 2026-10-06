@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 330" width="860" height="330" role="img" aria-label="보간 없음. 서버의 NPC는 곧게 움직이고, 클라이언트 화면의 NPC는 이동 갱신을 받을 때마다 계단처럼 건너뛴다.">
+<style>
+text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#e6edf3}
+.bg{fill:#0f141b}
+.title{font-size:17px;font-weight:700}
+.legend{font-size:13px;fill:#c9d4df}
+.tick{font-size:12px;fill:#9aa7b5}
+.axis{font-size:13px;fill:#c9d4df}
+.grid{stroke:#2b3442;stroke-width:1}
+.server{fill:none;stroke:#9aa7b5;stroke-width:2;stroke-dasharray:6 4}
+.client{fill:none;stroke:#ff6b61;stroke-width:2.5;stroke-linejoin:round}
+.recv{stroke:#f08c00;stroke-width:2}
+</style>
+<defs><clipPath id="plot"><rect x="80" y="54" width="750" height="216"/></clipPath></defs>
+<rect width="860" height="330" class="bg"/>
+<text x="20" y="30" class="title">보간 없음: 받은 위치로 바로 옮긴다</text>
+<line x1="470" y1="25" x2="500" y2="25" class="server"/><text x="508" y="30" class="legend">서버의 NPC</text>
+<line x1="600" y1="25" x2="630" y2="25" class="client"/><text x="638" y="30" class="legend">클라이언트 화면의 NPC</text>
+<line x1="470" y1="40" x2="470" y2="50" class="recv"/><text x="480" y="49" class="legend">이동 갱신을 받은 시각</text>
+<line x1="80" y1="64" x2="80" y2="270" class="grid"/><text x="80" y="288" class="tick" text-anchor="middle">0</text>
+<line x1="205" y1="64" x2="205" y2="270" class="grid"/><text x="205" y="288" class="tick" text-anchor="middle">200</text>
+<line x1="330" y1="64" x2="330" y2="270" class="grid"/><text x="330" y="288" class="tick" text-anchor="middle">400</text>
+<line x1="455" y1="64" x2="455" y2="270" class="grid"/><text x="455" y="288" class="tick" text-anchor="middle">600</text>
+<line x1="580" y1="64" x2="580" y2="270" class="grid"/><text x="580" y="288" class="tick" text-anchor="middle">800</text>
+<line x1="705" y1="64" x2="705" y2="270" class="grid"/><text x="705" y="288" class="tick" text-anchor="middle">1000</text>
+<line x1="830" y1="64" x2="830" y2="270" class="grid"/><text x="830" y="288" class="tick" text-anchor="middle">1200</text>
+<line x1="80" y1="244.3" x2="830" y2="244.3" class="grid"/><text x="72" y="248.3" class="tick" text-anchor="end">0</text>
+<line x1="80" y1="201.3" x2="830" y2="201.3" class="grid"/><text x="72" y="205.3" class="tick" text-anchor="end">100</text>
+<line x1="80" y1="158.4" x2="830" y2="158.4" class="grid"/><text x="72" y="162.4" class="tick" text-anchor="end">200</text>
+<line x1="80" y1="115.5" x2="830" y2="115.5" class="grid"/><text x="72" y="119.5" class="tick" text-anchor="end">300</text>
+<line x1="80" y1="72.6" x2="830" y2="72.6" class="grid"/><text x="72" y="76.6" class="tick" text-anchor="end">400</text>
+<text x="455" y="310" class="axis" text-anchor="middle">시간(ms)</text>
+<text x="22" y="167" class="axis" text-anchor="middle" transform="rotate(-90 22 167)">움직인 거리(cm)</text>
+<g clip-path="url(#plot)">
+<polyline points="60,248.2 81.9,243.9 102.8,239.6 123.6,235.3 144.4,230.9 166.3,226.6 186.6,222.3 207,218.1 227.5,213.9 247.9,209.6 268.7,205.4 290.1,201 310.8,196.7 331.6,192.4 352.4,188.1 372.8,183.8 394.1,179.4 415.1,175.2 435.4,170.9 456.7,166.6 476.7,162.4 497.9,158.1 518.7,153.9 540.2,149.4 561.4,145.1 583.7,140.7 603.9,136.4 624.2,132.1 645,127.8 666,123.5 687.7,119.1 709.7,114.8 729.5,110.5 750.2,106.2 771.1,101.8 791.6,97.6 812.9,93.4 832.6,89.1 853.4,84.9" class="server"/>
+<polyline points="56.3,265.7 77.3,265.7 77.3,248.2 98.4,248.2 98.4,248.2 119.5,248.2 119.5,248.2 141,248.2 141,248.2 161.5,248.2 161.5,230.9 181.6,230.9 181.6,230.9 202.3,230.9 202.3,230.9 222.8,230.9 222.8,230.9 247.2,230.9 247.2,213.6 267.8,213.6 267.8,213.6 290.7,213.6 290.7,213.6 312.5,213.6 312.5,213.6 336.1,213.6 336.1,196.8 359.4,196.8 359.4,196.8 384.4,196.8 384.4,196.8 407.6,196.8 407.6,179.5 431,179.5 431,179.5 451.7,179.5 451.7,179.5 473,179.5 473,179.5 495,179.5 495,162.2 515,162.2 515,162.2 537.8,162.2 537.8,162.2 558.6,162.2 558.6,162.2 583.5,162.2 583.5,144.9 602.7,144.9 602.7,144.9 623.6,144.9 623.6,144.9 647.2,144.9 647.2,144.9 669,144.9 669,127.7 690.9,127.7 690.9,127.7 713.5,127.7 713.5,127.7 740.3,127.7 740.3,110.4 760.6,110.4 760.6,110.4 783.3,110.4 783.3,110.4 804.1,110.4 804.1,110.4 825,110.4 825,93.5 845.9,93.5 845.9,93.5" class="client"/>
+</g>
+<line x1="158.2" y1="260" x2="158.2" y2="270" class="recv"/>
+<line x1="244.6" y1="260" x2="244.6" y2="270" class="recv"/>
+<line x1="333.3" y1="260" x2="333.3" y2="270" class="recv"/>
+<line x1="405.5" y1="260" x2="405.5" y2="270" class="recv"/>
+<line x1="491.7" y1="260" x2="491.7" y2="270" class="recv"/>
+<line x1="579.8" y1="260" x2="579.8" y2="270" class="recv"/>
+<line x1="666.9" y1="260" x2="666.9" y2="270" class="recv"/>
+<line x1="738" y1="260" x2="738" y2="270" class="recv"/>
+<line x1="822.8" y1="260" x2="822.8" y2="270" class="recv"/>
+</svg>

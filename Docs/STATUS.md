@@ -16,12 +16,12 @@
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 일곱 단계(포스팅 10까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 2막에 새 기법을 측정하면 단계를 더한다.
 - **포스팅 11의 작은 규모 확인(2026-10-07).** 클라이언트 2개, 자원 노드 100개, NPC 10개와 플레이어 주변 50개(`-PlayerSpacing 3 -NpcsNearPlayers 50 -MotionLog`), 준비 20초, 측정 30초다. 보간 없음(`tsmall-motion1-r1`) → 150ms 보간(`tsmall-motion2-r1`)에서 표시 위치 오차 평균 21.19 → 49.03cm, 표시 속도 오차 평균 448.7 → 12.3cm/s, 표시 지연 70 → 165ms, 수신 간격 평균 133.4ms(그대로), `out_bytes_per_sec_per_conn` 7,677 → 8,421이다. 보간 없음의 값은 ADR-0020의 예상(약 25cm, 450cm/s)과 맞는다. 작은 규모라 포스팅의 비교에 쓰지 않는다.
 - **첫 확정 규모 묶음은 쓰지 않는다(2026-10-07).** `act2-interp-base1`, `act2-interp1`(01:32\~01:50, 본체 화면)은 측정 시작 직후(01:33:12)부터 다른 세션이 남긴 `grep.exe`가 코어 하나를 계속 썼다. 기준 묶음의 `work_avg_ms`가 13.43\~14.16(전날 같은 구성 `act2-fastarr-base1` 8.852)이고, Consider List와 호출 횟수는 같은데 모든 타이머가 약 1.5배 느렸다(`GameNetDriver` 4.112 → 6.468ms, `act2-fastarr-base1-r3`과 `act2-interp-base1-r3`의 Insights 내보내기). 이 묶음에서 보간 시계의 결함도 찾았다. 서버가 1분에 1,764\~1,779프레임만 돌자 프레임 길이를 33.3ms로 가정한 시계가 밀려 표시 지연이 139\~144ms(150ms보다 짧음)였다. 클라이언트가 받은 시각에 직선을 맞춰 프레임 길이를 추정하게 고쳤고, 서버를 28Hz로 돌린 작은 규모 확인에서 표시 지연 151ms, 표시 속도 오차 평균 12.9cm/s였다(`tsmall-motion5-r1`, `run-scenario.ps1 -ServerTickRate 28`, 진단용). 같은 두 구성을 `act2-interp-base2`, `act2-interp2`로 다시 쟀다(아래 "측정 결과").
-- 다음 시각 자료 라벨은 `visual20`이다(`visual18`, `visual19`는 포스팅 10의 인벤토리 패널 전후. `visual16`, `visual17`의 GIF는 한 칸 번쩍임이 48색 팔레트에서 사라져 쓰지 않았다, 2026-10-06).
+- 다음 시각 자료 라벨은 `visual22`이다(`visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후, 2026-10-07. `visual18`, `visual19`는 포스팅 10의 인벤토리 패널 전후).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **포스팅 11(NPC 이동의 클라이언트 보간)을 시작한다.** [backlog.md](backlog.md) "우선순위 순" 7번. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)으로 승인됐다(2026-10-07, 표시 위치 오차와 표시 속도 오차, 포스팅 12, 13도 쓴다). 사용자가 서버 시각을 붙인 버퍼 보간(서버 프레임 번호 8비트, 보간 지연 150ms, 버퍼가 비면 멈춤)을 골랐다(2026-10-07, [포스팅 11 관찰 자료](../Posts/11-npc-interpolation/candidates.md) 5절). 모션 기록과 보간을 구현해 작은 규모에서 확인했다(`tsmall-motion1`, `tsmall-motion2`, 아래). 확정 규모 측정을 마쳤다(`act2-interp-base2`, `act2-interp2`, 아래 "측정 결과"). 다음은 시각 자료(녹화는 사용자 허가 뒤, `visual20`부터)와 포스팅 초안이다. 기준 구성은 포스팅 10의 최종 구성(포스팅 9의 구성에 `-InventoryFastArray`)이고, 기준 구성과 적용 구성은 연달아 잰다.
+2. **포스팅 11(NPC 이동의 클라이언트 보간)을 시작한다.** [backlog.md](backlog.md) "우선순위 순" 7번. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)으로 승인됐다(2026-10-07, 표시 위치 오차와 표시 속도 오차, 포스팅 12, 13도 쓴다). 사용자가 서버 시각을 붙인 버퍼 보간(서버 프레임 번호 8비트, 보간 지연 150ms, 버퍼가 비면 멈춤)을 골랐다(2026-10-07, [포스팅 11 관찰 자료](../Posts/11-npc-interpolation/candidates.md) 5절). 모션 기록과 보간을 구현해 작은 규모에서 확인했다(`tsmall-motion1`, `tsmall-motion2`, 아래). 확정 규모 측정을 마쳤다(`act2-interp-base2`, `act2-interp2`, 아래 "측정 결과"). 시각 자료(`visual20`, `visual21`, 위치 그래프, 원리 도식)와 포스팅 초안([본문](../Posts/11-npc-interpolation/README.md), [측정 기록](../Posts/11-npc-interpolation/measurements.md))을 썼다. 다음은 사용자의 초안 확인("문제", "원리" 승인, 시각 자료 선택)과 태그 `post-11-npc-interpolation`이다. 기준 구성은 포스팅 10의 최종 구성(포스팅 9의 구성에 `-InventoryFastArray`)이고, 기준 구성과 적용 구성은 연달아 잰다.
 
 ## 포스팅 진행
 
@@ -38,6 +38,7 @@
 | 8. 자원 노드의 Net Update Frequency 낮추기 | 완료 | `post-08-node-update-frequency` |
 | 9. 인벤토리를 소유자에게만 보내기 | 완료 | `post-09-inventory-owner-only` |
 | 10. 인벤토리를 FastArray로 보내기 | 완료 | `post-10-inventory-fastarray` |
+| 11. 클라이언트에서 NPC 위치를 보간하기 | 초안, 사용자 확인 대기 | |
 
 ## 명령
 
@@ -145,3 +146,4 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 ## 사용자에게 요청한 일
 
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
+- **포스팅 11 초안 확인.** [본문](../Posts/11-npc-interpolation/README.md)의 "문제"와 "원리" 승인, 시각 자료 선택(요약의 GIF, 위치 그래프 둘, 원리 도식). 확인 뒤 태그 `post-11-npc-interpolation`을 붙인다.
