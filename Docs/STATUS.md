@@ -12,13 +12,13 @@
 - **태스크 25(포스팅 8, `post-08-node-update-frequency`)가 끝났다(2026-10-06).** 자원 노드의 Net Update Frequency를 2로 낮추자 `work_avg_ms` 중앙값이 18.060 → 8.615였다(`act2-nodeuf-base1`, `act2-nodeuf1`). 이제 `GameNetDriver`에서 가장 큰 것은 `Process Prioritized Actors Time`(45.8%)이다. 경위는 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 25"에 있다.
 - **태스크 26(포스팅 9, `post-09-inventory-owner-only`)이 끝났다(2026-10-06).** 인벤토리를 소유자의 연결에만 보내자(`-InventoryOwnerOnly`) `out_bytes_per_sec_per_conn` 중앙값이 16,635 → 12,421(-25.3%)이고 `work_avg_ms`는 구별되지 않았다(`act2-invown-base1`, `act2-invown1`). 소유자는 여전히 바뀔 때마다 200칸(18,190비트)을 받는다. 경위는 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 26"에 있다.
 - **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
-- 다음 시각 자료 라벨은 `visual16`이다(`visual14`, `visual15`는 포스팅 9의 인벤토리 패널 전후, 2026-10-06).
+- 다음 시각 자료 라벨은 `visual20`이다(`visual18`, `visual19`는 포스팅 10의 인벤토리 패널 전후. `visual16`, `visual17`의 GIF는 한 칸 번쩍임이 48색 팔레트에서 사라져 쓰지 않았다, 2026-10-06).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **태스크 27(포스팅 10, 인벤토리와 FastArray): 확정 규모 측정과 패널 녹화.** [backlog.md](backlog.md) "우선순위 순" 6번. 기준 구성은 포스팅 9의 최종 구성(포스팅 8의 구성에 `-InventoryOwnerOnly`)이고, 거기에 `-InventoryFastArray`를 더한다. 구현(공통 부모 `ULabInventoryBase`, 사용자 선택)과 작은 규모 확인이 끝났다(2026-10-06). 연달아 잰 작은 규모에서 `out_bytes_per_sec_per_conn`가 5,907 → 5,300이고, 서버는 바뀔 때만 FastArray를 썼다(`tsmall-fastarr-off2-r1`, `tsmall-fastarr-on2-r1`). 원리, 예상, 확인 결과는 [포스팅 10 관찰 자료](../Posts/10-inventory-fastarray/candidates.md)에 있다. 측정과 녹화는 구성, 라벨, 시간, 화면 조건, 찍을 영역과 파일 이름을 채팅에 적고 사용자의 답을 받은 뒤 한다. 기준 묶음을 새로 재면 "측정 결과"의 `act2-invown-base1`, `act2-invown1` 행을 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)로 옮긴다.
-3. **[사람과 논의] FastArray의 추가, 삭제, 변경에서 일어나는 일을 글에서 자세히 보일지.** 사용자 의견(2026-10-06). 관찰 자료 9절.
+2. **[사람과 논의] FastArray의 추가, 삭제, 변경에서 일어나는 일을 글에서 자세히 보일지.** 사용자 의견(2026-10-06). 에이전트 안(도식 하나와 작은 표)은 [포스팅 10 관찰 자료](../Posts/10-inventory-fastarray/candidates.md) 9절. 정해지면 3번의 초안에 반영한다.
+3. **태스크 27(포스팅 10, 인벤토리와 FastArray): 초안.** [backlog.md](backlog.md) "우선순위 순" 6번. 구현, 측정, Insights 값, 패널 영상이 끝났다(2026-10-06). 연결당 송신량은 12,387 → 11,807(-4.7%)이고, `Connection 0`의 인벤토리는 한 번 바뀔 때 최대 18,190 → 345비트, 60초에 273,676 → 7,086비트다. `work_avg_ms`는 구별되지 않았고(8.852 → 8.586, 변동 폭 0.289), 인벤토리의 CPU는 줄지 않았다(프레임당 0.104 → 0.117ms, 실행 하나씩). 값과 계산은 관찰 자료 10절부터에 있다. 본문의 "문제", "원리"는 에이전트 초안을 사용자가 승인한다(AGENTS.md "사람에게 넘기는 일").
 
 ## 포스팅 진행
 
@@ -49,7 +49,7 @@
 - 두 클라이언트 영상(1번 내려다보기, 2번 3인칭 이동): 이 PC의 150% 배율에서 두 창은 959,-47과 1919,-47(각 962×588)이라 `capture-video.ps1 -Region "959,0,1922,541" -RaiseSlots "1,2" -NoMouse`로 찍는다. `-Region`은 창을 맨 위로 올리지 않으므로 `-RaiseSlots`로 두 창(명령줄 `-LabSlot=1`, `-LabSlot=2`)을 찍는 동안 TOPMOST로 올린다(`visual2`, `visual3`에서는 같은 일을 `SetWindowPos`로 직접 했다. `-RaiseSlots`는 창이 없을 때 거부하는 것만 확인했고 실제 녹화에는 아직 쓰지 않았다). 8개 창 전체 화면은 `-RaiseSlots "0,1,2,3,4,5,6,7" -Region "0,0,3840,1126" -NoMouse -AllowMeasuring -Out <이름>.png`로 한 프레임을 찍는다(창은 4열 2줄, 각 962×588이고 영역이 창으로 모두 덮인다. `visual11`).
 - 지난 태그의 빌드에서 녹화할 때: 태그를 체크아웃해 빌드한 뒤 `git restore --source=main --worktree Scripts/capture-video.ps1`로 지금의 녹화 스크립트만 꺼내 쓴다(태그 시점의 스크립트는 GIF 기본값이 다르다). 끝나면 `git restore Scripts/capture-video.ps1`로 되돌리고 main으로 돌아와 다시 빌드한다(`visual11`).
 - NPC 하나의 움직임을 전후로 찍을 때: `run-scenario.ps1`에 `-ShowcaseNpc`를 더한다(`visualN` 라벨에서만 받는다. 0번 자리 앞 10m를 왕복하는 NPC 하나가 더 생긴다). 0번 창의 클라이언트 영역은 0,0 960×540이라 `capture-video.ps1 -Region "0,0,960,540" -Fps 60 -NoMouse -AllowMeasuring -Out <이름>.mp4`로 찍고, 자르기와 느린 재생은 ffmpeg로 따로 한다(`visual9`, `visual10`. 가공 값은 [candidates.md](../Posts/04-update-frequency/candidates.md) 6절).
-- 인벤토리 패널을 띄울 때: `run-scenario.ps1`에 `-InventoryPanelSlot <클라이언트 번호>`를 더한다(그 클라이언트에 `-LabInventoryPanel`. `visualN`과 `tsmall-*` 라벨에서만 받는다). 화면 왼쪽 아래에 자기 인벤토리와 다른 플레이어 일곱의 칸 격자를 그린다. 칸 색은 아이템 번호, 클라이언트에서 값이 바뀐 칸은 0.4초 흰색, 받지 못한 칸은 회색이다(`LabHUD.cpp`의 `DrawInventoryPanel`). 2번 창의 클라이언트 영역은 1920,0 960×540이라 `capture-video.ps1 -Region "1920,0,960,540" -RaiseSlots "2" -NoMouse -AllowMeasuring -Seconds 10`으로 찍는다(`visual14`, `visual15`에서 확인). 2번 창은 자동 스크린샷이 없어서, 작은 규모 확인은 `-InventoryPanelSlot 0`으로 한다.
+- 인벤토리 패널을 띄울 때: `run-scenario.ps1`에 `-InventoryPanelSlot <클라이언트 번호>`를 더한다(그 클라이언트에 `-LabInventoryPanel`. `visualN`과 `tsmall-*` 라벨에서만 받는다). 화면 왼쪽 아래에 자기 인벤토리와 다른 플레이어 일곱의 칸 격자를 그린다. 칸 색은 아이템 번호, 클라이언트에서 값이 바뀐 칸은 0.4초 흰색, 받지 못한 칸은 회색이다(`LabHUD.cpp`의 `DrawInventoryPanel`). 2번 창의 클라이언트 영역은 1920,0 960×540이라 `capture-video.ps1 -Region "1920,0,960,540" -RaiseSlots "2" -NoMouse -AllowMeasuring -Seconds 10`으로 찍는다(`visual14`, `visual15`에서 확인). 한 칸만 번쩍이는 장면은 48색 GIF에서 흰색이 팔레트에 들지 못해 사라진다(`visual17`). 그래서 `-Out <이름>.mp4`로 찍고, ffmpeg로 패널만 잘라 GIF를 만든다: `ffmpeg -i <이름>.mp4 -vf "crop=610:150:10:380,fps=8,scale=915:-1:flags=neighbor,split[a][b];[a]drawbox=x=0:y=0:w=120:h=60:color=white:t=fill,palettegen=max_colors=64:stats_mode=full[p];[b][p]paletteuse=dither=none" <이름>.gif`. `drawbox`는 팔레트를 만드는 쪽에만 흰 사각형을 그려 흰색을 팔레트에 넣는다(`visual18`, `visual19`, 각 약 3MB). 2번 창은 자동 스크린샷이 없어서, 작은 규모 확인은 `-InventoryPanelSlot 0`으로 한다.
 - 수동 확인을 에이전트가 할 때: `run-manual.ps1`은 `Read-Host`로 기다리므로 `Start-Process powershell`로 새 창에 띄우고, 끝나면 `UnrealEditor`와 그 창을 종료한다(에이전트의 `Stop-Process`는 거부된다. troubleshooting.md). 컴퓨터 조작 권한은 `UnrealEditor.exe`의 전체 경로로 요청한다. 관찰자 창을 클릭하면 마우스가 카메라를 돌리므로 클릭한 뒤 커서를 옮겨 카메라를 맞춘다(커서의 창 안 x좌표에 따라 돌고, 조작 도구 좌표로 1px에 약 0.3°, 창 폭만큼만 돌릴 수 있다). 달리기(`shift+w`) 28초가 약 275m다(2026-10-02, 포스팅 3의 정확성 확인).
 - 문서용 Insights 캡처: `powershell -ExecutionPolicy Bypass -File Scripts/capture-insights.ps1 -Label <라벨>-rN -Out <경로>.png`. 화면 복사 대신 창 내용만 찍는다.
 - Insights 이미지에 번호 붙은 상자 그리기: `powershell -ExecutionPolicy Bypass -File Scripts/annotate-image.ps1 -In <원본>.png -Out <포스팅용 이름>.png -Boxes "x,y,w,h;x,y,w,h"`. 좌표는 원본 픽셀 기준, 상자는 최대 3개, 원본은 그대로 둔다.
@@ -108,19 +108,19 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | `act2-baseline1-r3` | 272 | 220.521 | 331.528 | 272 | 211.365 | 36324 | 5871 | 0.000 |
 | **중앙값** | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
 | **변동 폭** | 7 | 5.283 | 69.892 | 7 | 4.807 | 741 | 0 | 0.000 |
-| `act2-invown-base1-r1` | 1788 | 8.494 | 14.090 | 0 | 4.200 | 16637 | 77 | 0.000 |
-| `act2-invown-base1-r2` | 1796 | 8.560 | 13.187 | 1 | 4.157 | 16550 | 77 | 0.000 |
-| `act2-invown-base1-r3` | 1789 | 8.588 | 13.161 | 0 | 4.278 | 16635 | 77 | 0.000 |
-| **중앙값** | 1789 | 8.560 | 13.187 | 0 | 4.200 | 16635 | 77 | 0.000 |
-| **변동 폭** | 8 | 0.094 | 0.929 | 1 | 0.121 | 87 | 0 | 0.000 |
-| `act2-invown1-r1` | 1787 | 8.551 | 13.236 | 1 | 4.183 | 12421 | 77 | 0.000 |
-| `act2-invown1-r2` | 1797 | 8.493 | 12.756 | 0 | 4.133 | 12441 | 77 | 0.000 |
-| `act2-invown1-r3` | 1798 | 8.398 | 13.451 | 1 | 4.090 | 12408 | 77 | 0.000 |
-| **중앙값** | 1797 | 8.493 | 13.236 | 1 | 4.133 | 12421 | 77 | 0.000 |
-| **변동 폭** | 11 | 0.153 | 0.695 | 1 | 0.093 | 33 | 0 | 0.000 |
-| **`act2-invown-base1` 대비** | +8 | -0.067(-0.8%) | +0.049(+0.4%) | +1 | -0.067(-1.6%) | -4,214(-25.3%) | 0 | 0 |
+| `act2-fastarr-base1-r1` | 1798 | 8.929 | 14.228 | 1 | 4.419 | 12364 | 77 | 0.000 |
+| `act2-fastarr-base1-r2` | 1786 | 8.748 | 12.680 | 1 | 4.346 | 12390 | 77 | 0.000 |
+| `act2-fastarr-base1-r3` | 1787 | 8.852 | 13.237 | 1 | 4.370 | 12387 | 77 | 0.000 |
+| **중앙값** | 1787 | 8.852 | 13.237 | 1 | 4.370 | 12387 | 77 | 0.000 |
+| **변동 폭** | 12 | 0.181 | 1.548 | 0 | 0.073 | 26 | 0 | 0.000 |
+| `act2-fastarr1-r1` | 1789 | 8.650 | 12.887 | 1 | 4.240 | 11807 | 77 | 0.000 |
+| `act2-fastarr1-r2` | 1797 | 8.586 | 13.355 | 1 | 4.181 | 11799 | 77 | 0.000 |
+| `act2-fastarr1-r3` | 1789 | 8.361 | 12.044 | 0 | 4.068 | 11828 | 77 | 0.000 |
+| **중앙값** | 1789 | 8.586 | 12.887 | 1 | 4.181 | 11807 | 77 | 0.000 |
+| **변동 폭** | 8 | 0.289 | 1.311 | 1 | 0.172 | 29 | 0 | 0.000 |
+| **`act2-fastarr-base1` 대비** | +2 | -0.266(-3.0%) | -0.350(-2.6%) | 0 | -0.189(-4.3%) | -580(-4.7%) | 0 | 0 |
 
-1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. `act2-invown-base1`(포스팅 8의 최종 구성)과 `act2-invown1`(`-InventoryOwnerOnly`)은 2026-10-06에 연달아 쟀고, Insights 값은 [포스팅 9 관찰 자료](../Posts/09-inventory-owner-only/candidates.md) 8절부터에 있다.
+1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. `act2-fastarr-base1`(포스팅 9의 최종 구성)과 `act2-fastarr1`(`-InventoryFastArray`)은 2026-10-06 17:31\~17:47에 연달아 쟀고, Insights 값은 [포스팅 10 관찰 자료](../Posts/10-inventory-fastarray/candidates.md) 10절부터에 있다.
 
 ## 막힌 것
 

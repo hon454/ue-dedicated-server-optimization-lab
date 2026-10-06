@@ -299,6 +299,7 @@
 | FastArray의 클라이언트는 처음 보는 번호의 칸을 배열 맨 뒤에 더하고, 지우기는 마지막에 한다. 맨 앞 칸을 지우고 맨 뒤에 더하면 새 칸이 지운 칸의 자리로 옮겨 와, 클라이언트에서는 새 칸이 앞에서부터 차례로 들어간다 | `FastArraySerializer.h:1524`(`AddDefaulted_GetRef`), `1186-1197`. 실행: `tsmall-fastarr-all1-r1`의 인벤토리 패널에서 맨 윗줄의 한 칸만 번쩍였다 |
 | FastArray 같은 사용자 정의 델타 프로퍼티는 객체마다 하는 비교에 들어가지 않는다. 연결마다 리플리케이트할 때 `ReplicateCustomDeltaProperties`가 조건을 확인하고 보낼지 정한다 | `RepLayout.cpp:5848-5855`(`IsCustomDelta`), `6318-6321`, `1424-1431`, `DataReplication.cpp:1646, 1719` |
 | FastArray는 바뀌었을 때만 쓴다. 앞 칸을 지운 한 번은 바뀐 칸 하나와 지운 번호 하나다 | 실행: `tsmall-fastarr-on2-r1`의 서버 로그(`LogNetFastTArray Log`)에 `NumChange: 1. NumDel: 1` 100줄, 채집 6줄, 처음 200칸 8줄뿐이다 |
+| FastArray는 객체마다의 비교를 없애는 대신 연결마다 리플리케이트할 때 `Custom Delta Property Rep Time`이 돈다. 칸이 드물게 바뀌는 인벤토리 여덟 개에서 그 컴포넌트의 CPU는 줄지 않았다(프레임당 0.104 → 0.117ms). 이 타이머는 `-statnamedevents` 트레이스에 기록된다 | 실행: `act2-fastarr-base-split1-r1`, `act2-fastarr-split1-r1`(한 번씩). `DataReplication.cpp:1661`. [포스팅 10 관찰 자료](../../Posts/10-inventory-fastarray/candidates.md) 13절 |
 | `FFastArraySerializer`를 쓰는 모듈은 `NetCore`에 의존해야 한다. 빠지면 `FFastArraySerializer` 생성자 등에서 링크 오류가 난다 | `Net/Core/Classes/Net/Serialization/FastArraySerializer.h`(`NETCORE_API`). 2026-10-06 빌드 |
 
 ## 11. 계획 초안의 코드에서 바꾼 것 요약
