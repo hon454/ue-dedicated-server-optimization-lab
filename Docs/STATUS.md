@@ -9,14 +9,15 @@
 - **2막 단계 1\~3(태스크 15\~21)이 끝났다(2026-10-04).** 기법 전환 인자, 확장 요소, 규모 확정, 포스팅 5(`post-05-expanded-testbed`)까지다. 확정값은 아래 "확정할 값"의 2막 줄, 인자는 "명령"에 있고, 경위는 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)의 "태스크 15"부터 "태스크 15\~21: STATUS.md에서 옮긴 경위"까지에 있다.
 - **태스크 22(포스팅 6, `post-06-three-techniques-again`)가 끝났다(2026-10-05).** 구성별 `work_avg_ms` 중앙값은 213.555 → 35.674 → 19.536 → 16.732다([포스팅 6 측정 기록](../Posts/06-three-techniques-again/measurements.md) 3절). 경위는 [Worklog/06-three-techniques-again.md](Worklog/06-three-techniques-again.md)의 "태스크 22"에 있다.
 - **태스크 24(포스팅 7, `post-07-net-driver-breakdown`)가 끝났다(2026-10-06).** `GameNetDriver` Incl 가운데 `Prioritize Actors Time` 56.4%, `Consider Actors Time` 23.5%이고, 활성 목록 5,272개 가운데 자원 노드가 4,887개다. 경위는 [Worklog/07-net-driver-breakdown.md](Worklog/07-net-driver-breakdown.md)의 "태스크 24"에 있다.
-- **태스크 25(포스팅 8, 자원 노드의 Net Update Frequency 낮추기)를 시작했다(2026-10-06).** 사용자가 [후보](../Posts/08-node-update-frequency/candidates.md) A를 골랐다. 구현과 작은 규모 확인이 끝났고, 빌드된 바이너리는 그 커밋의 소스다. 인자는 "명령"에 있다. 낮춘 구성에서는 채집과 되살아남이 `ForceNetUpdate()`로 다음 고려 시각을 당긴다(`LabResourceNode.cpp`의 `WakeForChange`). 새 서버 로그 `lab_consider_list avg_per_frame=`(측정 구간의 프레임당 Consider List 길이, 엔진 지표 `NumConsideredActors`)가 작은 규모에서 85.1 → 15.2였다(`tsmall-nodeuf-off1-r1`, `tsmall-nodeuf-on1-r1`, 클라이언트 2, 자원 노드 100). 낮춘 구성에서도 검증용 자원 노드가 고갈되어 화면에서 사라졌다.
+- **태스크 25(포스팅 8, `post-08-node-update-frequency`)가 끝났다(2026-10-06).** 자원 노드의 Net Update Frequency를 2로 낮추자 `work_avg_ms` 중앙값이 18.060 → 8.615, 프레임당 Consider List가 3,887 → 413이었다(`act2-nodeuf-base1`, `act2-nodeuf1`). 활성 목록은 5,272 그대로라 `Consider Actors Time` 0.959ms가 남았고, 이제 `GameNetDriver`에서 가장 큰 것은 `Process Prioritized Actors Time`(45.8%)이다([측정 기록](../Posts/08-node-update-frequency/measurements.md)). 아래는 진행 중의 기록이다. 사용자가 [후보](../Posts/08-node-update-frequency/candidates.md) A를 골랐다. 구현과 작은 규모 확인이 끝났고, 빌드된 바이너리는 그 커밋의 소스다. 인자는 "명령"에 있다. 낮춘 구성에서는 채집과 되살아남이 `ForceNetUpdate()`로 다음 고려 시각을 당긴다(`LabResourceNode.cpp`의 `WakeForChange`). 새 서버 로그 `lab_consider_list avg_per_frame=`(측정 구간의 프레임당 Consider List 길이, 엔진 지표 `NumConsideredActors`)가 작은 규모에서 85.1 → 15.2였다(`tsmall-nodeuf-off1-r1`, `tsmall-nodeuf-on1-r1`, 클라이언트 2, 자원 노드 100). 낮춘 구성에서도 검증용 자원 노드가 고갈되어 화면에서 사라졌다.
 - **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
 - 다음 시각 자료 라벨은 `visual14`다(`visual13`은 README의 8개 창 화면, 2026-10-05).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **[사람] 포스팅 8 초안 확인.** [본문](../Posts/08-node-update-frequency/README.md)과 [측정 기록](../Posts/08-node-update-frequency/measurements.md) 초안을 썼다(2026-10-06). "문제"와 "원리"는 에이전트 초안이라 승인이 필요하다. Insights 캡처는 측정 기록 4절에 넣었다. 남은 것: 태그 `post-08-node-update-frequency`.
+2. **[사람] 포스팅 8과 태그 푸시.** 초안을 사용자가 승인했고(2026-10-06) 태그 `post-08-node-update-frequency`를 붙였다.
+3. **포스팅 9(인벤토리와 FastArray)를 시작한다.** [backlog.md](backlog.md) "우선순위 순" 5번. 시작하기 전에 태스크 25의 경위(위 "단계"의 태스크 25 줄)를 `Docs/Worklog/08-node-update-frequency.md`(새 파일)로 옮기는 정리안을 보인다.
 
 ## 포스팅 진행
 
@@ -30,7 +31,7 @@
 | 5. 테스트베드 확장과 새 기준선 | 완료 | `post-05-expanded-testbed` |
 | 6. 1막의 세 최적화를 2막에 다시 적용 | 완료 | `post-06-three-techniques-again` |
 | 7. 네트워크 드라이버 자체 시간 나누기 | 완료 | `post-07-net-driver-breakdown` |
-| 8. 자원 노드의 Net Update Frequency 낮추기 | 초안 | |
+| 8. 자원 노드의 Net Update Frequency 낮추기 | 완료 | `post-08-node-update-frequency` |
 
 ## 명령
 
