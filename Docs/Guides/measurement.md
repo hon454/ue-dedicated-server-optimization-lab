@@ -50,7 +50,7 @@
 
 ## 수치의 이름과 출처
 
-같은 이름으로 다른 값을 부르지 않는다([ADR-0004](../Decisions/0004-insights-and-csv-metrics.md)).
+같은 이름으로 다른 값을 부르지 않는다([ADR-0004](../Decisions/0004-insights-and-csv-metrics.md)). "모션 기록"은 `-MotionLog`를 켠 실행이 `Saved/LabMotion/<라벨>-rN/`에 남기는 서버와 클라이언트의 NPC 위치 기록이고, 값은 `Scripts/analyze-motion.ps1`이 계산한다([ADR-0020](../Decisions/0020-npc-motion-quality-metrics.md)).
 
 | 이름 | 정의 | 출처 | 쓰는 곳 |
 | --- | --- | --- | --- |
@@ -63,6 +63,11 @@
 | 클라이언트에 존재하는 액터 수 | 클라이언트 화면 위 글자의 노드 수와 NPC 수 | 스크린샷 | 포스팅 |
 | Consider List 길이(프레임당) | 측정 구간의 프레임마다 Consider List에 든 액터 수(엔진 지표 `NumConsideredActors`, `NetDriver.cpp:5454`)의 평균. 서버 로그 `lab_consider_list avg_per_frame=` | 서버 로그 | `Docs/STATUS.md`, 포스팅 |
 | `saturated_ratio` | 측정 구간에 모든 연결에서 송신 한도 때문에 중간에 끊긴 리플리케이션 횟수 ÷ 리플리케이션 시도 횟수. 엔진이 `ServerReplicateActors`에서 연결마다 남기는 기록(`UNetConnection::GetSaturationAnalytics`)의 차다([ADR-0006](../Decisions/0006-saturation-from-engine-analytics.md)). 그 전의 `smoke` 행은 프레임 끝의 `IsNetReady()`로 잰 값이다. 포화 판정 기준은 0.01 이상이다 | CSV | `Docs/STATUS.md`, 해석의 전제 |
+| 표시 위치 오차 | 측정 구간의 (클라이언트, NPC, 클라이언트 프레임)마다 클라이언트에 그려지는 NPC 메시의 위치와 같은 시각의 서버 NPC 위치(서버 프레임 기록 사이를 선형 보간)의 거리(cm). 평균과 P99. NPC가 그 클라이언트에 생긴 뒤 1초 안의 표본은 뺀다([ADR-0020](../Decisions/0020-npc-motion-quality-metrics.md)) | 모션 기록 | 둘 다(포스팅 11\~13) |
+| 표시 속도 오차 | 같은 표본에서 클라이언트 프레임 한 칸 동안의 표시 이동과 서버 이동의 차 ÷ 그 시간(cm/s). 평균과 P99(ADR-0020) | 모션 기록 | 둘 다(포스팅 11\~13) |
+| 표시 위치가 바뀐 간격 | NPC마다 표시 위치가 1cm 넘게 바뀐 클라이언트 프레임 사이의 시간(ms). 평균과 P99. 포스팅 4의 영상에서 읽은 "위치가 바뀐 간격"을 기록으로 잰 것이다(ADR-0020) | 모션 기록 | 보조 |
+| 수신 간격 | NPC마다 클라이언트가 이동 갱신을 받은 시각의 차(ms). 평균과 P99(ADR-0020) | 모션 기록 | 보조 |
+| 표시 지연 | 서버 경로를 τ만큼 늦췄을 때 평균 표시 위치 오차가 가장 작은 τ(0\~300ms, 1ms 간격). 클라이언트 기록 시각이 게임 스레드 프레임의 끝이라 화면에 나오기까지의 시간은 들어가지 않는다(ADR-0020) | 모션 기록 | 보조 |
 
 수치 CSV의 `config` 열은 그 행을 잰 구성이다. 서버 인자 가운데 기본값과 다른 것을 `;`로 이은 문자열이고(예: `AlwaysRelevant;NoNodeDormancy;NpcUpdateFrequency=100`), 인자를 주지 않은 실행은 `default`다. 2막의 확장 요소도 이 열에 적힌다(플레이어 자리 간격은 `PlayerSpacing=3`). 서버 로그의 `lab_config=` 줄에 같은 값이 남는다. 이 열을 더하기 전(2026-10-03, 2막 구현 계획 태스크 15)의 행은 `Saved/LabMetrics/summary-act1.csv`에 있고, 그 행의 구성은 라벨과 그때의 빌드로 정해진다.
 
@@ -79,6 +84,7 @@
 | 연결당 송신 대역폭 | Network Insights. CSV 값과 대조 | 클라이언트 회선 부담과 서버 송신 비용 |
 | 연결당 열린 액터 채널 수 | CSV | 서버가 연결마다 유지하는 리플리케이션 대상의 수 |
 | 클라이언트에 존재하는 액터 수 | 클라이언트 화면 위 글자 | 클라이언트가 실제로 가진 것 |
+| 표시 위치 오차, 표시 속도 오차 (평균, P99) | 모션 기록. 위 "수치의 이름과 출처". 포스팅 11부터 | 클라이언트가 보는 NPC 움직임의 정확도와 부드러움 |
 
 ## 한계
 
