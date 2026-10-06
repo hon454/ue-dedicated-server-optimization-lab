@@ -25,7 +25,7 @@
 | 클라이언트는 받은 위치로 NPC를 바로 옮긴다 | `AActor::OnRep_ReplicatedMovement`가 시뮬레이티드 프록시에서 `PostNetReceiveLocationAndRotation`을 부르고, 여기서 `SetActorLocationAndRotation`으로 옮긴다(`Engine/Source/Runtime/Engine/Private/ActorReplication.cpp:182-275, 277-285`) | 엔진 소스 |
 | 표시 속도 오차 평균 440 → 15.0cm/s, -96.6% | 중앙값 439.9 → 15.0(`act2-interp-base2`, `act2-interp2`). 15.0 ÷ 439.9 − 1 = -96.59% | 4절 |
 | 표시 지연 74 → 155ms, +81ms | 중앙값 74 → 155. 155 − 74 = 81 | 4절 |
-| 연결당 송신 대역폭 11,800 → 12,700바이트/초, +7.29% | CSV `out_bytes_per_sec_per_conn` 중앙값 11,820 → 12,682. 12,682 ÷ 11,820 − 1 = 7.293%. Network Insights에서는 읽지 않았다(8절) | 3절 |
+| 연결당 송신 대역폭 11,800 → 12,700바이트/초, +7.29% | CSV `out_bytes_per_sec_per_conn` 중앙값 11,820 → 12,682. 12,682 ÷ 11,820 − 1 = 7.293% | 3절 |
 | 서버 프레임 시간 평균 8.88 → 8.89ms, 구별되지 않음 | Timing Insights 8.880 → 8.893(중앙값 실행 `r1`끼리, ADR-0010). CSV `work_avg_ms` 중앙값 8.601 → 8.616(+0.015)이 두 묶음의 변동 폭 0.138, 0.215 가운데 큰 쪽보다 작다 | 3절, 5절 |
 | 가장 큰 원뿔이 10m를 왕복하는 시연용 NPC, 4배 느리게 | `ALabShowcaseNpc`의 왕복 구간은 0번 자리에서 (+10m, +2.5m) → (+10m, +12.5m)(`LabGameMode.cpp`의 `SetPatrol` 호출). GIF는 `setpts=4*PTS`(6절) | 프로젝트 소스, 6절 |
 | NPC는 300cm/s로 걷는다 | `ALabNpc::MoveSpeed` 300(`Source/DSOptLab/LabNpc.h`) | 프로젝트 소스 |
@@ -44,6 +44,7 @@
 | 예상: 표시 위치 오차 약 47cm | 300 × 0.1572 = 47.2cm | 계산 |
 | 예상: 갱신 한 번에 16비트, 송신 대역폭 약 7.2% 증가 | 바뀐 프로퍼티마다 핸들 8비트와 값(`uint8` 8비트)(`Engine/Source/Runtime/Engine/Private/RepLayout.cpp`의 `SerializeIntPacked` 핸들, [포스팅 10 측정 기록](../10-inventory-fastarray/measurements.md) 2절). 연결 하나가 1초에 받는 NPC 갱신은 205,338 ÷ 8 ÷ 60.023 = 427.6번(`act2-interp-base2-r1`의 수신 간격 n). 427.6 × 16 ÷ 8 = 855바이트/초, 855 ÷ 11,820 = 7.24% | 계산 |
 | 적용의 코드 | `Source/DSOptLab/LabNpc.h`, `LabNpc.cpp`(커밋 `f44bbfd`, 프레임 길이 추정은 `6274fd5`). 본문은 줄여 옮겼다 | 프로젝트 소스 |
+| NPC 갱신 한 번은 101비트에서 117비트, 늘어난 몫이 프레임 번호 | Networking Insights의 `LabNpc` Incl ÷ Count: 2,706,415 ÷ 26,736 = 101.23비트(`act2-interp-base2-r1`), 3,133,781 ÷ 26,738 = 117.20비트(`act2-interp2-r1`). 차이 15.97비트. 적용 후의 `ServerFrame`은 26,738번, 427,808비트로 한 번에 16비트(I.Max 16)다 | 5.1절 |
 | 결과 표의 예상 약 12,700 | 11,820 + 855 = 12,675 | 계산 |
 | 결과 표의 실제 | 15.0, 155, 46.38, 12,682(중앙값) | 3절, 4절 |
 | 차트의 값 | 439.9, 15.0 | 4절 |
@@ -107,6 +108,21 @@
 - `Saved/InsightsExport/<라벨>/summary.txt`에서 옮겼다. 구간은 두 북마크 사이(60.023초, 60.000초)다.
 - `LabNpc`의 차이(+0.029ms)는 실행 하나씩의 값이라 구별 여부를 판단하지 않았다.
 
+### 5.1 Networking Insights (`Game Instance 0 [Server]`, `Connection 0`, `Outgoing`)
+
+| 줄 | `act2-interp-base2-r1` Count / Incl / I.Avg | `act2-interp2-r1` Count / Incl / I.Avg |
+| --- | ---: | ---: |
+| `Actor` | 38,243 / 5,569,125 / 145 | 38,214 / 5,994,747 / 156 |
+| `LabNpc` | 26,736 / 2,706,415 / 101 | 26,738 / 3,133,781 / 117 |
+| `ServerFrame` | 없음 | 26,738 / 427,808 / 16 |
+| `ReplicatedMovement` | 36,579 / 3,465,610 / 94 | 36,580 / 3,465,749 / 94 |
+| `PropertyHandle` | 38,496 / 307,968 / 8 | 38,475 / 307,800 / 8 |
+| `PacketHeaderAndInfo` | 1,899 / 174,708 / 92 | 1,901 / 174,892 / 92 |
+
+- 패킷 범위는 측정 구간이 아니라 그래프의 정상 구간에서 약 1,900패킷을 손으로 골랐다(두 트레이스에서 같은 화면 위치를 클릭과 Shift-클릭). 그래서 이 표의 Count와 Incl은 서로 비교하지 않고, 갱신 한 번의 평균(Incl ÷ Count)만 쓴다. 창은 2912 폭 화면에서 최대화했다.
+- `ServerFrame`의 16비트는 모두 그 아래의 `Shared`다(패킷 하나의 Packet Content에서 `ServerFrame` Size 16 bits, 아래 `Shared` Size 16 bits). `PropertyHandle`의 Count가 두 트레이스에서 거의 같아(38,496, 38,475), 프로퍼티 핸들은 따로 더 가지 않았다. 원리의 예상(핸들 8비트 + 값 8비트)과 합계는 같고, 엔진이 핸들을 `Shared` 안에 기록한 것으로 본다.
+- `ReplicatedMovement`에는 플레이어 캐릭터의 이동도 들어 있다. 패킷 하나에서 읽은 NPC 하나의 `ReplicatedMovement` 아래 `Shared`는 83비트였다.
+
 ## 6. 시각 자료
 
 - 요약의 GIF([images/npc-compare.gif](images/npc-compare.gif))는 시각 자료 전용 실행 `visual20`(적용 전 구성 + `-ShowcaseNpc`)과 `visual21`(적용 후 구성 + `-ShowcaseNpc`)에서 찍었다. 두 실행은 `-NoTrace`, 한 번씩이고 수치는 쓰지 않는다. 시작 신호 48.5초 뒤에 `Scripts/capture-video.ps1 -Region "0,0,960,540" -RaiseSlots "0" -Fps 60 -Seconds 8 -NoMouse -AllowMeasuring`로 0번 창을 8초 찍었다(`Saved/Screenshots/Lab/visual20-npc.mp4`, `visual21-npc.mp4`).
@@ -123,7 +139,7 @@
 
 ## 8. 확인하지 않은 것
 
-- Network Insights에서 NPC 갱신 한 번의 크기. 16비트는 계산 값이고, 실제 증가는 CSV의 862바이트/초가 계산(855바이트/초)과 맞는 것으로만 확인했다.
+- `ServerFrame`의 `Shared` 16비트 안에서 핸들과 값이 각각 몇 비트인지. 패킷 내용 화면은 더 나누지 않았다.
 - 표시 속도 오차 P99(약 339cm/s)가 NPC가 방향을 바꾸는 순간에서 오는지.
 - 0번이 아닌 클라이언트별 값의 차이(`summary.txt`에 클라이언트별 평균이 있다).
 - 보간이 클라이언트 CPU에 주는 비용.
