@@ -15,13 +15,13 @@
 - **루트 README의 결과는 2막 일곱 구성을 연달아 잰 `act2-all-*1`이다(2026-10-06).** 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 여섯 단계"에 있다. 틱 예산을 조금 넘는 구성(① 거리 판정)은 프레임 시간이 Consider List를 늘리는 되먹임으로 약 38ms와 50ms 사이를 오간다. 이런 구성은 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 경위는 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "README와 시각화 페이지 갱신"에 있다.
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 일곱 단계(포스팅 10까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 2막에 새 기법을 측정하면 단계를 더한다.
 - **포스팅 11의 작은 규모 확인(2026-10-07).** 클라이언트 2개, 자원 노드 100개, NPC 10개와 플레이어 주변 50개(`-PlayerSpacing 3 -NpcsNearPlayers 50 -MotionLog`), 준비 20초, 측정 30초다. 보간 없음(`tsmall-motion1-r1`) → 150ms 보간(`tsmall-motion2-r1`)에서 표시 위치 오차 평균 21.19 → 49.03cm, 표시 속도 오차 평균 448.7 → 12.3cm/s, 표시 지연 70 → 165ms, 수신 간격 평균 133.4ms(그대로), `out_bytes_per_sec_per_conn` 7,677 → 8,421이다. 보간 없음의 값은 ADR-0020의 예상(약 25cm, 450cm/s)과 맞는다. 작은 규모라 포스팅의 비교에 쓰지 않는다.
-- **첫 확정 규모 묶음은 쓰지 않는다(2026-10-07).** `act2-interp-base1`, `act2-interp1`(01:32\~01:50, 본체 화면)은 측정 시작 직후(01:33:12)부터 다른 세션이 남긴 `grep.exe`가 코어 하나를 계속 썼다. 기준 묶음의 `work_avg_ms`가 13.43\~14.16(전날 같은 구성 `act2-fastarr-base1` 8.852)이고, Consider List와 호출 횟수는 같은데 모든 타이머가 약 1.5배 느렸다(`GameNetDriver` 4.112 → 6.468ms, `act2-fastarr-base1-r3`과 `act2-interp-base1-r3`의 Insights 내보내기). 이 묶음에서 보간 시계의 결함도 찾았다. 서버가 1분에 1,764\~1,779프레임만 돌자 프레임 길이를 33.3ms로 가정한 시계가 밀려 표시 지연이 139\~144ms(150ms보다 짧음)였다. 클라이언트가 받은 시각에 직선을 맞춰 프레임 길이를 추정하게 고쳤고, 서버를 28Hz로 돌린 작은 규모 확인에서 표시 지연 151ms, 표시 속도 오차 평균 12.9cm/s였다(`tsmall-motion5-r1`, `run-scenario.ps1 -ServerTickRate 28`, 진단용). 다음은 같은 두 구성을 `act2-interp-base2`, `act2-interp2`로 다시 잰다.
+- **첫 확정 규모 묶음은 쓰지 않는다(2026-10-07).** `act2-interp-base1`, `act2-interp1`(01:32\~01:50, 본체 화면)은 측정 시작 직후(01:33:12)부터 다른 세션이 남긴 `grep.exe`가 코어 하나를 계속 썼다. 기준 묶음의 `work_avg_ms`가 13.43\~14.16(전날 같은 구성 `act2-fastarr-base1` 8.852)이고, Consider List와 호출 횟수는 같은데 모든 타이머가 약 1.5배 느렸다(`GameNetDriver` 4.112 → 6.468ms, `act2-fastarr-base1-r3`과 `act2-interp-base1-r3`의 Insights 내보내기). 이 묶음에서 보간 시계의 결함도 찾았다. 서버가 1분에 1,764\~1,779프레임만 돌자 프레임 길이를 33.3ms로 가정한 시계가 밀려 표시 지연이 139\~144ms(150ms보다 짧음)였다. 클라이언트가 받은 시각에 직선을 맞춰 프레임 길이를 추정하게 고쳤고, 서버를 28Hz로 돌린 작은 규모 확인에서 표시 지연 151ms, 표시 속도 오차 평균 12.9cm/s였다(`tsmall-motion5-r1`, `run-scenario.ps1 -ServerTickRate 28`, 진단용). 같은 두 구성을 `act2-interp-base2`, `act2-interp2`로 다시 쟀다(아래 "측정 결과").
 - 다음 시각 자료 라벨은 `visual20`이다(`visual18`, `visual19`는 포스팅 10의 인벤토리 패널 전후. `visual16`, `visual17`의 GIF는 한 칸 번쩍임이 48색 팔레트에서 사라져 쓰지 않았다, 2026-10-06).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **포스팅 11(NPC 이동의 클라이언트 보간)을 시작한다.** [backlog.md](backlog.md) "우선순위 순" 7번. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)으로 승인됐다(2026-10-07, 표시 위치 오차와 표시 속도 오차, 포스팅 12, 13도 쓴다). 사용자가 서버 시각을 붙인 버퍼 보간(서버 프레임 번호 8비트, 보간 지연 150ms, 버퍼가 비면 멈춤)을 골랐다(2026-10-07, [포스팅 11 관찰 자료](../Posts/11-npc-interpolation/candidates.md) 5절). 모션 기록과 보간을 구현해 작은 규모에서 확인했다(`tsmall-motion1`, `tsmall-motion2`, 아래). 다음은 확정 규모 측정이고, 시작하기 전에 사용자에게 구성, 라벨, 걸리는 시간, 화면 조건을 알린다. 기준 구성은 포스팅 10의 최종 구성(포스팅 9의 구성에 `-InventoryFastArray`)이고, 기준 구성과 적용 구성은 연달아 잰다.
+2. **포스팅 11(NPC 이동의 클라이언트 보간)을 시작한다.** [backlog.md](backlog.md) "우선순위 순" 7번. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)으로 승인됐다(2026-10-07, 표시 위치 오차와 표시 속도 오차, 포스팅 12, 13도 쓴다). 사용자가 서버 시각을 붙인 버퍼 보간(서버 프레임 번호 8비트, 보간 지연 150ms, 버퍼가 비면 멈춤)을 골랐다(2026-10-07, [포스팅 11 관찰 자료](../Posts/11-npc-interpolation/candidates.md) 5절). 모션 기록과 보간을 구현해 작은 규모에서 확인했다(`tsmall-motion1`, `tsmall-motion2`, 아래). 확정 규모 측정을 마쳤다(`act2-interp-base2`, `act2-interp2`, 아래 "측정 결과"). 다음은 시각 자료(녹화는 사용자 허가 뒤, `visual20`부터)와 포스팅 초안이다. 기준 구성은 포스팅 10의 최종 구성(포스팅 9의 구성에 `-InventoryFastArray`)이고, 기준 구성과 적용 구성은 연달아 잰다.
 
 ## 포스팅 진행
 
@@ -113,8 +113,30 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | `act2-baseline1-r3` | 272 | 220.521 | 331.528 | 272 | 211.365 | 36324 | 5871 | 0.000 |
 | **중앙값** | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
 | **변동 폭** | 7 | 5.283 | 69.892 | 7 | 4.807 | 741 | 0 | 0.000 |
+| `act2-interp-base2-r1` | 1788 | 8.601 | 12.616 | 1 | 4.162 | 11820 | 77 | 0.000 |
+| `act2-interp-base2-r2` | 1788 | 8.515 | 12.304 | 1 | 4.108 | 11826 | 77 | 0.000 |
+| `act2-interp-base2-r3` | 1797 | 8.653 | 13.000 | 1 | 4.145 | 11815 | 77 | 0.000 |
+| **중앙값** | 1788 | 8.601 | 12.616 | 1 | 4.145 | 11820 | 77 | 0.000 |
+| **변동 폭** | 9 | 0.138 | 0.696 | 0 | 0.054 | 11 | 0 | 0.000 |
+| `act2-interp2-r1` | 1788 | 8.616 | 12.632 | 1 | 4.188 | 12682 | 77 | 0.000 |
+| `act2-interp2-r2` | 1797 | 8.525 | 13.092 | 1 | 4.094 | 12675 | 77 | 0.000 |
+| `act2-interp2-r3` | 1796 | 8.740 | 13.181 | 0 | 4.212 | 12689 | 77 | 0.000 |
+| **중앙값** | 1796 | 8.616 | 13.092 | 1 | 4.188 | 12682 | 77 | 0.000 |
+| **변동 폭** | 9 | 0.215 | 0.549 | 1 | 0.118 | 14 | 0 | 0.000 |
+| **`act2-interp-base2` 대비** | +8 | +0.015(+0.2%) | +0.476(+3.8%) | 0 | +0.043(+1.0%) | +862(+7.3%) | 0 | 0 |
 
-1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다.
+1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다. `act2-interp-base2`(포스팅 10의 최종 구성에 `-MotionLog`)와 `act2-interp2`(`-NpcInterpDelay 150`)는 2026-10-07 06:15\~06:31에 본체 화면에서 연달아 쟀다. `work_avg_ms`, `work_p99_ms`, `netflush_avg_ms`의 차이는 변동 폭 안이라 구별되지 않고, `out_bytes_per_sec_per_conn`만 구별된다. 서버가 모션 기록에 쓴 시간은 프레임당 0.0655\~0.0673ms다(서버 로그). 중앙값 실행(두 묶음 모두 `r1`)의 Insights 값은 서버 프레임 시간 평균 8.880 → 8.893ms, `GameNetDriver` 프레임당 3.907 → 3.934ms, 그중 `LabNpc` 0.857 → 0.886ms다(`export-insights.ps1`).
+
+품질 지표([ADR-0020](Decisions/0020-npc-motion-quality-metrics.md), `analyze-motion.ps1`, 클라이언트 8개, 측정 구간 60초, NPC 66개). 세 실행의 중앙값(변동 폭)이다.
+
+| 지표 | `act2-interp-base2` | `act2-interp2` |
+| --- | --- | --- |
+| 표시 위치 오차 평균 / P99(cm) | 22.25(0.12) / 42.27(0.22) | 46.38(0.75) / 52.43(3.16) |
+| 표시 속도 오차 평균 / P99(cm/s) | 439.9(0.7) / 957.6(7.0) | 15.0(0.1) / 338.5(8.1) |
+| 표시 위치가 바뀐 간격 평균(ms) | 133.6 | 35.4 |
+| 수신 간격 평균(ms) | 133.6 | 133.4 |
+| 표시 지연(ms) | 74 | 155 |
+| 클라이언트 프레임 간격 평균(ms) | 35.3 | 35.4 |
 
 ## 막힌 것
 
