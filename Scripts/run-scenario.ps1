@@ -51,7 +51,10 @@
     # 포스팅 11~13의 측정은 기준 구성과 적용 구성 모두 켠다. 켠 묶음과 끈 묶음은 비교하지 않는다.
     [switch]$MotionLog,
     # 2막의 기법. 0보다 크면 클라이언트가 NPC를 서버 시각 기준으로 이 시간(ms)만큼 늦게 보간해 그린다. 포스팅 11의 구성은 150이다.
-    [int]$NpcInterpDelay = 0
+    [int]$NpcInterpDelay = 0,
+    # 진단용. 0보다 크면 서버의 틱 상한(NetServerMaxTickRate, 엔진 기본값 30)을 이 값으로 바꾼다. 클라이언트는 30 그대로다.
+    # 서버가 30Hz를 못 지킬 때 클라이언트의 보간 시계가 프레임 길이를 따라가는지 보려고 둔다. 작은 규모 확인(tsmall-*)에서만 받는다.
+    [int]$ServerTickRate = 0
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -68,6 +71,11 @@ if ($ShowcaseNpc -and $Label -notmatch '^visual\d+$') {
 
 if ($InventoryPanelSlot -ge 0 -and $Label -notmatch '^(visual\d+|tsmall-.+)$') {
     Write-Host "FAIL: -InventoryPanelSlot changes a client screen, so it is only allowed with a visual-only label (visualN) or a small check (tsmall-*)."
+    exit 1
+}
+
+if ($ServerTickRate -gt 0 -and $Label -notmatch '^tsmall-.+$') {
+    Write-Host "FAIL: -ServerTickRate changes the server tick, so it is only allowed with a small check (tsmall-*)."
     exit 1
 }
 
@@ -253,6 +261,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($NpcInterpDelay -gt 0) {
         $ServerArgs += "-LabNpcInterpDelay=$NpcInterpDelay"
+    }
+    if ($ServerTickRate -gt 0) {
+        $ServerArgs += "-ini:Engine:[/Script/OnlineSubsystemUtils.IpNetDriver]:NetServerMaxTickRate=$ServerTickRate"
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")

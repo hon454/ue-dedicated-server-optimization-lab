@@ -37,10 +37,10 @@ protected:
 private:
 	static constexpr float WanderRadius = 3000.f;
 
-	/** 클라이언트에서 받은 위치 하나. ServerTime은 서버 프레임 번호로 정한 서버 시각(초)이다. */
+	/** 클라이언트에서 받은 위치 하나. Frame은 펼친 서버 프레임 번호다. 보간은 이 번호를 시각축으로 쓴다. */
 	struct FSnapshot
 	{
-		double ServerTime = 0.0;
+		double Frame = 0.0;
 		FVector Location = FVector::ZeroVector;
 		FQuat Rotation = FQuat::Identity;
 	};

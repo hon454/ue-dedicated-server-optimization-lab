@@ -17,18 +17,31 @@ namespace
 	/**
 	 * 클라이언트 전용. NPC 전체가 함께 쓰는 서버 시계(포스팅 11).
 	 * 받은 8비트 프레임 번호를 지금까지 본 가장 큰 번호에 가장 가까운 값으로 펼친다. 모든 NPC의 갱신이 몇 프레임 안에 오므로 ±128프레임이면 충분하다.
-	 * 받은 시각 - 서버 시각의 최솟값(최근 2초)을 두 시계의 차로 삼는다. 가장 빨리 도착한 갱신이 전달 지연이 가장 짧은 갱신이다.
+	 * "프레임 f가 가장 빨리 도착할 시각" R(f) = Intercept + Period × f를 받은 시각으로 추정한다.
+	 * 0.5초 칸마다 전달 지연이 가장 짧았던 갱신 하나를 남기고(최근 8초), 그 점들에 직선을 맞춰 Period(서버 프레임 길이)를 구한다.
+	 * Intercept는 그 기울기로 점들의 아래쪽 경계에 맞춘다. 서버가 30Hz를 다 못 지켜 프레임이 33.3ms보다 길어도 시계가 밀리지 않는다
+	 * (프레임 길이를 33.3ms로 가정하면 1분에 1,770프레임일 때 서버 시각이 약 1.5% 늦게 갔다. act2-interp1).
 	 */
 	struct FLabServerClock
 	{
 		static constexpr double BucketSeconds = 0.5;
-		static constexpr int32 NumBuckets = 4;
+		static constexpr int32 NumBuckets = 16;
+
+		struct FPoint
+		{
+			double Frame = 0.0;
+			double Receive = 0.0;
+			bool bValid = false;
+		};
 
 		int64 LatestFrame = 0;
 		bool bHasFrame = false;
-		double BucketMin[NumBuckets] = { DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX };
+		FPoint Points[NumBuckets];
 		double BucketStart = -1.0;
 		int32 Bucket = 0;
+		double NominalPeriod = 1.0 / 30.0;
+		double Period = 1.0 / 30.0;
+		double Intercept = 0.0;
 
 		int64 Unwrap(uint8 Raw)
 		{
@@ -48,34 +61,96 @@ namespace
 			return Frame;
 		}
 
-		void AddSample(double ReceiveTime, double ServerTime)
+		void AddSample(double ReceiveTime, int64 Frame)
 		{
 			if (BucketStart < 0.0)
 			{
 				BucketStart = ReceiveTime;
 			}
-			// 0.5초가 지날 때마다 가장 오래된 칸을 비운다. 2초 넘게 받지 못했으면 모두 비운다.
+			// 0.5초가 지날 때마다 가장 오래된 칸을 비운다. 8초 넘게 받지 못했으면 모두 비운다.
 			const int32 Steps = FMath::Min(NumBuckets, static_cast<int32>((ReceiveTime - BucketStart) / BucketSeconds));
 			for (int32 Step = 0; Step < Steps; ++Step)
 			{
 				Bucket = (Bucket + 1) % NumBuckets;
-				BucketMin[Bucket] = DBL_MAX;
+				Points[Bucket].bValid = false;
 			}
 			if (Steps > 0)
 			{
 				BucketStart = ReceiveTime;
 			}
-			BucketMin[Bucket] = FMath::Min(BucketMin[Bucket], ReceiveTime - ServerTime);
+
+			// 한 칸(0.5초) 안에서는 서버 틱 상한으로 정한 프레임 길이(33.3ms)로 비교해도 어긋남이 1ms 아래다.
+			FPoint& Point = Points[Bucket];
+			const double Frames = static_cast<double>(Frame);
+			if (!Point.bValid || ReceiveTime - NominalPeriod * Frames < Point.Receive - NominalPeriod * Point.Frame)
+			{
+				Point.Frame = Frames;
+				Point.Receive = ReceiveTime;
+				Point.bValid = true;
+			}
+			Refit();
 		}
 
-		double GetOffset() const
+		void Refit()
 		{
-			double Offset = DBL_MAX;
-			for (const double Value : BucketMin)
+			int32 Count = 0;
+			double MeanFrame = 0.0;
+			double MeanReceive = 0.0;
+			double MinFrame = DBL_MAX;
+			double MaxFrame = -DBL_MAX;
+			for (const FPoint& Point : Points)
 			{
-				Offset = FMath::Min(Offset, Value);
+				if (Point.bValid)
+				{
+					++Count;
+					MeanFrame += Point.Frame;
+					MeanReceive += Point.Receive;
+					MinFrame = FMath::Min(MinFrame, Point.Frame);
+					MaxFrame = FMath::Max(MaxFrame, Point.Frame);
+				}
 			}
-			return Offset;
+			if (Count == 0)
+			{
+				return;
+			}
+			MeanFrame /= Count;
+			MeanReceive /= Count;
+
+			// 점이 2초 넘게 퍼져 있을 때만 기울기를 믿는다. 그 길이에서 10% 넘게 벗어나면 버린다.
+			Period = NominalPeriod;
+			if (Count >= 4 && (MaxFrame - MinFrame) * NominalPeriod >= 2.0)
+			{
+				double Sxx = 0.0;
+				double Sxy = 0.0;
+				for (const FPoint& Point : Points)
+				{
+					if (Point.bValid)
+					{
+						Sxx += (Point.Frame - MeanFrame) * (Point.Frame - MeanFrame);
+						Sxy += (Point.Frame - MeanFrame) * (Point.Receive - MeanReceive);
+					}
+				}
+				const double Slope = Sxx > 0.0 ? Sxy / Sxx : NominalPeriod;
+				if (FMath::Abs(Slope - NominalPeriod) <= 0.1 * NominalPeriod)
+				{
+					Period = Slope;
+				}
+			}
+
+			Intercept = DBL_MAX;
+			for (const FPoint& Point : Points)
+			{
+				if (Point.bValid)
+				{
+					Intercept = FMath::Min(Intercept, Point.Receive - Period * Point.Frame);
+				}
+			}
+		}
+
+		/** 지금(Now)보다 Delay초 앞선 순간에 가장 빨리 도착했을 서버 프레임(소수). */
+		double GetRenderFrame(double Now, double Delay) const
+		{
+			return (Now - Delay - Intercept) / Period;
 		}
 	};
 
@@ -234,14 +309,14 @@ void ALabNpc::PostNetReceiveLocationAndRotation()
 
 	// 같은 묶음의 프로퍼티는 모두 받은 뒤에 RepNotify가 불리므로 ServerFrame은 이 위치와 같은 프레임의 값이다.
 	const UNetDriver* NetDriver = GetWorld()->GetNetDriver();
-	const double FramePeriod = 1.0 / FMath::Clamp(NetDriver ? NetDriver->GetNetServerMaxTickRate() : 30, 1, 1000);
 	FLabServerClock& Clock = GetServerClock();
-	const double ServerTime = static_cast<double>(Clock.Unwrap(ServerFrame)) * FramePeriod;
-	Clock.AddSample(FPlatformTime::Seconds(), ServerTime);
+	Clock.NominalPeriod = 1.0 / FMath::Clamp(NetDriver ? NetDriver->GetNetServerMaxTickRate() : 30, 1, 1000);
+	const int64 Frame = Clock.Unwrap(ServerFrame);
+	Clock.AddSample(FPlatformTime::Seconds(), Frame);
 
 	const FRepMovement& Rep = GetReplicatedMovement();
 	FSnapshot Snapshot;
-	Snapshot.ServerTime = ServerTime;
+	Snapshot.Frame = static_cast<double>(Frame);
 	Snapshot.Location = FRepMovement::RebaseOntoLocalOrigin(Rep.Location, this);
 	Snapshot.Rotation = Rep.Rotation.Quaternion();
 
@@ -253,7 +328,7 @@ void ALabNpc::PostNetReceiveLocationAndRotation()
 		return;
 	}
 	// 같거나 이전 프레임의 위치는 버린다.
-	if (ServerTime <= Snapshots.Last().ServerTime)
+	if (Snapshot.Frame <= Snapshots.Last().Frame)
 	{
 		return;
 	}
@@ -271,11 +346,11 @@ void ALabNpc::TickInterpolation()
 		return;
 	}
 
-	// 서버 시각으로 지금보다 보간 지연만큼 앞선 순간을 그린다.
-	const double RenderTime = FPlatformTime::Seconds() - GetServerClock().GetOffset() - FLabScenarioConfig::Get().NpcInterpDelayMs / 1000.0;
+	// 지금보다 보간 지연만큼 앞선 순간의 서버 프레임(소수)을 그린다.
+	const double RenderFrame = GetServerClock().GetRenderFrame(FPlatformTime::Seconds(), FLabScenarioConfig::Get().NpcInterpDelayMs / 1000.0);
 
-	// RenderTime보다 앞선 위치는 하나만 남긴다.
-	while (Snapshots.Num() >= 2 && Snapshots[1].ServerTime <= RenderTime)
+	// RenderFrame보다 앞선 위치는 하나만 남긴다.
+	while (Snapshots.Num() >= 2 && Snapshots[1].Frame <= RenderFrame)
 	{
 		Snapshots.RemoveAt(0);
 	}
@@ -283,11 +358,11 @@ void ALabNpc::TickInterpolation()
 	FVector Location = Snapshots[0].Location;
 	FQuat Rotation = Snapshots[0].Rotation;
 	// 두 위치 사이면 보간한다. 다음 위치가 아직 오지 않았으면(버퍼가 빔) 마지막 위치에 멈춘다.
-	if (Snapshots.Num() >= 2 && RenderTime > Snapshots[0].ServerTime)
+	if (Snapshots.Num() >= 2 && RenderFrame > Snapshots[0].Frame)
 	{
 		const FSnapshot& From = Snapshots[0];
 		const FSnapshot& To = Snapshots[1];
-		const double Alpha = (RenderTime - From.ServerTime) / (To.ServerTime - From.ServerTime);
+		const double Alpha = (RenderFrame - From.Frame) / (To.Frame - From.Frame);
 		Location = FMath::Lerp(From.Location, To.Location, Alpha);
 		Rotation = FQuat::Slerp(From.Rotation, To.Rotation, static_cast<float>(Alpha));
 	}
