@@ -7,7 +7,7 @@
 
 class ALabBuilding;
 class ALabPlayerController;
-class ULabInventoryComponent;
+class ULabInventoryBase;
 class ULabStateComponent;
 
 /** 서버 시작 시 월드를 생성하고, 공통 시작 신호로 NPC와 플레이어를 출발시킨다. */
@@ -89,7 +89,7 @@ private:
 	TArray<TWeakObjectPtr<ULabStateComponent>> StateComponents;
 
 	/** 인벤토리를 붙인 순서(자리 번호 순서). */
-	TArray<TWeakObjectPtr<ULabInventoryComponent>> Inventories;
+	TArray<TWeakObjectPtr<ULabInventoryBase>> Inventories;
 
 	FRandomStream StateRng;
 	int32 NextChurnIndex = 0;

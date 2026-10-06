@@ -43,17 +43,17 @@ private:
 	void UpdateInventoryPanel(const APawn& ControlledPawn);
 	void DrawInventoryPanel();
 
-	/** 인벤토리 하나를 클라이언트가 지난 틱에 본 값과 비교하려고 기억한다. */
+	/** 인벤토리 하나를 클라이언트가 지난 틱에 본 값과 비교하려고 기억한다. 그리는 것도 이 값이다. */
 	struct FInventoryView
 	{
-		TArray<FLabItem> Previous;
+		TArray<FLabItem> Items;
 		TArray<double> FlashUntil;
 		bool bSeen = false;
 	};
 
 	struct FPanelEntry
 	{
-		TWeakObjectPtr<const ULabInventoryComponent> Inventory;
+		TWeakObjectPtr<const ULabInventoryBase> Inventory;
 		bool bOwn = false;
 	};
 
@@ -62,8 +62,9 @@ private:
 	static constexpr int32 PanelColumns = 20;
 	static constexpr double FlashSeconds = 0.4;
 
-	TMap<TWeakObjectPtr<const ULabInventoryComponent>, FInventoryView> InventoryViews;
+	TMap<TWeakObjectPtr<const ULabInventoryBase>, FInventoryView> InventoryViews;
 	TArray<FPanelEntry> PanelEntries;
+	TArray<FLabItem> ItemsScratch;
 
 	UPROPERTY()
 	TObjectPtr<ACameraActor> TopDownCamera;

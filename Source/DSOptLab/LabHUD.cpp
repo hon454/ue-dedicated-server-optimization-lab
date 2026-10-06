@@ -77,7 +77,7 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 	int32 NumStates = 0;
 	int32 NumInventories = 0;
 	int32 NumOwnItems = 0;
-	int32 OwnFirstItemId = 0;
+	int32 OwnNewestItemId = 0;
 	int32 NumOtherItems = 0; // 다른 플레이어의 인벤토리에서 받은 칸 수의 합. 소유자에게만 보내면 0이다
 
 	int32 NumBuildings = 0;
@@ -107,13 +107,13 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 	{
 		++NumPlayers;
 		NumStates += It->FindComponentByClass<ULabStateComponent>() ? 1 : 0;
-		if (const ULabInventoryComponent* Inventory = It->FindComponentByClass<ULabInventoryComponent>())
+		if (const ULabInventoryBase* Inventory = It->FindComponentByClass<ULabInventoryBase>())
 		{
 			++NumInventories;
 			if (*It == &ControlledPawn)
 			{
 				NumOwnItems = Inventory->GetNumItems();
-				OwnFirstItemId = Inventory->GetFirstItemId();
+				OwnNewestItemId = Inventory->GetNewestItemId();
 			}
 			else
 			{
@@ -140,11 +140,11 @@ void ALabHUD::UpdateOverlay(const ALabPlayerController& Controller, const APawn&
 		FString::Printf(TEXT("on this client: nodes=%d npcs=%d players=%d | pos x=%.0fm y=%.0fm"), NumNodes, NumNpcs, NumPlayers, Location.X, Location.Y),
 	};
 
-	// 맨 앞 칸의 아이템 번호는 인벤토리의 앞 칸이 지워질 때마다 바뀐다.
+	// 가장 최근에 더한 칸의 아이템 번호는 인벤토리의 앞 칸이 지워질 때마다 바뀐다. 클라이언트의 칸 순서와 상관없다(FastArray).
 	if (NumStates > 0 || NumInventories > 0 || NumBuildings > 0)
 	{
 		OverlayLines.Add(FString::Printf(TEXT("buildings=%d states=%d inventories=%d"), NumBuildings, NumStates, NumInventories));
-		OverlayLines.Add(FString::Printf(TEXT("own items=%d first id=%d | other items=%d"), NumOwnItems, OwnFirstItemId, NumOtherItems));
+		OverlayLines.Add(FString::Printf(TEXT("own items=%d newest id=%d | other items=%d"), NumOwnItems, OwnNewestItemId, NumOtherItems));
 	}
 }
 
@@ -241,7 +241,7 @@ void ALabHUD::UpdateInventoryPanel(const APawn& ControlledPawn)
 	PanelEntries.Reset();
 	for (TActorIterator<ALabCharacter> It(GetWorld()); It; ++It)
 	{
-		const ULabInventoryComponent* Inventory = It->FindComponentByClass<ULabInventoryComponent>();
+		const ULabInventoryBase* Inventory = It->FindComponentByClass<ULabInventoryBase>();
 		if (!Inventory)
 		{
 			continue;
@@ -249,21 +249,22 @@ void ALabHUD::UpdateInventoryPanel(const APawn& ControlledPawn)
 		PanelEntries.Add({Inventory, *It == &ControlledPawn});
 
 		// 같은 자리의 값이 지난 틱과 다르면 그 칸을 번쩍이게 한다. 처음 칸이 채워질 때(초기 전송)는 번쩍이지 않는다.
+		// 자리는 이 클라이언트가 가진 배열의 순서다. FastArray에서는 서버의 순서와 다르다.
 		FInventoryView& View = InventoryViews.FindOrAdd(Inventory);
-		const TArray<FLabItem>& Items = Inventory->GetItems();
-		View.FlashUntil.SetNumZeroed(FMath::Max(View.FlashUntil.Num(), Items.Num()));
+		Inventory->CopyItems(ItemsScratch);
+		View.FlashUntil.SetNumZeroed(FMath::Max(View.FlashUntil.Num(), ItemsScratch.Num()));
 		if (View.bSeen)
 		{
-			for (int32 Index = 0; Index < Items.Num(); ++Index)
+			for (int32 Index = 0; Index < ItemsScratch.Num(); ++Index)
 			{
-				if (!View.Previous.IsValidIndex(Index) || !(View.Previous[Index] == Items[Index]))
+				if (!View.Items.IsValidIndex(Index) || !(View.Items[Index] == ItemsScratch[Index]))
 				{
 					View.FlashUntil[Index] = Now + FlashSeconds;
 				}
 			}
 		}
-		View.Previous = Items;
-		View.bSeen = Items.Num() > 0;
+		View.Items = ItemsScratch;
+		View.bSeen = ItemsScratch.Num() > 0;
 	}
 
 	for (auto It = InventoryViews.CreateIterator(); It; ++It)
@@ -372,8 +373,9 @@ void ALabHUD::DrawInventoryPanel()
 
 void ALabHUD::DrawInventoryGrid(const FPanelEntry& Entry, float X, float Y, float Cell, int32 NumCells, double Now)
 {
-	const TArray<FLabItem>* Items = Entry.Inventory.IsValid() ? &Entry.Inventory->GetItems() : nullptr;
+	// 이번 틱의 UpdateInventoryPanel이 복사해 둔 칸을 그린다.
 	const FInventoryView* View = InventoryViews.Find(Entry.Inventory);
+	const TArray<FLabItem>* Items = Entry.Inventory.IsValid() && View ? &View->Items : nullptr;
 
 	// 칸 사이에 한 픽셀 틈을 두어 칸이 하나씩 보이게 한다.
 	const float Size = FMath::Max(1.f, Cell - 1.f);

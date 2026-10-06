@@ -40,6 +40,7 @@ const FLabServerConfig& FLabServerConfig::Get()
 		FParse::Value(Cmd, TEXT("LabNpcsNearPlayers="), C.NpcsPerCluster);
 		FParse::Value(Cmd, TEXT("LabNodeUpdateFrequency="), C.NodeUpdateFrequency);
 		C.bInventoryOwnerOnly = FParse::Param(Cmd, TEXT("LabInventoryOwnerOnly"));
+		C.bInventoryFastArray = FParse::Param(Cmd, TEXT("LabInventoryFastArray"));
 		return C;
 	}();
 	return Config;
@@ -97,6 +98,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (bInventoryOwnerOnly != Defaults.bInventoryOwnerOnly)
 	{
 		Parts.Add(TEXT("InventoryOwnerOnly"));
+	}
+	if (bInventoryFastArray != Defaults.bInventoryFastArray)
+	{
+		Parts.Add(TEXT("InventoryFastArray"));
 	}
 	return Parts.IsEmpty() ? TEXT("default") : FString::Join(Parts, TEXT(";"));
 }

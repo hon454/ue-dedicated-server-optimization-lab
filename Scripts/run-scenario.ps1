@@ -42,6 +42,8 @@
     [double]$NodeUpdateFrequency = 0,
     # 2막의 기법. 인벤토리의 칸을 그 캐릭터를 소유한 연결에만 보낸다(COND_OwnerOnly). 주지 않으면 모든 연결에 보낸다. 포스팅 9.
     [switch]$InventoryOwnerOnly,
+    # 2막의 기법. 인벤토리의 칸을 일반 TArray 대신 FastArray로 보낸다(ULabInventoryFastArrayComponent). 포스팅 10.
+    [switch]$InventoryFastArray,
     # 이 번호의 클라이언트 화면에 인벤토리 패널(-LabInventoryPanel)을 그린다. -1이면 그리지 않는다.
     # 측정 실행의 화면과 자동 스크린샷을 바꾸지 않도록 시각 자료 라벨(visualN)과 작은 규모 확인(tsmall-*)에서만 받는다.
     [int]$InventoryPanelSlot = -1
@@ -220,6 +222,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($InventoryOwnerOnly) {
         $ServerArgs += "-LabInventoryOwnerOnly"
+    }
+    if ($InventoryFastArray) {
+        $ServerArgs += "-LabInventoryFastArray"
     }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")

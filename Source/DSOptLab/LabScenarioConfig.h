@@ -44,7 +44,7 @@ struct FLabServerConfig
 	float PlayerSpacingMeters = 0.f;   // -LabPlayerSpacing=
 	// 0보다 크면 NPC와 플레이어 캐릭터에 상태 값(ULabStateComponent)을 붙이고, 액터 하나의 값이 평균 이 간격(초)마다 하나씩 바뀐다.
 	float StateIntervalSeconds = 0.f;  // -LabStateInterval=
-	// 0보다 크면 플레이어 캐릭터에 이 칸 수의 인벤토리(ULabInventoryComponent)를 붙인다.
+	// 0보다 크면 플레이어 캐릭터에 이 칸 수의 인벤토리(ULabInventoryComponent, -LabInventoryFastArray면 ULabInventoryFastArrayComponent)를 붙인다.
 	int32 InventoryItems = 0;          // -LabInventoryItems=
 	// 0보다 크면 플레이어마다 이 간격(초)으로 인벤토리의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다.
 	float InventoryChurnSeconds = 0.f; // -LabInventoryChurn=
@@ -58,8 +58,10 @@ struct FLabServerConfig
 	// 2막의 기법. 인자를 주지 않으면 끈 상태다.
 	// 자원 노드의 NetUpdateFrequency. 기본값은 엔진 기본값 100이다(Actor.cpp의 AActor 생성자). 포스팅 8에서 2로 낮춘다.
 	float NodeUpdateFrequency = 100.f; // -LabNodeUpdateFrequency=
-	// 인벤토리의 칸(ULabInventoryComponent의 Items)을 그 캐릭터를 소유한 연결에만 보낸다(COND_OwnerOnly). 포스팅 9.
+	// 인벤토리의 칸을 그 캐릭터를 소유한 연결에만 보낸다(COND_OwnerOnly). 포스팅 9.
 	bool bInventoryOwnerOnly = false;  // -LabInventoryOwnerOnly
+	// 인벤토리의 칸을 일반 TArray 대신 FastArray(ULabInventoryFastArrayComponent)로 보낸다. 포스팅 10.
+	bool bInventoryFastArray = false;  // -LabInventoryFastArray
 
 	/** 수치 CSV의 config 열에 적는 값. 기본값과 다른 인자를 ';'로 잇고, 모두 기본값이면 "default"다. */
 	FString GetConfigName() const;

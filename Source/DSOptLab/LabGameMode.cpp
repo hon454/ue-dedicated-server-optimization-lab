@@ -10,6 +10,7 @@
 #include "LabCharacter.h"
 #include "LabHUD.h"
 #include "LabInventoryComponent.h"
+#include "LabInventoryFastArrayComponent.h"
 #include "LabNpc.h"
 #include "LabPlayerController.h"
 #include "LabResourceNode.h"
@@ -360,9 +361,13 @@ void ALabGameMode::AddPlayerElements(ALabPlayerController& Player)
 		AddStateComponent(*Pawn);
 	}
 
-	if (Config.InventoryItems > 0 && !Pawn->FindComponentByClass<ULabInventoryComponent>())
+	if (Config.InventoryItems > 0 && !Pawn->FindComponentByClass<ULabInventoryBase>())
 	{
-		ULabInventoryComponent* Inventory = NewObject<ULabInventoryComponent>(Pawn);
+		// 칸을 보내는 방식만 다른 두 클래스 가운데 하나를 붙인다(-LabInventoryFastArray, 포스팅 10).
+		const TSubclassOf<ULabInventoryBase> InventoryClass = Config.bInventoryFastArray
+			? ULabInventoryFastArrayComponent::StaticClass()
+			: ULabInventoryComponent::StaticClass();
+		ULabInventoryBase* Inventory = NewObject<ULabInventoryBase>(Pawn, InventoryClass);
 		Inventory->RegisterComponent();
 		// 자리마다 다른 시드라서 인벤토리의 내용이 서로 다르고, 실행마다 같다.
 		Inventory->Fill(Config.InventoryItems, Config.Seed + 1000 + Player.GetSlot());
@@ -409,7 +414,7 @@ void ALabGameMode::ChangeOneState()
 
 void ALabGameMode::ChurnOneInventory()
 {
-	if (ULabInventoryComponent* Inventory = Inventories[NextChurnIndex % Inventories.Num()].Get())
+	if (ULabInventoryBase* Inventory = Inventories[NextChurnIndex % Inventories.Num()].Get())
 	{
 		Inventory->Churn();
 	}

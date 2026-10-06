@@ -200,7 +200,7 @@ void ALabPlayerController::ServerHarvest_Implementation()
 		Nearest->Harvest();
 
 		// 인벤토리가 있으면(-LabInventoryItems=) 채집한 것을 한 칸에 더한다.
-		if (ULabInventoryComponent* Inventory = ControlledPawn->FindComponentByClass<ULabInventoryComponent>())
+		if (ULabInventoryBase* Inventory = ControlledPawn->FindComponentByClass<ULabInventoryBase>())
 		{
 			Inventory->AddHarvest();
 		}

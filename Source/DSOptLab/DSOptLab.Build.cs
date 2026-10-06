@@ -10,6 +10,7 @@ public class DSOptLab : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"NetCore", // FFastArraySerializer(인벤토리 FastArray, 포스팅 10)
 			"InputCore",
 			"EnhancedInput"
 		});
