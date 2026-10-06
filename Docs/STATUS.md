@@ -11,13 +11,15 @@
 - **태스크 24(포스팅 7, `post-07-net-driver-breakdown`)가 끝났다(2026-10-06).** `GameNetDriver` Incl 가운데 `Prioritize Actors Time` 56.4%, `Consider Actors Time` 23.5%이고, 활성 목록 5,272개 가운데 자원 노드가 4,887개다. 경위는 [Worklog/07-net-driver-breakdown.md](Worklog/07-net-driver-breakdown.md)의 "태스크 24"에 있다.
 - **태스크 25(포스팅 8, `post-08-node-update-frequency`)가 끝났다(2026-10-06).** 자원 노드의 Net Update Frequency를 2로 낮추자 `work_avg_ms` 중앙값이 18.060 → 8.615였다(`act2-nodeuf-base1`, `act2-nodeuf1`). 이제 `GameNetDriver`에서 가장 큰 것은 `Process Prioritized Actors Time`(45.8%)이다. 경위는 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 25"에 있다.
 - **태스크 26(포스팅 9, `post-09-inventory-owner-only`)이 끝났다(2026-10-06).** 인벤토리를 소유자의 연결에만 보내자(`-InventoryOwnerOnly`) `out_bytes_per_sec_per_conn` 중앙값이 16,635 → 12,421(-25.3%)이고 `work_avg_ms`는 구별되지 않았다(`act2-invown-base1`, `act2-invown1`). 소유자는 여전히 바뀔 때마다 200칸(18,190비트)을 받는다. 경위는 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 26"에 있다.
+- **태스크 27(포스팅 10, `post-10-inventory-fastarray`)이 끝났다(2026-10-06).** 인벤토리를 FastArray로 보내자(`-InventoryFastArray`) `out_bytes_per_sec_per_conn` 중앙값이 12,387 → 11,807(-4.7%)이고, `Connection 0`의 인벤토리 한 번이 최대 18,190 → 345비트였다(`act2-fastarr-base1`, `act2-fastarr1`). `work_avg_ms`는 구별되지 않았고 인벤토리의 CPU는 줄지 않았다(프레임당 0.104 → 0.117ms, `-StatNamedEvents` 실행 하나씩). 칸 안 델타 직렬화가 기본으로 켜져 있음을 확인해 engine-notes.md 10절을 바로잡았다. 아래는 다음 태스크를 시작할 때 `Worklog/10-inventory-fastarray.md`로 옮길 경위다.
+  - **태스크 27의 경위.** [backlog.md](backlog.md) "우선순위 순" 6번. 초안은 [본문](../Posts/10-inventory-fastarray/README.md)과 [측정 기록](../Posts/10-inventory-fastarray/measurements.md)이다(2026-10-06). FastArray의 추가, 삭제, 변경은 사용자가 고른 대로 도식 하나(`Scripts/make-fastarray-cases.ps1`)와, 경우마다 클라이언트가 부르는 함수와 칸 하나에 가는 비트의 표로 보였다(2026-10-06 사용자 요청). 칸 안 델타 직렬화가 기본으로 켜져 있다는 것을 확인해 engine-notes.md 10절의 틀린 행을 바로잡았다. "문제", "원리"는 에이전트 초안이라 사용자가 승인한다. 사용자가 승인했다(2026-10-06). 루트 README 행의 "(작성 중)"을 빼고 태그를 붙였다. 루트 README의 "결과 한눈에 보기"와 [Posts/measurements.md](../Posts/measurements.md)는 포스팅 6의 세 단계만 다루고 포스팅 8, 9도 고치지 않아 그대로 두었다. 구현, 측정, Insights 값, 패널 영상이 끝났다(2026-10-06). 연결당 송신량은 12,387 → 11,807(-4.7%)이고, `Connection 0`의 인벤토리는 한 번 바뀔 때 최대 18,190 → 345비트, 60초에 273,676 → 7,086비트다. `work_avg_ms`는 구별되지 않았고(8.852 → 8.586, 변동 폭 0.289), 인벤토리의 CPU는 줄지 않았다(프레임당 0.104 → 0.117ms, 실행 하나씩). 값과 계산은 관찰 자료 10절부터에 있다. 본문의 "문제", "원리"는 에이전트 초안을 사용자가 승인한다(AGENTS.md "사람에게 넘기는 일").
 - **시리즈 웹 페이지를 공개했다(2026-10-03).** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다(첫 배포 18초, 실행 37113083287). 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 1막의 네 단계만 다루고, 2막의 구성은 [backlog.md](backlog.md)에 적었다.
 - 다음 시각 자료 라벨은 `visual20`이다(`visual18`, `visual19`는 포스팅 10의 인벤토리 패널 전후. `visual16`, `visual17`의 GIF는 한 칸 번쩍임이 48색 팔레트에서 사라져 쓰지 않았다, 2026-10-06).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **[사람] 태스크 27(포스팅 10, 인벤토리와 FastArray): 초안 확인.** [backlog.md](backlog.md) "우선순위 순" 6번. 초안은 [본문](../Posts/10-inventory-fastarray/README.md)과 [측정 기록](../Posts/10-inventory-fastarray/measurements.md)이다(2026-10-06). FastArray의 추가, 삭제, 변경은 사용자가 고른 대로 도식 하나(`Scripts/make-fastarray-cases.ps1`)와, 경우마다 클라이언트가 부르는 함수와 칸 하나에 가는 비트의 표로 보였다(2026-10-06 사용자 요청). 칸 안 델타 직렬화가 기본으로 켜져 있다는 것을 확인해 engine-notes.md 10절의 틀린 행을 바로잡았다. "문제", "원리"는 에이전트 초안이라 사용자가 승인한다. 승인되면 루트 README 행의 "(작성 중)"을 빼고, 2막 결과 표와 [Posts/measurements.md](../Posts/measurements.md)를 갱신하고, 태그 `post-10-inventory-fastarray`를 붙인다. 구현, 측정, Insights 값, 패널 영상이 끝났다(2026-10-06). 연결당 송신량은 12,387 → 11,807(-4.7%)이고, `Connection 0`의 인벤토리는 한 번 바뀔 때 최대 18,190 → 345비트, 60초에 273,676 → 7,086비트다. `work_avg_ms`는 구별되지 않았고(8.852 → 8.586, 변동 폭 0.289), 인벤토리의 CPU는 줄지 않았다(프레임당 0.104 → 0.117ms, 실행 하나씩). 값과 계산은 관찰 자료 10절부터에 있다. 본문의 "문제", "원리"는 에이전트 초안을 사용자가 승인한다(AGENTS.md "사람에게 넘기는 일").
+2. **포스팅 11(NPC 이동의 클라이언트 보간)을 시작한다.** [backlog.md](backlog.md) "우선순위 순" 7번. 시작하기 전에 위 "단계"의 태스크 27 경위를 Worklog로 옮기는 정리안을 보여 주고 승인을 받는다. 기준 구성은 포스팅 10의 최종 구성(포스팅 9의 구성에 `-InventoryFastArray`)이다.
 
 ## 포스팅 진행
 
@@ -33,6 +35,7 @@
 | 7. 네트워크 드라이버 자체 시간 나누기 | 완료 | `post-07-net-driver-breakdown` |
 | 8. 자원 노드의 Net Update Frequency 낮추기 | 완료 | `post-08-node-update-frequency` |
 | 9. 인벤토리를 소유자에게만 보내기 | 완료 | `post-09-inventory-owner-only` |
+| 10. 인벤토리를 FastArray로 보내기 | 완료 | `post-10-inventory-fastarray` |
 
 ## 명령
 
