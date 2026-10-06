@@ -16,7 +16,7 @@
 
 - 빌드는 커밋 `a397f55`의 소스다. 이 커밋이 인자 `-LabNodeUpdateFrequency=`와 서버 로그 `lab_consider_list`를 더했다.
 - `lab_consider_list avg_per_frame`은 측정 구간의 프레임마다 엔진 지표 `NumConsideredActors`를 읽은 평균이다. 엔진은 Consider List를 만든 끝에 그 길이를 이 지표에 쓴다(`Engine/Source/Runtime/Engine/Private/NetDriver.cpp:5454`). 서버는 프레임 끝(`FCoreDelegates::OnEndFrame`)에 읽는다(`Source/DSOptLab/LabMetricsSubsystem.cpp`의 `SampleConsideredActors`).
-- 타이머를 더 켠 실행은 이벤트를 더 기록한다. 그 값은 같은 인자의 두 묶음끼리만 비교하고 기본 묶음과 섞지 않는다([engine-notes.md](../../Docs/Reference/engine-notes.md) 차절).
+- 타이머를 더 켠 실행은 이벤트를 더 기록한다. 그 값은 같은 인자의 두 묶음끼리만 비교하고 기본 묶음과 섞지 않는다([engine-notes.md](../../Docs/Reference/engine-notes.md) 9절).
 - 프레임당 값은 Incl ÷ 프레임 수다. 프레임 수는 기본 묶음에서 `WorldTick` Count, 타이머를 더 켠 묶음에서 `GameNetDriver` Count이고, 모두 CSV `frames`와 같았다. 읽은 명령은 `Scripts/export-insights.ps1`이다.
 
 ## 2. 본문의 수치와 출처
@@ -84,7 +84,7 @@
 - 요약의 두 이미지는 `act2-nodeuf-base1-r3-topdown-03.png`와 `act2-nodeuf1-r3-topdown-03.png`(t=60초)를 `images/before-topdown.png`, `images/after-topdown.png`로 복사했다. 두 묶음의 중앙값 실행이고 같은 순번이다.
 - 원리의 흐름도는 Mermaid로 그렸다. ①\~③은 [포스팅 7](../07-net-driver-breakdown/README.md)의 흐름도와 같은 번호이고 stat 타이머에 대응한다(① `Consider Actors Time`, ② `Prioritize Actors Time`, ③ `Process Prioritized Actors Time`).
 - 결과의 차트 값은 `split` 묶음의 중앙값 실행의 프레임당 ms다.
-- Insights 캡처는 `act2-nodeuf-split-base1-r3`(적용 전)과 `act2-nodeuf-split1-r3`(적용 후)의 Timing Insights다. 창을 3000×2080으로 맞추고 Log View에서 `Lab_MeasureStart`와 `Lab_MeasureEnd`를 골라 구간을 정했다. 이 트레이스에서는 `WorldTick`이 프레임을 감싸지 않는다(engine-notes.md 차절). Timers에서 `GameNetDriver`를 골라 Callees 패널을 띄웠다. 적용 후 트레이스에서는 Insights가 가장 큰 ③을 펼쳐 보여서 그 줄을 접었다. 2026-10-06에 찍었다.
+- Insights 캡처는 `act2-nodeuf-split-base1-r3`(적용 전)과 `act2-nodeuf-split1-r3`(적용 후)의 Timing Insights다. 창을 3000×2080으로 맞추고 Log View에서 `Lab_MeasureStart`와 `Lab_MeasureEnd`를 골라 구간을 정했다. 이 트레이스에서는 `WorldTick`이 프레임을 감싸지 않는다(engine-notes.md 9절). Timers에서 `GameNetDriver`를 골라 Callees 패널을 띄웠다. 적용 후 트레이스에서는 Insights가 가장 큰 ③을 펼쳐 보여서 그 줄을 접었다. 2026-10-06에 찍었다.
 - 두 구간 모두 `GameNetDriver` Count 1,789가 CSV `frames`와 같다. Incl 24.32초 ÷ 1,789 = 13.59ms, 7.3초 ÷ 1,789 = 4.08ms로 내보낸 요약(13.590, 4.081)과 같다.
 - 번호 상자는 원리의 흐름도와 같은 번호다.
 

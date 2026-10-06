@@ -6,7 +6,7 @@
 - 실행: 기준 묶음 `act2-split-base1-r1`\~`r3`(인자 없음), 나누는 묶음 `act2-split1-r1`\~`r3`(`run-scenario.ps1 -StatNamedEvents`, 서버에 `-statnamedevents`). 2026-10-05 22:16\~22:31에 연달아 잼, 본체 화면, 실행 중 PC 조작 없음. 빌드는 커밋 `3a82d7b`의 소스다. 6회 모두 종료 코드 0이고 선호도 재설정이 없었다.
 - `act2-split1`은 이벤트를 더 기록하므로 수치를 다른 실행과 비교하지 않고, `GameNetDriver` 안의 비율만 본다(2절 끝의 비용은 참고값이다).
 - 중앙값 실행(`work_avg_ms` 기준): `act2-split-base1-r2`, `act2-split1-r3`.
-- 프레임당 값은 Incl ÷ 프레임 수다. 프레임 수는 기준 묶음에서 `WorldTick` Count, 나누는 묶음에서 `GameNetDriver` Count다(이 트레이스에서는 `WorldTick`이 프레임을 감싸지 않는다. [engine-notes.md](../../Docs/Reference/engine-notes.md) 차절). 둘 다 CSV `frames`와 같았다.
+- 프레임당 값은 Incl ÷ 프레임 수다. 프레임 수는 기준 묶음에서 `WorldTick` Count, 나누는 묶음에서 `GameNetDriver` Count다(이 트레이스에서는 `WorldTick`이 프레임을 감싸지 않는다. [engine-notes.md](../../Docs/Reference/engine-notes.md) 9절). 둘 다 CSV `frames`와 같았다.
 - 1\~6절은 내보낸 값과 그 값으로 계산한 값이다. 7절 "에이전트 의견"만 해석이다. 6절은 자원 노드 수를 바꾼 대조 실행(`act2-split2`, `act2-split-nodes2500-1`)이다.
 
 ## 1. CSV

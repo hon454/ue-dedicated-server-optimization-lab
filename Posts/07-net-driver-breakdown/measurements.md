@@ -90,7 +90,7 @@
 - 요약의 이미지는 `act2-split-base1-r2-topdown-03.png`(t=60초)를 `images/topdown.png`로 복사했다. 기본 트레이스 묶음의 중앙값 실행이다.
 - 원리의 흐름도는 Mermaid로 그렸다. 단계 이름은 stat 타이머(`Consider Actors Time`, `Prioritize Actors Time`, `Process Prioritized Actors Time`)에 대응한다.
 - 결과의 차트 값은 `act2-split1-r3`의 프레임당 ms다.
-- Insights 캡처는 `act2-split1-r3`의 Timing Insights다. Log View에서 `Lab_MeasureStart`와 `Lab_MeasureEnd`를 골라 구간을 정하고(이 트레이스에서는 `WorldTick`이 프레임을 감싸지 않는다. engine-notes.md 차절), Timers에서 `GameNetDriver`를 골라 Callees 패널을 띄웠다. 구간의 `GameNetDriver` Count 1,787은 CSV `frames`와 같고, Incl 22.84초 ÷ 1,787 = 12.78ms/프레임이 내보낸 요약의 12.787ms와 같다. 번호 상자는 원리의 흐름도와 같은 번호다: ① `Consider Actors Time`(5.36초, % Root 23.48%), ② `Prioritize Actors Time`(12.88초, 56.37%), ③ `Process Prioritized Actors Time`(3.78초, 16.54%). 2026-10-06에 찍었다.
+- Insights 캡처는 `act2-split1-r3`의 Timing Insights다. Log View에서 `Lab_MeasureStart`와 `Lab_MeasureEnd`를 골라 구간을 정하고(이 트레이스에서는 `WorldTick`이 프레임을 감싸지 않는다. engine-notes.md 9절), Timers에서 `GameNetDriver`를 골라 Callees 패널을 띄웠다. 구간의 `GameNetDriver` Count 1,787은 CSV `frames`와 같고, Incl 22.84초 ÷ 1,787 = 12.78ms/프레임이 내보낸 요약의 12.787ms와 같다. 번호 상자는 원리의 흐름도와 같은 번호다: ① `Consider Actors Time`(5.36초, % Root 23.48%), ② `Prioritize Actors Time`(12.88초, 56.37%), ③ `Process Prioritized Actors Time`(3.78초, 16.54%). 2026-10-06에 찍었다.
 
 ![act2-split1-r3의 GameNetDriver Callees. ① Consider Actors Time, ② Prioritize Actors Time, ③ Process Prioritized Actors Time](images/insights-r3-callees-crop.png)
 

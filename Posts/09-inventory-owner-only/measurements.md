@@ -32,13 +32,13 @@
 | 여덟 명은 서로 150m 안 | 밀집 배치의 모든 경로가 한 변 84.85m 상자 안이고 대각선이 120.0m다. Net Cull Distance는 150m(`Engine/Source/Runtime/Engine/Private/Actor.cpp:312`) | [2막 설계](../../Docs/Planning/2026-10-03-act-2-design.md) 3.1절 |
 | 조건 없이 리플리케이트했다 | `DOREPLIFETIME(ULabInventoryComponent, Items)`(커밋 `730f247` 전) | 프로젝트 소스 |
 | 문제의 표: NPC 5,310(33.5%), 인벤토리 4,540(28.6%), 플레이어 캐릭터 3,080(19.4%), 그 밖 2,930(18.5%) | `LabNpc` 2,550,189 ÷ 8 ÷ 60.015 = 5,311.6, `BP_LabCharacter_C` 1,478,785 ÷ 8 ÷ 60.015 = 3,080.0, 그 밖 = 15,864.0 − 4,544.8 − 5,311.6 − 3,080.0 = 2,927.6. 비율은 15,864.0에 대한 값 | 관찰 자료 10절 |
-| 같은 자리끼리 비교해 당겨진 칸을 모두 바뀐 칸으로 본다 | `CompareProperties_Array_r`가 원소를 인덱스마다 비교한다(`Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1692-1775`) | 엔진 소스, [engine-notes.md](../../Docs/Reference/engine-notes.md) 자절 |
+| 같은 자리끼리 비교해 당겨진 칸을 모두 바뀐 칸으로 본다 | `CompareProperties_Array_r`가 원소를 인덱스마다 비교한다(`Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1692-1775`) | 엔진 소스, [engine-notes.md](../../Docs/Reference/engine-notes.md) 8절 |
 | 바뀔 때마다 200칸을 다시 보낸다 | 적용 전 `ItemId` Count 24,000 = 120번 × 200칸. 120번은 60초 ÷ 0.5초. 패킷 16,384 하나의 내용에 `ItemId` 200개, `Count` 198개 | 관찰 자료 10절, 10.1절 |
 | 한 번에 약 18,200비트, 적용 후에도 같다 | `LabInventoryComponent` I.Max 18,190비트(적용 전, 적용 후) | 관찰 자료 10절 캡처 |
 | 클라이언트는 자기 인벤토리만 쓴다 | 클라이언트에서 인벤토리를 읽는 곳은 `LabHUD.cpp`의 화면 글자(자기 인벤토리의 칸 수와 첫 칸)와 인벤토리 패널뿐이다 | 프로젝트 소스 |
 | `COND_OwnerOnly`는 소유자 연결에만 보낸다 | `COND_OwnerOnly = 2`, "This property will only send to the actor's owner"(`Engine/Source/Runtime/CoreUObject/Public/UObject/CoreNetTypes.h:20`). 조건 표 `ConditionMap[COND_OwnerOnly] = bIsOwner`(`Engine/Source/Runtime/Engine/Public/Net/RepLayout.h:135-149`) | 엔진 소스 |
 | 캐릭터의 소유자 연결은 조종하는 플레이어의 연결 | `APawn::GetNetConnection`이 컨트롤러의 연결을 돌려준다(`Pawn.cpp:753-760`). 연결마다 `RepFlags.bNetOwner = (OwningConnection == Connection ...)`(`DataChannel.cpp:3809-3812`) | 엔진 소스 |
-| 비교는 객체마다 프레임에 한 번, 결과를 모든 연결이 함께 쓴다 | `FRepLayout::UpdateChangelistMgr`가 `LastReplicationFrame`이 이번 프레임이면 비교를 건너뛴다(`RepLayout.cpp:1275-1331`) | 엔진 소스, engine-notes.md 자절 |
+| 비교는 객체마다 프레임에 한 번, 결과를 모든 연결이 함께 쓴다 | `FRepLayout::UpdateChangelistMgr`가 `LastReplicationFrame`이 이번 프레임이면 비교를 건너뛴다(`RepLayout.cpp:1275-1331`) | 엔진 소스, engine-notes.md 8절 |
 | 조건은 연결마다 확인해 바뀐 목록에서 뺀다 | `FRepLayout::ReplicateProperties`에서 `FilterChangeListToActive(RepState->LifetimeChangelist, RepState->InactiveParents, ...)`(`RepLayout.cpp:2047`, 함수 `2660-2680`) | 엔진 소스 |
 | 예상: 약 570바이트/초, 8분의 1 | 4,548 × 15 ÷ 120 = 568(포스팅 8 최종 구성의 `act2-nodeuf1-r3`에서 계산) | 관찰 자료 5절 |
 | 예상: 연결당 송신 대역폭 약 25%, 약 11,900 | (7,626,709 − 2,182,034 × 105 ÷ 120) ÷ 8 ÷ 59.973 = 11,917, -25.0% | 관찰 자료 5절 |

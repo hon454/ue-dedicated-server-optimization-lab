@@ -166,7 +166,7 @@
 | 틱 예산 33.3ms(`NetServerMaxTickRate` 30) | `Engine/Config/BaseEngine.ini:1867` |
 | Net Cull Distance 기본값 150m | `Engine/Source/Runtime/Engine/Private/Actor.cpp:312` |
 | `NetUpdateFrequency` 기본값 100 | `Actor.cpp:295-296` |
-| 프로퍼티 비교는 객체마다 프레임에 한 번이고, 바뀐 것만 보낸다 | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1275-1331`([engine-notes.md](../../Docs/Reference/engine-notes.md) 자절) |
+| 프로퍼티 비교는 객체마다 프레임에 한 번이고, 바뀐 것만 보낸다 | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1275-1331`([engine-notes.md](../../Docs/Reference/engine-notes.md) 8절) |
 | 클래스 이름 타이머 | `DataChannel.cpp:3622-3625`의 `SCOPE_CYCLE_UOBJECT` |
 
 ## 11. 시각 자료의 사정

@@ -50,7 +50,7 @@
 
 ### 2.2 CPU (`act2-nodeuf-split1-r3`, 프레임당 ms)
 
-타이머를 더 켠 실행이라 비율만 본다([engine-notes.md](../../Docs/Reference/engine-notes.md) 차절). `LabInventoryComponent`는 `Replicate Actor Time` → `LabCharacter` 아래에 있다.
+타이머를 더 켠 실행이라 비율만 본다([engine-notes.md](../../Docs/Reference/engine-notes.md) 9절). `LabInventoryComponent`는 `Replicate Actor Time` → `LabCharacter` 아래에 있다.
 
 | 타이머 | 프레임당 횟수 | Incl | `GameNetDriver` Incl(4.081) 대비 |
 | --- | ---: | ---: | ---: |
@@ -60,7 +60,7 @@
 | 그 아래 `Dynamic Property Compare Time` | 6.2 | 0.024 | 0.6% |
 
 - `LabInventoryComponent`의 Excl은 0.041ms다. 서버 프레임 시간 평균 9.250ms의 1.6%다(0.145 ÷ 9.250).
-- 비교(`Dynamic Property Compare Time`)는 프레임에 6.2번이다. 비교는 객체마다 프레임에 한 번 하고 그 결과를 연결들이 함께 쓴다(`Engine/Private/RepLayout.cpp:1275-1331`, engine-notes.md 자절). 200칸을 비교하는 일은 한 번에 약 3.9µs다(0.024 ÷ 6.2, 계산).
+- 비교(`Dynamic Property Compare Time`)는 프레임에 6.2번이다. 비교는 객체마다 프레임에 한 번 하고 그 결과를 연결들이 함께 쓴다(`Engine/Private/RepLayout.cpp:1275-1331`, engine-notes.md 8절). 200칸을 비교하는 일은 한 번에 약 3.9µs다(0.024 ÷ 6.2, 계산).
 - `export-insights.ps1`의 트리는 부모의 타이머 ID로 자식을 모은다. 그래서 `Dynamic Property Rep Time`처럼 여러 부모 아래 나오는 타이머의 자식 줄(요약 파일에서 `LabInventoryComponent` 아래 `Dynamic Property Send Time` 114.8번 등)은 여러 곳의 값이 합쳐져 있어 쓰지 않았다. 위 표는 부모가 하나뿐인 줄이다.
 
 ## 3. 인벤토리가 바뀌는 방식

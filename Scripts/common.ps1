@@ -32,7 +32,7 @@ if (-not (Test-Path $Editor)) {
 
 # 프로세스가 요청한 타이머 해상도를 Windows가 무시하지 못하게 한다(ADR-0012).
 # Windows 11은 창이 최소화되거나 완전히 가려진 프로세스의 타이머 해상도 요청(엔진의 timeBeginPeriod(1))을 보장하지 않는다.
-# 그러면 서버의 틱 속도 제한이 15.625ms 단위로만 깨어나 30Hz가 아니라 약 21Hz로 돈다(engine-notes.md 아절).
+# 그러면 서버의 틱 속도 제한이 15.625ms 단위로만 깨어나 30Hz가 아니라 약 21Hz로 돈다(engine-notes.md 7절).
 Add-Type @"
 using System; using System.Runtime.InteropServices;
 public static class LabProcess {
@@ -51,7 +51,7 @@ public static class LabProcess {
 
 # 프로세스를 선호도 제한이 걸린 Job 객체에 넣는다. 프로세스 선호도(ProcessorAffinity)만 설정하면, 엔진이 스레드마다
 # SetThreadGroupAffinity로 그룹의 모든 코어를 요청할 때 Windows가 프로세스 선호도를 전체 코어로 넓힌다
-# (WindowsRunnableThread.cpp:140-142, engine-notes.md 마절). Job의 제한은 스레드가 넓히지 못한다. 그 요청은 실패하고(오류 31)
+# (WindowsRunnableThread.cpp:140-142, engine-notes.md 4절). Job의 제한은 스레드가 넓히지 못한다. 그 요청은 실패하고(오류 31)
 # 엔진은 경고 한 줄을 남긴 채 계속 돈다.
 function Set-LabJobAffinity($Process, [long]$Mask) {
     $Job = [LabProcess]::CreateJobObject([IntPtr]::Zero, $null)

@@ -4,6 +4,7 @@
 - 엔진: `G:\Epic Games\UE_Source` (git 태그 `5.8.3-release`, `Engine/Build/Build.version`의 5.8.3)
 - 경로는 엔진 루트 기준이다. 줄 번호는 이 태그의 것이다.
 - 구현 계획 태스크 2.5의 결과다. 테스트베드 포스팅의 "엔진에서 확인한 것"과 이후 코드의 근거로 쓴다.
+- 절은 숫자로 부른다("engine-notes.md 8절"). 새 절은 마지막 번호 다음 번호로 더한다. 2026-10-06까지는 가나다 순 이름(가절, 나절, …)이었고, 승인된 ADR과 지난 Worklog는 그 이름으로 부른다. 옛 이름과 지금 번호는 가=1, 나=2, 다=3, 마=4, 바=5, 사=6, 아=7, 자=8, 차=9, 카=10, 라=11이다(라는 맨 끝에 있던 절이다).
 
 ## 0. 프로젝트 구성
 
@@ -21,7 +22,7 @@
 
 `.gitignore`는 레포를 만들 때 들어간 GitHub의 Unreal 템플릿(루트 기준)을 그대로 쓰고 `.idea/`, `*.slnx`, `*.utrace`만 더했다.
 
-## 가. 기본값과 이름
+## 1. 기본값과 이름
 
 | 항목 | 찾은 값 | 위치 | 결론 |
 | --- | --- | --- | --- |
@@ -40,7 +41,7 @@
 | 채널 수 상한 | `DefaultMaxChannelSize(32767)`, 콘솔 변수 `net.MaxChannelSize`(기본 0이면 앞의 값) | `NetConnection.cpp:80, 405, 450-454` | 출발값(약 5,310개)은 상한 안이다. 노드 20,000개까지도 안이다 |
 | 종료 코드를 주는 종료 | `static void RequestExitWithStatus(bool Force, uint8 ReturnCode, const TCHAR* CallSite = nullptr)` | `Engine/Source/Runtime/Core/Public/GenericPlatform/GenericPlatformMisc.h:1096` | 계획 그대로 쓴다 |
 
-## 나. 동작 순서와 방식
+## 2. 동작 순서와 방식
 
 ### 한 프레임 안의 순서
 
@@ -117,7 +118,7 @@
 
 실행에서 확인한 것(`dormancy2-r1`\~`r3`, 2026-10-02): `LabResourceNode` 타이머 호출이 60초에 546\~609번으로 줄었고(적용 전 약 100만 번), `GameNetDriver` Excl은 프레임당 9.32\~10.60ms로 남았다(적용 전 10.43\~10.80ms). 클라이언트의 노드 수는 이동하는 클라이언트에서 t=75s에 313개였다(적용 전 111개). 값은 [Posts/03-dormancy/candidates.md](../../Posts/03-dormancy/candidates.md)에 있다.
 
-## 다. 템플릿에서 남긴 것 (태스크 2.6, 2026-10-01 정리)
+## 3. 템플릿에서 남긴 것 (태스크 2.6, 2026-10-01 정리)
 
 5.8의 TPP 템플릿은 `Variant_Combat`, `Variant_Platforming`, `Variant_SideScrolling` 코드와 콘텐츠, 템플릿 레벨을 함께 만든다. 쓰지 않는 것을 지우고 남긴 코드에 접두사 `Lab`을 붙였다.
 
@@ -135,7 +136,7 @@
 - 템플릿의 `ADSOptLabPlayerController`와 `ADSOptLabGameMode`, 그 블루프린트는 지웠다. 템플릿 컨트롤러가 블루프린트에서 지정하던 입력 매핑(`IMC_Default`, `IMC_MouseLook`)은 `ALabPlayerController`가 생성자에서 읽어 `SetupInputComponent`에서 등록한다. 터치 조작 위젯은 옮기지 않았다.
 - 모듈 의존성에서 `AIModule`, `StateTreeModule`, `GameplayStateTreeModule`, `UMG`, `Slate`를, `.uproject`에서 `StateTree`, `GameplayStateTree` 플러그인을 뺐다.
 
-## 마. 첫 실행에서 확인한 것 (태스크 7.3\~7.7, 2026-10-01)
+## 4. 첫 실행에서 확인한 것 (태스크 7.3\~7.7, 2026-10-01)
 
 조건: 클라이언트 2, 노드 100 + 검증용 1, NPC 10, 준비 20초, 측정 30초, 트레이스 없음. 라벨 `smoke2-r1`, `smoke3-r1`, `smoke4-r1` 세 실행이 종료 코드 0으로 끝났다. 수치는 동작 확인용이고 결과로 쓰지 않는다.
 
@@ -161,7 +162,7 @@
 - **클라이언트 인자에서 `-log`를 뺐다(2026-10-01).** 클라이언트마다 뜨던 로그 콘솔 창을 없애려는 것이다. `-log`는 콘솔 창을 보이게 할 뿐이다(`LaunchEngineLoop.cpp:6793-6796`, `GLogConsole->Show(true)`). 파일 출력 장치는 `-NODEFAULTLOG`가 없으면 항상 붙고(`GenericPlatformOutputDevices.cpp:28-31`), 파일 이름은 `-LOG=`에서 읽는다(같은 파일 84줄, `GetAbsoluteLogFilename`). `FParse::Param`은 이름 뒤에 공백이나 문자열 끝이 와야 일치하므로(`Parse.cpp:341`) `-LOG=파일`은 `-log`로 읽히지 않는다. `nolog1-r1`(클라이언트 2, 노드 101, NPC 10, 준비 20초, 측정 30초, `-NoTrace`)이 종료 코드 0으로 끝났고 `client0-nolog1-r1.log`(1,631줄)와 `client1-nolog1-r1.log`(1,637줄), 자동 스크린샷 6장이 남았다. 실행 중 클라이언트 프로세스의 보이는 창은 게임 창(창 클래스 `UnrealWindow`) 하나뿐이었고 콘솔 창(`ConsoleWindowClass`)은 서버에만 있었다. 수치는 이전 `smoke` 실행과 같은 범위다(`frames` 897, `work_avg_ms` 1.931, `out_bytes_per_sec_per_conn` 5391, `open_actor_channels_per_conn` 118, `saturated_ratio` 0.000). 서버의 `-log`는 그대로 둔다([ADR-0002](../Decisions/0002-editor-build-without-packaging.md)).
   - **측정 조건이 바뀐 것이다.** 클라이언트가 콘솔 창에 로그를 쓰지 않는다. 클라이언트에 `-log`가 있던 실행은 `smoke1`\~`smoke9`, `calib-a`\~`calib-e`, `diag-a`\~`diag-c`이고, 없는 실행은 `diag-d-r1`, `diag-e-r1`, `nolog1-r1`부터다(각 `client0-<라벨>.log`의 `Command Line` 줄로 확인). 서버 수치에 차이가 나는지는 따로 비교하지 않았다.
 
-## 바. 태스크 8 시작 전 점검에서 확인한 것 (2026-10-01)
+## 5. 태스크 8 시작 전 점검에서 확인한 것 (2026-10-01)
 
 ### 포화를 판정하는 시점
 
@@ -198,7 +199,7 @@
 - 자동 이동은 한 변 100m의 정사각형이고 캐릭터 속도는 500cm/s다(`LabCharacter.cpp`의 `MaxWalkSpeed`). 한 바퀴 400m에 80초가 걸린다(계산값). 준비 30초와 측정 60초 동안 약 한 바퀴를 돈다.
 - 수동 조작용 달리기(2026-10-02, 사용자 요청). `ALabCharacter`의 이동 컴포넌트를 `ULabCharacterMovement`로 바꾸고, 왼쪽 Shift를 누르는 동안 `GetMaxSpeed()`가 `SprintSpeed` 1,000cm/s(걷기 500의 두 배)를 돌려준다. 달리기 여부는 저장된 이동의 압축 플래그 `FLAG_Custom_0`(`Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementComponent.h:3136`, 5.8.3에서 폐기 예정 표시 없음)으로 보낸다. 서버는 `MoveAutonomous`에서 `UpdateFromCompressedFlags`를 불러(`Engine/Source/Runtime/Engine/Private/Components/CharacterMovementComponent.cpp:10677`) 같은 값을 얻으므로 클라이언트 예측과 서버 이동이 같은 속도를 쓴다. 이미 보내는 플래그 바이트의 한 비트라 송신량이 늘지 않고, 리플리케이트되는 속성이나 RPC는 없다. 입력 액션과 매핑 컨텍스트는 에디터 에셋 없이 `SetupPlayerInputComponent`에서 만든다. 시나리오의 자동 이동(`LabPlayerController.cpp`의 `AddMovementInput`)은 이 플래그를 켜지 않으므로 측정에서는 걷기 속도만 쓰인다. 애니메이션 블렌드 스페이스는 그대로라 달릴 때 발이 미끄러져 보일 수 있다(확인하지 않음).
 
-## 사. 같은 구성의 실행 사이에 서버 속도가 세 배 달라지는 원인 (2026-10-01)
+## 6. 같은 구성의 실행 사이에 서버 속도가 세 배 달라지는 원인 (2026-10-01)
 
 모든 실행은 클라이언트 8, 노드 5,001, NPC 300, 준비 30초, 측정 60초, 트레이스 켬, `net_speed` 350000이다(`calib-b-r1`만 10000000). 엔진 소스가 아니라 이 PC에서의 실행으로 확인한 것이다.
 
@@ -222,7 +223,7 @@
 프레임당 송신량은 상태와 무관하다. 30Hz 환산 송신량이 `calib-b-r1` 172,638, `calib-e-r1` 172,756, `diag-d-r1` 172,271(32,540 × 30 ÷ (340 ÷ 60))이라 고정한 송신 한도 350,000은 그대로 맞다.
 
 
-## 아. 서버 틱이 30Hz가 아니라 약 21Hz로 도는 원인 (2026-10-03)
+## 7. 서버 틱이 30Hz가 아니라 약 21Hz로 도는 원인 (2026-10-03)
 
 틱 예산 안의 구성에서 `frames`가 60초에 약 1,790이 아니라 약 1,280으로 나오는 실행이 있었다(`relevancy2-r1` 1,304, `dormancy2-r1` 1,288, `refactor-after2-r1` 1,271, `refactor-after2-r3` 1,287). 서버 로그의 프레임 번호로 보면 시작 신호 전의 대기 구간에서 이미 5초에 약 107프레임이다.
 
@@ -244,7 +245,7 @@
 - 영향: `frames`와 초당 값(`out_bytes_per_sec_per_conn`)이 약 0.71배가 된다. 틱마다 하는 일이 달라져 `work_avg_ms`도 흔들릴 수 있다(`dormancy2-r1` 16.205, `refactor-after2-r3` 14.794. `refactor-after2-r1`은 12.850으로 차이가 없었다). 틱 예산을 넘는 구성(`baseline3`)은 기다리지 않으므로 영향이 없다.
 - 대처는 [ADR-0012](../Decisions/0012-server-timer-resolution.md)(승인됨)다. `Scripts/common.ps1`의 `Disable-LabTimerThrottle`이 서버를 띄운 직후 이 스로틀을 끈다. 적용 뒤 `timerfix-min-r1`(서버 창 최소화, 작은 규모)이 `frames` 902, 확정 규모 `timerfix` 세 실행이 1,788 / 1,784 / 1,796이다.
 
-## 자. 2막 계획을 세우며 확인한 것 (2026-10-03)
+## 8. 2막 계획을 세우며 확인한 것 (2026-10-03)
 
 모두 5.8.3 소스에서 읽은 것이고 실행해 보지 않았다. 쓰이는 곳은 [2막 설계](../Planning/2026-10-03-act-2-design.md) 3절과 6절이다.
 
@@ -264,7 +265,7 @@
 
 확인하지 않은 것: 지연과 패킷 손실을 넣는 설정의 이름과 위치, Iris가 구조체의 `NetSerialize`를 그대로 쓰는지(`PropertyNetSerializerInfoRegistry.cpp:98-118`에 `FLastResortPropertyNetSerializerInfo`가 있다는 것까지만 봤다), `GameNetDriver` 타이머가 Iris에서 같은 범위를 감싸는지.
 
-## 차. `-statnamedevents`가 트레이스에 주는 영향 (2026-10-05, 태스크 24)
+## 9. `-statnamedevents`가 트레이스에 주는 영향 (2026-10-05, 태스크 24)
 
 포스팅 7(`GameNetDriver` 자체 시간 나누기)을 시작하며 확인했다. 실행은 작은 규모 두 번이다: `tsmall-named-off1-r1`(인자 없음), `tsmall-named-on1-r1`(`run-scenario.ps1 -StatNamedEvents`). 둘 다 클라이언트 2, 자원 노드 100, NPC 10, 2막 요소를 줄인 값(`-PlayerSpacing 3 -NpcsNearPlayers 5 -StateInterval 5 -InventoryItems 20 -InventoryChurn 4 -Buildings 20 -BuildInterval 1`), 측정 30초다.
 
@@ -282,7 +283,7 @@
 
 결론: `run-scenario.ps1 -StatNamedEvents`로 잰 트레이스는 `export-insights.ps1`이 서버 로그의 명령줄을 보고 알아서 `GameNetDriver`를 뿌리로 내보내고, `GameNetDriver`와 `TickCompletionEvents` 아래 트리를 요약에 적는다. 이 실행의 수치는 이벤트가 더 기록되므로 다른 실행과 비교하지 않는다. 클래스별 값을 기본 트레이스와 같은 방식으로 읽으려면 `Replicate Actor Time` 아래를 본다. 평탄한 타이머 통계(`stats.csv`)의 클래스 타이머는 리플리케이션과 액터 틱(`LabNpc`는 둘 다 있다)이 섞인 값이다.
 
-## 카. 리플리케이션 조건과 FastArray (2026-10-06, 태스크 26)
+## 10. 리플리케이션 조건과 FastArray (2026-10-06, 태스크 26)
 
 5.8.3 소스에서 읽었고, 조건은 실행으로도 확인했다. 쓰이는 곳은 [포스팅 9](../../Posts/09-inventory-owner-only/README.md)와 포스팅 10(FastArray)이다. 자세한 위치는 [포스팅 9 관찰 자료](../../Posts/09-inventory-owner-only/candidates.md) 4절에 있다.
 
@@ -296,22 +297,22 @@
 | FastArray의 칸 안 델타 직렬화는 생성자 기본값이 꺼짐이다(`SetDeltaSerializationEnabled`로 켠다). 헤더 주석은 기본으로 켜져 있다고 적었지만 생성자는 `None`이다 | `FastArraySerializer.h:220, 549-566`, `Net/Core/Private/Net/Serialization/FastArraySerializer.cpp:33` |
 | FastArray의 클라이언트는 지운 칸을 `RemoveAtSwap`으로 지운다. 클라이언트의 칸 순서가 서버와 달라진다 | `FastArraySerializer.h:1193` |
 
-## 라. 계획 초안의 코드에서 바꾼 것 요약
+## 11. 계획 초안의 코드에서 바꾼 것 요약
 
 | 태스크 | 바꾼 것 | 이유 |
 | --- | --- | --- |
 | 전체 | 경로, 모듈 이름, 접두사(`SL` → `Lab`) | 0절 |
-| 5.1, 5.2 | 생성자에서 입력 매핑을 읽고 `SetupInputComponent`에서 등록 | 다절 |
-| 5.2 | `TickTopDown`의 플래그 설정을 지우고 `SpawnPlayerCameraManager` 재정의로 옮김(서버와 클라이언트, 모든 플레이어) | 나절 "관련성 판정의 기준 위치" |
+| 5.1, 5.2 | 생성자에서 입력 매핑을 읽고 `SetupInputComponent`에서 등록 | 3절 |
+| 5.2 | `TickTopDown`의 플래그 설정을 지우고 `SpawnPlayerCameraManager` 재정의로 옮김(서버와 클라이언트, 모든 플레이어) | 2절 "관련성 판정의 기준 위치" |
 | 5.2 | `PlayerTick` 앞에 `IsLocalController()` 검사 추가, 지역 변수 `Role`을 `View`로 바꿈 | 서버에서 실행되지 않게 함. `AActor::Role` 멤버와 이름이 겹침 |
-| 5.2 | `TickTopDown`에서 `bClientSimulatingViewTarget`을 켜고 매 틱 뷰 타깃을 확인 | 마절 |
-| 6.2 | `IsNetReady(false)` → `IsNetReady()` | 가절 |
+| 5.2 | `TickTopDown`에서 `bClientSimulatingViewTarget`을 켜고 매 틱 뷰 타깃을 확인 | 4절 |
+| 6.2 | `IsNetReady(false)` → `IsNetReady()` | 1절 |
 | 2.1\~2.3 | `env.ps1` 대신 `common.ps1`이 `EngineAssociation`으로 엔진을 찾음 | 0절 |
-| 7.1 | 선호도를 기다리는 동안 다시 설정, 클라이언트가 먼저 죽으면 바로 실패 | 마절 |
+| 7.1 | 선호도를 기다리는 동안 다시 설정, 클라이언트가 먼저 죽으면 바로 실패 | 4절 |
 | 7.1, 7.2 | 스크립트를 UTF-8 BOM으로 저장 | `powershell`(5.1)이 BOM 없는 한글을 잘못 읽음 |
-| 8.4a | 올릴 설정 키가 세 개 | 가절 "한도가 정해지는 과정" |
-| 7.1, 7.2 | 서버와 클라이언트 인자에 `-DisablePython` 추가 | 마절 |
-| 7.1, 7.2 | 클라이언트 인자에서 `-log`를 뺌 | 마절 |
-| 6.2 | `saturated_ratio`를 프레임 끝의 `IsNetReady()`에서 엔진의 포화 기록(`GetSaturationAnalytics`)으로 바꿈. 5초 간격 로그의 `saturated=`가 `saturated_replications=끊긴 횟수/시도 횟수`가 됨 | 바절 "포화를 판정하는 시점" |
-| 7.1 | 시작 신호 전에 죽은 클라이언트를 다시 띄움(실행당 최대 3번). 서버 종료 시점의 클라이언트 생존, `.utrace` 존재, 측정 시작 뒤의 선호도 재설정, 라벨의 로그와 트레이스 재사용, 이미 떠 있는 `UnrealEditor`를 검사. 클라이언트와 `-NoTrace` 서버에 `-traceautostart=0` | 마절(단언 크래시), 바절 |
-| 8.4, 8.4a | 포화를 먼저 없앤 뒤 예산 초과를 판단. 한도는 규모가 정해진 뒤 30Hz 환산 송신량의 약 두 배로 한 번만 고정 | 바절 "대역폭 예산과 서버 틱" |
+| 8.4a | 올릴 설정 키가 세 개 | 1절 "한도가 정해지는 과정" |
+| 7.1, 7.2 | 서버와 클라이언트 인자에 `-DisablePython` 추가 | 4절 |
+| 7.1, 7.2 | 클라이언트 인자에서 `-log`를 뺌 | 4절 |
+| 6.2 | `saturated_ratio`를 프레임 끝의 `IsNetReady()`에서 엔진의 포화 기록(`GetSaturationAnalytics`)으로 바꿈. 5초 간격 로그의 `saturated=`가 `saturated_replications=끊긴 횟수/시도 횟수`가 됨 | 5절 "포화를 판정하는 시점" |
+| 7.1 | 시작 신호 전에 죽은 클라이언트를 다시 띄움(실행당 최대 3번). 서버 종료 시점의 클라이언트 생존, `.utrace` 존재, 측정 시작 뒤의 선호도 재설정, 라벨의 로그와 트레이스 재사용, 이미 떠 있는 `UnrealEditor`를 검사. 클라이언트와 `-NoTrace` 서버에 `-traceautostart=0` | 4절(단언 크래시), 5절 |
+| 8.4, 8.4a | 포화를 먼저 없앤 뒤 예산 초과를 판단. 한도는 규모가 정해진 뒤 30Hz 환산 송신량의 약 두 배로 한 번만 고정 | 5절 "대역폭 예산과 서버 틱" |

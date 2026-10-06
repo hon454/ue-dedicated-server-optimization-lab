@@ -110,7 +110,7 @@ if ($Logical -le 8 -or $Logical -gt 62) {
 $ClientMask = (([long]1 -shl $Logical) - 1) - [long]0xFF
 
 # 프로세스 선호도는 엔진이 스레드 선호도를 설정할 때마다 전체 코어로 넓어진다(2026-10-01 smoke1, smoke3에서 관찰,
-# 원인은 2026-10-05에 확인. engine-notes.md 마절). 그래서 실행 직후 Job 객체로 묶어 넓어지지 않게 하고(Set-LabJobAffinity),
+# 원인은 2026-10-05에 확인. engine-notes.md 4절). 그래서 실행 직후 Job 객체로 묶어 넓어지지 않게 하고(Set-LabJobAffinity),
 # 그래도 서버를 기다리는 동안 2초마다 다시 읽어 달라져 있으면 다시 설정한다. 되돌린 횟수를 돌려준다.
 function Set-Affinity($Process, [long]$Mask) {
     if ($Process.HasExited) { return 0 }
