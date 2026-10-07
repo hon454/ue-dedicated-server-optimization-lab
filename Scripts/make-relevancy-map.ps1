@@ -268,7 +268,7 @@ $($ClipCircles.ToString())</clipPath>
 </defs>
 <rect width="900" height="520" rx="10" fill="#0f141b"/>
 
-<text x="30" y="34" class="title">적용 전: Always Relevant</text>
+<text x="30" y="34" class="title">적용 전: 모든 액터를 항상 보냄</text>
 <text x="30" y="54" class="sub">서버가 모든 액터를 클라이언트 8개 모두에게 보낸다</text>
 <g transform="translate(30 68)">
 <rect width="400" height="400" class="map"/>
@@ -276,7 +276,7 @@ $($ClipCircles.ToString())</clipPath>
 <use href="#npcs" class="dots npc"/>
 $($PlayersNoRange.ToString())</g>
 
-<text x="470" y="34" class="title">적용 후: Net Cull Distance 150m</text>
+<text x="470" y="34" class="title">적용 후: 150m 거리 판정</text>
 <text x="470" y="54" class="sub">서버가 원 안의 액터만 그 클라이언트에게 보낸다</text>
 <g transform="translate(470 68)">
 <rect width="400" height="400" class="map"/>

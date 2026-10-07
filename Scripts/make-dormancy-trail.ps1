@@ -53,7 +53,7 @@ $Player = "<g transform=`"translate($x0 $y0)`"><animateTransform attributeName=`
 $Route = "<path d=`"M$x0 $y0 H$x1 V$y1 H$x0 Z`" class=`"route`"/>"
 
 $Svg = @"
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520" role="img" aria-label="클라이언트 하나가 가진 자원 노드. Relevancy만 적용하면 원 밖으로 나간 자원 노드가 사라지고, Dormancy를 적용하면 지나온 길의 자원 노드가 남는다.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520" role="img" aria-label="클라이언트 하나가 가진 자원 노드. 거리 판정만 켜면 원 밖으로 나간 자원 노드가 사라지고, 자원 노드를 Dormant 상태로 두면 지나온 길의 자원 노드가 남는다.">
 <style>
 text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#e6edf3}
 .title{font-size:17px;font-weight:700}
@@ -82,7 +82,7 @@ text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif
 </defs>
 <rect width="900" height="520" rx="10" fill="#0f141b"/>
 
-<text x="30" y="34" class="title">Relevancy만 적용</text>
+<text x="30" y="34" class="title">거리 판정만</text>
 <text x="30" y="54" class="sub">원 밖으로 나간 자원 노드는 클라이언트에서 사라진다</text>
 <g transform="translate(30 68)" clip-path="url(#panel)">
 <rect width="400" height="400" class="map"/>
@@ -96,7 +96,7 @@ $Route
 $Player
 </g>
 
-<text x="470" y="34" class="title">Dormancy 적용</text>
+<text x="470" y="34" class="title">자원 노드를 Dormant 상태로</text>
 <text x="470" y="54" class="sub">지나온 길의 자원 노드가 클라이언트에 남는다</text>
 <g transform="translate(470 68)" clip-path="url(#panel)">
 <rect width="400" height="400" class="map"/>
