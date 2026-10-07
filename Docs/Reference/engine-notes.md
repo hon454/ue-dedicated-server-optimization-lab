@@ -370,6 +370,6 @@
 | 위치와 속도는 성분당 비트 수 N을 7비트 머리에 쓰고 X, Y, Z를 N비트씩 쓴다. N은 세 성분 가운데 가장 큰 절댓값(정밀도 단위로 반올림)에 부호 비트를 더한 길이다. 0 벡터는 성분당 1비트다 | `Engine/Source/Runtime/Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:13-17, 90-96`, `Engine/Source/Runtime/Core/Private/Serialization/BitWriter.cpp:142-146` |
 | `ByteComponents` 회전은 성분마다 "0이 아님" 1비트와, 0이 아니면 1바이트다 | `Engine/Source/Runtime/Core/Private/Math/UnrealMath.cpp:84-` |
 | 따라서 평면에서 움직이고 속도가 0인 액터(`ALabNpc`)의 이동 데이터는 33 + 3N비트, 핸들을 더하면 41 + 3N비트다. 맵 원점에서 멀수록 N이 커진다(163m까지 15 이하, 655m를 넘으면 18) | 계산값. `act2-interp2-r1`의 패킷 하나에서 읽은 NPC의 `ReplicatedMovement`(`Shared`) 83비트가 N = 14일 때와 같다 |
-| 공유 직렬화(`Shared`)의 비트에는 프로퍼티 핸들이 들어 있다 | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:2741-2752`(`WriteSharedProperty`) |
+| 공유 직렬화(`Shared`)의 비트에는 프로퍼티 핸들이 들어 있다. Networking Insights의 `Shared` 범위는 공유 직렬화한 비트를 패킷에 복사할 때만 남는다. 그래서 어떤 프로퍼티가 공유 직렬화로 갔는지는 `Shared`의 Incl에서 그 프로퍼티의 비트를 빼 보면 안다(포스팅 12 측정 기록 5.1절) | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:2741-2752`(`WriteSharedProperty`), `2856-2861`(`Shared` 범위와 `GNumSharedSerializationHit`) |
 | 구조체를 공유 직렬화하려면 `WithNetSharedSerialization`을 켠다. 켜지 않은 구조체는 연결마다 직렬화한다 | `RepLayout.cpp:5555-5557`, `Engine/Source/Runtime/Engine/Classes/Engine/ReplicatedState.h:305-312` |
 | 패킷을 잃으면 그 패킷에 담긴 바뀐 프로퍼티에 다시 보냄 표시를 하고, 다시 보낼 때는 그때의 현재 값을 직렬화한다 | `Engine/Source/Runtime/Engine/Private/DataReplication.cpp:888-925`(`FObjectReplicator::ReceivedNak`), `RepLayout.cpp:2262-2279`(`UpdateChangelistHistory`가 다시 보낼 변경 목록을 이번 변경 목록에 합침) |

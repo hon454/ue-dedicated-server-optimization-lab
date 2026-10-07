@@ -15,13 +15,13 @@
 - **루트 README의 결과는 2막 여덟 구성(기준선과 ①\~⑦)을 연달아 잰 `act2-all-*2`다(2026-10-07).** 포스팅 11을 ⑦ NPC 보간으로 더하면서 모든 구성을 다시 쟀다(사용자 결정. 처음에는 빼기로 했다가 같은 날 바꿨다). 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 일곱 단계"에 있다. ⑥ → ⑦은 `work_avg_ms` 중앙값 8.591 → 8.501(구별되지 않음), `out_bytes_per_sec_per_conn` 11,807 → 12,701(+7.6%)이다. 사용자가 무거운 프로그램을 닫은 뒤 쟀고, ①을 빼면 각 글의 묶음과 -3.8\~+5.3% 다르다. 틱 예산을 조금 넘는 ① 거리 판정은 프레임 시간이 Consider List를 늘리는 되먹임으로 잰 날마다 크게 다르다(Insights 35.9, 55.1, 44.1ms). 이런 구성은 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 지난 묶음 `act2-all-*1`의 경위는 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "README와 시각화 페이지 갱신"에 있다.
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 여덟 단계(포스팅 11까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 단계를 더하는 기준은 [AGENTS.md](../AGENTS.md) "규칙"에 있다.
 - **태스크 28(포스팅 11, `post-11-npc-interpolation`)이 끝났다(2026-10-07).** 클라이언트가 NPC를 서버 프레임 번호 기준으로 150ms 늦게 보간하자(`-NpcInterpDelay 150`) 표시 속도 오차 평균이 439.9 → 15.0cm/s, 표시 지연이 74 → 155ms, 표시 위치 오차 평균이 22.25 → 46.38cm였다(`act2-interp-base2`, `act2-interp2`). NPC 갱신 한 번은 101 → 117비트(Networking Insights), `out_bytes_per_sec_per_conn`은 11,820 → 12,682(+7.3%)이고 `work_avg_ms`는 구별되지 않았다. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)이고 포스팅 12, 13도 쓴다. 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 28"에 있다.
-- **태스크 29(포스팅 12)를 시작했다(2026-10-07).** 지금 NPC 갱신 한 번의 이동 데이터는 핸들을 포함해 41 + 3N비트(N은 위치 성분당 비트 수, `act2-interp2-r1`에서 평균 13.81)로 평균 82.43비트이고, `ServerFrame` 16비트를 더해 약 98.4비트다. 그중 Z, 속도, 위치 머리, 플래그 38비트는 NPC에게 필요 없다([관찰 자료](../Posts/12-npc-move-netserialize/candidates.md) 1절, 식은 [engine-notes.md](Reference/engine-notes.md) 13절). 사용자가 B(집 기준 상대 좌표, 1cm, 프레임 번호를 구조체에 넣음)를 골랐고(5절) `-NpcCompactMove`로 구현했다. 작은 규모 확인(클라이언트 2, 자원 노드 100, NPC 10과 플레이어 주변 50, `-PlayerSpacing 3 -NpcsNearPlayers 50 -MotionLog -NpcInterpDelay 150`, `-NoTrace`)에서 `out_bytes_per_sec_per_conn` 8,436 → 6,183이었다(`tsmall-move1-r1`, `tsmall-move2-r1`). 클라이언트 하나가 1초에 받은 NPC 갱신 약 375번으로 나누면 갱신 한 번에 약 48비트가 줄어 예상(48.4비트)과 맞는다. 표시 위치 오차 평균 50.18 → 45.88cm, 표시 지연 169 → 153ms, 그 지연에서의 위치 오차 2.22 → 2.15cm, 표시 속도 오차 평균 12.8 → 13.0cm/s, `lab_npc_move_clamped`는 없었다. 작은 규모라 포스팅의 비교에 쓰지 않는다.
+- **태스크 29(포스팅 12)를 시작했다(2026-10-07).** 지금 NPC 갱신 한 번의 이동 데이터는 핸들을 포함해 41 + 3N비트(N은 위치 성분당 비트 수, `act2-interp2-r1`에서 평균 13.81)로 평균 82.43비트이고, `ServerFrame` 16비트를 더해 약 98.4비트다. 그중 Z, 속도, 위치 머리, 플래그, 회전의 "0이 아님" 비트 39비트(위치 성분이 14비트일 때)는 NPC에게 필요 없다([관찰 자료](../Posts/12-npc-move-netserialize/candidates.md) 1절, 식은 [engine-notes.md](Reference/engine-notes.md) 13절). 사용자가 B(집 기준 상대 좌표, 1cm, 프레임 번호를 구조체에 넣음)를 골랐고(5절) `-NpcCompactMove`로 구현했다. 작은 규모 확인(클라이언트 2, 자원 노드 100, NPC 10과 플레이어 주변 50, `-PlayerSpacing 3 -NpcsNearPlayers 50 -MotionLog -NpcInterpDelay 150`, `-NoTrace`)에서 `out_bytes_per_sec_per_conn` 8,436 → 6,183이었다(`tsmall-move1-r1`, `tsmall-move2-r1`). 클라이언트 하나가 1초에 받은 NPC 갱신 약 375번으로 나누면 갱신 한 번에 약 48비트가 줄어 예상(48.4비트)과 맞는다. 표시 위치 오차 평균 50.18 → 45.88cm, 표시 지연 169 → 153ms, 그 지연에서의 위치 오차 2.22 → 2.15cm, 표시 속도 오차 평균 12.8 → 13.0cm/s, `lab_npc_move_clamped`는 없었다. 작은 규모라 포스팅의 비교에 쓰지 않는다.
 - 다음 시각 자료 라벨은 `visual22`이다(`visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후, 2026-10-07. `visual18`, `visual19`는 포스팅 10의 인벤토리 패널 전후).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **포스팅 12(태스크 29)의 시각 자료와 초안.** 확정 규모 측정과 Insights 값은 끝났다(아래 "측정 결과"). Networking Insights(`Connection 0`, `Outgoing`, 측정 구간과 거의 같은 1,789, 1,791패킷)에서 `LabNpc` 갱신 한 번이 25,182번에 117.24비트 → 25,189번에 69.04비트였다. 적용 후 `Move`는 25,189번 모두 50비트, `ServerFrame`은 없고, `MoveOrigin`은 4번에 246비트다(`act2-npcmove-base1-r2`, `act2-npcmove1-r2`). 두 화면의 캡처는 `Saved/Screenshots/Lab/insights-<라벨>-netstats.png`에 있다. 남은 것: 시각 자료 후보를 내고, 본문과 측정 기록의 초안을 쓴다.
+2. **[사람] 포스팅 12(태스크 29)의 초안을 확인한다.** [본문](../Posts/12-npc-move-netserialize/README.md)과 [측정 기록](../Posts/12-npc-move-netserialize/measurements.md)의 초안이다(본문 3,126자). "문제"와 "원리"는 승인이 필요한 에이전트 초안이다. 시각 자료는 사용자가 추천안대로 골랐다(비트 구성 도식 `Scripts/make-move-bits.ps1`, 흐름도, 송신 대역폭 차트, 측정 기록의 Net Stats 캡처 두 장, 영상 없음). Networking Insights(`Connection 0`, `Outgoing`)에서 `LabNpc` 갱신 한 번이 117.24 → 69.04비트, `Move`는 25,189번 모두 50비트였다(`act2-npcmove-base1-r2`, `act2-npcmove1-r2`). `Shared`의 합으로 `Move`가 공유 직렬화로 갔음을 확인했다(engine-notes.md 13절). 승인되면 태그 `post-12-npc-move-netserialize`를 붙이고, 루트 README의 "결과 한눈에 보기"와 시리즈 웹 페이지에 단계를 더한다(AGENTS.md "규칙").
 
 ## 포스팅 진행
 
@@ -39,7 +39,7 @@
 | 9. 인벤토리를 소유자에게만 보내기 | 완료 | `post-09-inventory-owner-only` |
 | 10. 인벤토리를 FastArray로 보내기 | 완료 | `post-10-inventory-fastarray` |
 | 11. 클라이언트에서 NPC 위치를 보간하기 | 완료 | `post-11-npc-interpolation` |
-| 12. NPC 이동의 `NetSerialize` | 관찰 자료 | |
+| 12. NPC 이동을 필요한 비트만 담은 구조체로 보내기 | 초안 | |
 
 ## 명령
 
@@ -147,3 +147,4 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 ## 사용자에게 요청한 일
 
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
+- **포스팅 12 초안 확인.** 위 "다음 할 일" 2번.
