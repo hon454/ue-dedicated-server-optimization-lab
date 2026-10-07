@@ -195,7 +195,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 		<strong>이 페이지의 숫자를 읽는 법</strong>
 		<ul>
 			<li>"측정"이라고 적힌 값만 실제 서버에서 측정했다. 근거는 각 글의 측정 기록에 있다.</li>
-			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 한 단계의 적용 후 값과 다음 단계의 적용 전 값이 조금 다르다. 2막의 루트 README는 여덟 구성을 하루에 연달아 잰 다른 묶음이라 값이 다르다.</li>
+			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 한 단계의 적용 후 값과 다음 단계의 적용 전 값이 조금 다르다. 2막의 루트 README는 아홉 구성을 하루에 연달아 잰 다른 묶음이라 값이 다르다.</li>
 			<li>지도와 흐름의 숫자는 이 브라우저에서 도는 모형이 센 값이다. 모형은 엔진의 기본 리플리케이션 순서를 따른다.</li>
 			<li>맵 크기, 액터 수, 플레이어의 자리와 경로, 150m는 실제 값이다. 자원 노드와 NPC, 건축물의 위치는 예시다.</li>
 			<li>모형은 서버 프레임 간격을 측정값에서 가져온다. 틱 예산을 넘는 단계의 서버는 30Hz를 지키지 못해서 지도가 느리게 움직인다.</li>
@@ -286,8 +286,15 @@ const STEPS2 = [
 		desc: '클라이언트가 받은 NPC 위치를 쌓아 두고, 150ms 앞선 순간을 끼는 두 위치 사이를 이어 그린다. 서버는 위치마다 서버 프레임 번호를 붙여 보낸다. 서버의 일은 그대로이고, 화면 속 NPC는 끊기지 않는 대신 늦게 보인다.',
 		code: 'UPROPERTY(Replicated) uint8 ServerFrame;',
 		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'fast', interp: 0.15, tick: 1 / 30,
-		before: { frame: 8.880, repl: 3.907, bw: 11820, chan: 77, speedErr: 439.9, delay: 74 }, indistinct: ['frame', 'repl'], remeasured: true,
-		m: { frame: 8.893, repl: 3.934, bw: 12682, chan: 77, speedErr: 15.0, delay: 155 }, flowMeasured: { active: '5,272', considered: '415' },
+		before: { frame: 8.880, repl: 3.907, bw: 11820, chan: 77, npcBits: 101.23, speedErr: 439.9, delay: 74 }, indistinct: ['frame', 'repl'], remeasured: true,
+		m: { frame: 8.893, repl: 3.934, bw: 12682, chan: 77, npcBits: 117.20, speedErr: 15.0, delay: 155 }, flowMeasured: { active: '5,272', considered: '415' },
+		invRate: 14.8 },
+	{ name: '⑧ NPC 이동 구조체', short: 'NPC 이동 구조체', hint: '필요한 비트만 보낸다', post: 'Posts/12-npc-move-netserialize/README.md',
+		desc: '서버가 NPC 이동을 엔진의 이동 데이터 대신 구조체 하나로 보낸다. 구조체는 집에서 잰 X, Y를 13비트씩, 방향과 서버 프레임 번호를 8비트씩 직접 쓴다. NPC에게 늘 같은 높이와 늘 0인 속도는 보내지 않는다. 서버는 프레임마다 한 번 쓴 비트를 모든 연결에 함께 쓴다.',
+		code: 'bool FLabNpcMove::NetSerialize(FArchive& Ar, ...)',
+		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'fast', interp: 0.15, tick: 1 / 30,
+		before: { frame: 8.957, repl: 3.993, bw: 12672, chan: 77, npcBits: 117.24, speedErr: 14.9, delay: 155 }, indistinct: ['speedErr', 'delay'], remeasured: true,
+		m: { frame: 8.760, repl: 3.824, bw: 10088, chan: 77, npcBits: 69.04, speedErr: 15.0, delay: 154 }, flowMeasured: { active: '5,272', considered: '415' },
 		invRate: 14.8 },
 ];
 const SHOW = {
@@ -298,6 +305,7 @@ const SHOW = {
 	consider: ['Consider List 길이', v => `${v.toLocaleString('ko-KR')}개/프레임`],
 	invRate: ['인벤토리 송신량(연결 하나)', v => `${v.toLocaleString('ko-KR')}바이트/초`],
 	invBits: ['인벤토리 한 번의 최대 크기', v => `${v.toLocaleString('ko-KR')}비트`],
+	npcBits: ['NPC 갱신 한 번의 크기(0번 연결)', v => `${v.toFixed(1)}비트`],
 	speedErr: ['표시 속도 오차 평균(화면 속 NPC)', v => `${v.toFixed(1)}cm/s`],
 	delay: ['표시 지연(화면 속 NPC)', v => `${v}ms`],
 };
@@ -307,7 +315,7 @@ const ACTS = [
 		note: '플레이어 여덟 명이 반지름 500m 원 위에 흩어져 각자 한 변 100m 정사각형을 돈다. 포스팅 1~4의 테스트베드다.' },
 	{ name: '2막', sub: '모인 플레이어', steps: STEPS2, nNode: 5001, nNpcMap: 300, nNpcNear: 50, nBuild: 500, cluster: true,
 		mapSub: '맵 2km × 2km, 클라이언트 8개, 자원 노드 5,001개, NPC 350명, 건축물 500개',
-		note: '플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 한 변 70m 정사각형을 돈다. 곁에 건축물 500개가 있고 1초마다 하나를 새로 짓는다. 포스팅 5~11의 테스트베드다.' },
+		note: '플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 한 변 70m 정사각형을 돈다. 곁에 건축물 500개가 있고 1초마다 하나를 새로 짓는다. 포스팅 5~12의 테스트베드다.' },
 ];
 const TICK_BUDGET = 33.3;
 
@@ -589,7 +597,8 @@ function setAct(index) {
 	for (const el of document.querySelectorAll('[data-act]')) if (el.parentElement.id !== 'acts') el.hidden = +el.dataset.act !== index + 1;
 	$('actNote').textContent = act.note;
 	$('mapSub').textContent = act.mapSub;
-	$('steps').style.setProperty('--n', STEPS.length);
+	// 단계가 여섯을 넘으면 버튼이 좁아지지 않게 두 줄로 놓는다.
+	$('steps').style.setProperty('--n', STEPS.length > 6 ? Math.ceil(STEPS.length / 2) : STEPS.length);
 		$('steps').innerHTML = STEPS.map((s, i) => `<button data-step="${i}" aria-pressed="false"><span class="no">${i}단계</span> ${s.short || s.name}<small>${s.hint}</small></button>`).join('');
 	renderStep();
 }
@@ -652,7 +661,7 @@ function renderStep() {
 		$('iConns').textContent = all ? '8개' : '1개(소유자)';
 		$('iCells').textContent = s.inv === 'fast' ? '새 칸 1개' : '200칸 모두';
 		$('iBits').textContent = s.inv === 'fast' ? '345비트' : '18,190비트';
-		// 4단계와 7단계는 인벤토리 구성이 바로 뒤나 앞 단계와 같아서 그 단계의 측정값을 쓴다(s.invRate).
+		// 4단계와 7, 8단계는 인벤토리 구성이 바로 뒤나 앞 단계와 같아서 그 단계의 측정값을 쓴다(s.invRate).
 		const rate = s.m.invRate !== undefined ? s.m.invRate : s.invRate !== undefined ? s.invRate : null;
 		$('iRate').textContent = rate === null ? '측정하지 않음' : `${rate.toLocaleString('ko-KR')}바이트/초`;
 	}

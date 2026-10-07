@@ -2,7 +2,7 @@
 
 [index.html](index.html)은 의존성이 없는 한 파일이다. main에 푸시하면 [배포 워크플로](../.github/workflows/pages.yml)가 이 폴더를 GitHub Pages에 올린다. 주소는 `https://hon454.github.io/ue-dedicated-server-optimization-lab/`다.
 
-페이지는 테스트베드 두 개를 고를 수 있다. 1막은 네 단계(0단계 기준선, 1단계 Relevancy, 2단계 Dormancy, 3단계 Net Update Frequency)이고, 2막은 여덟 단계(0단계 기준선부터 7단계 NPC 보간까지)다(2026-10-06에 더했고, 7단계는 2026-10-07에 더했다). 단계를 고르면 브라우저에서 도는 모형이 서버 프레임 하나의 횟수를 세어 보여 준다. 측정한 조합만 고를 수 있게 했다.
+페이지는 테스트베드 두 개를 고를 수 있다. 1막은 네 단계(0단계 기준선, 1단계 Relevancy, 2단계 Dormancy, 3단계 Net Update Frequency)이고, 2막은 아홉 단계(0단계 기준선부터 8단계 NPC 이동 구조체까지)다(2026-10-06에 더했고, 7단계와 8단계는 2026-10-07에 더했다). 단계를 고르면 브라우저에서 도는 모형이 서버 프레임 하나의 횟수를 세어 보여 준다. 측정한 조합만 고를 수 있게 했다.
 
 ## 수치의 출처: 1막
 
@@ -41,8 +41,10 @@
 | 4단계 | 측정값 | [포스팅 8 측정 기록](../Posts/08-node-update-frequency/measurements.md) 2절의 `r3`끼리(`act2-nodeuf-base1`, `act2-nodeuf1`). 연결당 송신 대역폭은 CSV 중앙값이고 구별되지 않았다. Consider List 3,887 → 413 |
 | 5단계 | 측정값 | [포스팅 9 측정 기록](../Posts/09-inventory-owner-only/measurements.md) 2절의 `r2`끼리(`act2-invown-base1`, `act2-invown1`). 연결당 송신 대역폭과 인벤토리 송신량은 Networking Insights `Connection 0`이다. 서버 프레임 시간 평균과 리플리케이션 시간은 구별되지 않았다(CSV `netflush_avg_ms` -0.067, 변동 폭 0.121) |
 | 6단계 | 측정값 | [포스팅 10 측정 기록](../Posts/10-inventory-fastarray/measurements.md) 2절과 [관찰 자료](../Posts/10-inventory-fastarray/candidates.md) 13절(`act2-fastarr-base1`, `act2-fastarr1`). 서버 프레임 시간 평균은 구별되지 않았다. 인벤토리 한 번의 최대 크기 18,190 → 345비트 |
-| 7단계 | 측정값 | [포스팅 11 측정 기록](../Posts/11-npc-interpolation/measurements.md) 3절, 4절, 5절의 `r1`끼리(`act2-interp-base2`, `act2-interp2`). 두 묶음 모두 모션 기록(`-MotionLog`)을 켰다. 서버 프레임 시간 평균 8.880 → 8.893ms와 리플리케이션 시간 3.907 → 3.934ms는 구별되지 않았다. 연결당 송신 대역폭은 CSV 중앙값 11,820 → 12,682다. 표시 속도 오차 평균 439.9 → 15.0cm/s와 표시 지연 74 → 155ms는 세 실행의 중앙값이다([ADR-0020](../Docs/Decisions/0020-npc-motion-quality-metrics.md)). Consider List 415는 `act2-interp2-r1`의 서버 로그 414.8이다 |
-| 인벤토리 카드의 "인벤토리 송신량"(4\~7단계) | 측정값 | 4단계는 5단계의 적용 전 값 4,545다(같은 구성). 7단계는 6단계의 적용 후 값 14.8이다(인벤토리 구성이 같다). 0\~3단계는 측정하지 않았다 |
+| 7단계 | 측정값 | [포스팅 11 측정 기록](../Posts/11-npc-interpolation/measurements.md) 3절, 4절, 5절의 `r1`끼리(`act2-interp-base2`, `act2-interp2`). 두 묶음 모두 모션 기록(`-MotionLog`)을 켰다. 서버 프레임 시간 평균 8.880 → 8.893ms와 리플리케이션 시간 3.907 → 3.934ms는 구별되지 않았다. 연결당 송신 대역폭은 CSV 중앙값 11,820 → 12,682다. 표시 속도 오차 평균 439.9 → 15.0cm/s와 표시 지연 74 → 155ms는 세 실행의 중앙값이다([ADR-0020](../Docs/Decisions/0020-npc-motion-quality-metrics.md)). Consider List 415는 `act2-interp2-r1`의 서버 로그 414.8이다. NPC 갱신 한 번의 크기 101.23 → 117.20비트는 Networking Insights `Connection 0`의 `LabNpc` Incl ÷ Count다(5.1절) |
+| 8단계 | 측정값 | [포스팅 12 측정 기록](../Posts/12-npc-move-netserialize/measurements.md) 2절, 3절, 4절, 5절, 5.1절의 `r2`끼리(`act2-npcmove-base1`, `act2-npcmove1`). 두 묶음 모두 모션 기록을 켰다. 서버 프레임 시간 평균 8.957 → 8.760ms, 리플리케이션 시간 3.993 → 3.824ms는 Timing Insights다. CSV `work_avg_ms`의 변화 -0.197은 변동 폭 0.190을 겨우 넘었다. 연결당 송신 대역폭은 CSV 중앙값 12,672 → 10,088이다. NPC 갱신 한 번의 크기 117.24 → 69.04비트는 Networking Insights `Connection 0`의 `LabNpc` Incl ÷ Count다. 표시 속도 오차 평균 14.9 → 15.0cm/s와 표시 지연 155 → 154ms는 세 실행의 중앙값이고 구별되지 않았다. Consider List 415, 활성 목록 5,272는 `act2-npcmove1-r2`의 서버 로그 414.8, 5,272다 |
+| 인벤토리 카드의 "인벤토리 송신량"(4\~8단계) | 측정값 | 4단계는 5단계의 적용 전 값 4,545다(같은 구성). 7단계와 8단계는 6단계의 적용 후 값 14.8이다(인벤토리 구성이 같다). 0\~3단계는 측정하지 않았다 |
+| 8단계의 구조체: 집에서 잰 X, Y 13비트씩, 방향과 서버 프레임 번호 8비트씩, 한 번 쓴 비트를 모든 연결이 함께 씀 | 소스의 값 | `LabNpc.h`의 `FLabNpcMove`, `LabNpc.cpp`의 `FLabNpcMove::NetSerialize`, `WithNetSharedSerialization`(`RepLayout.cpp:5555-5557`) |
 | 7단계의 보간 지연 150ms, 받은 위치 두 개 사이를 이음 | 소스의 값 | `-LabNpcInterpDelay=150`, `LabNpc.cpp`의 `TickInterpolation` |
 | "측정: 활성 목록, Consider List" | 측정값 | 서버 로그 `lab_network_objects active=`, `lab_consider_list avg_per_frame=`. 3단계는 `act2-nodeuf-base1-r3`(같은 구성을 포스팅 8에서 잰 값), 4\~6단계는 각 글의 적용 후 실행이다. 활성 목록에는 플레이어 캐릭터와 컨트롤러 같은 다른 액터가 들어 있다 |
 | 서버 프레임 간격 214ms(기준선), 35.9ms(1단계) | 측정값 | 두 단계의 서버 프레임 시간 평균. 나머지 단계는 틱 예산 안이라 33.3ms로 둔다 |
@@ -78,6 +80,7 @@
 - 단계를 Dormancy 이전으로 되돌리면 채널 없이 남아 있던 자원 노드를 바로 지운다.
 - 왕복하는 NPC 하나는 흐름의 횟수에 넣지 않는다.
 - 2막 7단계: 보간은 왕복하는 NPC 하나에만 그린다. 서버 시각을 그대로 쓰고, 서버 프레임 번호와 시계 추정, 전달 시간을 다루지 않는다. 클라이언트 지도의 NPC 점은 받은 위치다.
+- 2막 8단계: 모형은 비트를 다루지 않아 지도와 흐름, NPC의 움직임이 7단계와 같다. 8단계가 바꾼 것은 "실제 서버에서 측정한 값"에만 보인다.
 - 2막: 인벤토리는 앞 칸 지우기만 다루고 채집으로 수량이 바뀌는 것은 다루지 않는다. FastArray 클라이언트의 칸 순서가 서버와 달라지는 것도 다루지 않는다. 건축물을 허물 때 클라이언트에서 바로 지운다.
 - 1막은 2026-10-06 수정에서 모든 연결에서 Dormant 상태인 액터를 활성 목록에서 빼게 됐다. 1막의 플레이어는 서로 멀어 그런 자원 노드가 거의 없어서 흐름의 숫자는 그대로다(Dormancy 단계의 ④가 약 43 → 약 39).
 
