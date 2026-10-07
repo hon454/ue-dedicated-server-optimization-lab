@@ -24,7 +24,7 @@
 | 연결당 송신 대역폭 12,700 → 10,100바이트/초, -20.4% | CSV `out_bytes_per_sec_per_conn` 중앙값 12,672 → 10,088. 10,088 ÷ 12,672 − 1 = -20.39% | 3절 |
 | 표시 위치 오차 평균 46.6 → 45.9cm, 구별되지 않음 | 중앙값 46.56 → 45.87. 차이 0.69가 두 묶음의 변동 폭 1.01, 0.63 가운데 큰 쪽보다 작다 | 4절 |
 | 서버 프레임 시간 평균 8.96 → 8.76ms, -2.20% | Timing Insights 8.957 → 8.760(중앙값 실행 `r2`끼리, ADR-0010). 8.760 ÷ 8.957 − 1 = -2.20% | 5절 |
-| 요약의 도식 | `Scripts/make-move-bits.ps1`. 위치 성분 N = 14의 예시. `act2-interp2-r1`에서 받은 갱신의 59.4%가 N = 14였다 | 6절, [관찰 자료](candidates.md) 1.2절 |
+| 요약의 도식 | `Scripts/make-move-bits.ps1`. 위치를 축마다 N = 14비트로 쓰는 예시. `act2-interp2-r1`에서 받은 갱신의 59.4%가 N = 14였다 | 6절, [관찰 자료](candidates.md) 1.2절 |
 | 연결 하나는 1초에 NPC 갱신을 약 428번 받는다 | `act2-npcmove-base1-r2`의 모션 기록에서 클라이언트 8개가 측정 구간 60.022초에 받은 NPC 갱신 수 ÷ 60.022의 평균 427.8번(클라이언트별 419.4\~431.7) | 모션 기록 |
 | 0번 연결이 보낸 액터 데이터의 52.3%가 NPC | `LabNpc` Incl ÷ `Actor` Incl = 2,952,335 ÷ 5,645,669 = 52.29%(`act2-npcmove-base1-r2`) | 5.1절 |
 | 문제의 표: 이동 데이터 82.3비트 | `act2-npcmove-base1-r2`의 0번 클라이언트가 측정 구간에 받은 NPC 갱신 25,165번마다 그 순간의 서버 위치로 N을 셈하고 41 + 3N(핸들 포함)을 평균한 값 82.28(N 평균 13.759). Insights로 대조하면 `ReplicatedMovement` 3,264,808비트에서 플레이어 캐릭터 몫(적용 후 트레이스의 평균 1,196,449 ÷ 9,281 = 128.91비트 × 9,268번)을 뺀 2,070,033 ÷ 25,182 = 82.20비트다 | 관찰 자료 1.1절의 식, 5.1절 |
@@ -33,7 +33,7 @@
 | `ReplicatedMovement`는 위치, 회전, 속도를 담는 엔진의 구조체, X, Y, Z와 속도를 늘 보낸다 | `FRepMovement::NetSerialize`(`Engine/Source/Runtime/Engine/Private/Engine/ReplicatedState.cpp:67-152`). 비트 구성은 [engine-notes.md](../../Docs/Reference/engine-notes.md) 13절 | 엔진 소스 |
 | NPC의 높이가 늘 같다 | 스폰 높이 Z = 50(`Source/DSOptLab/LabGameMode.cpp:116, 296`), `ALabNpc::TickMovement`가 Z를 바꾸지 않는다. 모션 기록의 서버 위치 Z도 모두 50이었다 | 프로젝트 소스, 모션 기록 |
 | NPC의 속도가 늘 0이다 | 서버는 `GetVelocity()`를 보내고, 이 값은 루트 컴포넌트의 `ComponentVelocity`다. 이동 컴포넌트가 없는 `ALabNpc`는 채우지 않는다([포스팅 11 관찰 자료](../11-npc-interpolation/candidates.md) 1절) | 엔진 소스 |
-| 위치 성분이 14비트이면 39비트가 필요 없다 | 플래그 4 + 위치 머리 7 + Z 14 + 회전의 "0이 아님" 비트 3 + 속도 10 + 가속도 있음 1 = 39. 관찰 자료 1.3절은 Yaw의 "0이 아님" 비트를 필요한 쪽으로 세어 38비트로 적었다. 새 구조체는 Yaw를 늘 1바이트로 보내므로 이 비트도 없어진다 | 계산 |
+| 위치를 축마다 14비트로 쓰면 39비트가 필요 없다 | 플래그 4 + 위치 머리 7 + Z 14 + 회전의 "0이 아님" 비트 3 + 속도 10 + 가속도 있음 1 = 39. 관찰 자료 1.3절은 Yaw의 "0이 아님" 비트를 필요한 쪽으로 세어 38비트로 적었다. 새 구조체는 Yaw를 늘 1바이트로 보내므로 이 비트도 없어진다 | 계산 |
 | 정밀도의 기본값이 이미 가장 거친 단계다 | `LocationQuantizationLevel`, `VelocityQuantizationLevel`이 `RoundWholeNumber`(1cm), `RotationQuantizationLevel`이 `ByteComponents`(`ReplicatedState.cpp:34-36`). 열거형에 더 거친 값이 없다(`Engine/Source/Runtime/Engine/Classes/Engine/ReplicatedState.h:11-28`) | 엔진 소스 |
 | 구조체에 `NetSerialize`를 두면 엔진이 직렬화를 맡긴다 | `TStructOpsTypeTraits`의 `WithNetSerializer`. `FRepMovement`(`ReplicatedState.h:305-312`)와 `FHitResult`(`Classes/Engine/HitResult.h:305`)가 이렇게 직렬화된다 | 엔진 소스 |
 | 엔진은 위치 값의 크기에 맞춰 길이를 정하고 7비트 머리에 적는다 | `UE::Net::WriteQuantizedVector`(`Engine/Source/Runtime/Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:90-96`). `SerializeInt(값, 128)`은 7비트다(`Core/Private/Serialization/BitWriter.cpp:142-146`) | 엔진 소스 |
@@ -59,8 +59,8 @@
 | 엔진이 이동 데이터를 모으지 않게 된 몫으로 추정 | `AActor::GatherCurrentMovement`는 `IsReplicatingMovement()`일 때만 이동 데이터를 모은다(`Engine/Source/Runtime/Engine/Private/ActorReplication.cpp:426-428`). 몫을 나눠 재지 않았다(7절) | 엔진 소스 |
 | 표시 지연 155, 154ms | 중앙값 | 4절 |
 | 그 지연을 뺀 위치 오차 1.37, 1.22cm | 표시 지연에서의 평균 위치 오차(`summary.txt`의 `display_lag_ms` 줄) 중앙값 | 4절 |
-| 줄인 48.4비트 가운데 38.8비트가 필요 없는 성분, 범위를 아는 몫 1.62비트 | 평균 N = 13.81일 때 필요 없는 성분 4 + 7 + 13.81 + 3 + 10 + 1 = 38.81, 핸들 8, 범위 2 × (13.81 − 13) = 1.62. 합계 48.43 | 계산 |
-| 맵 가장자리라면 성분마다 18비트 | NPC 배치 범위의 끝 95,000cm(`LabScenarioConfig.h`의 `WorldHalfExtent`)는 부호 비트를 더해 18비트다(`QuantizedVectorSerialization.cpp:13-17`) | 엔진 소스, 계산 |
+| 줄인 48.4비트 가운데 38.8비트가 필요 없는 값, 범위를 아는 몫 1.62비트 | 평균 N = 13.81일 때 필요 없는 값 4 + 7 + 13.81 + 3 + 10 + 1 = 38.81, 핸들 8, 범위 2 × (13.81 − 13) = 1.62. 합계 48.43 | 계산 |
+| 맵 가장자리라면 축마다 18비트 | NPC 배치 범위의 끝 95,000cm(`LabScenarioConfig.h`의 `WorldHalfExtent`)는 부호 비트를 더해 18비트다(`QuantizedVectorSerialization.cpp:13-17`) | 엔진 소스, 계산 |
 | 잘라 보낸 횟수는 한 번도 없었다 | 6회의 서버 로그에 `lab_npc_move_clamped`가 없다 | 서버 로그 |
 
 ## 3. 서버가 남긴 CSV
@@ -142,7 +142,7 @@
 
 ## 6. 시각 자료
 
-- 요약의 도식 [images/move-bits.svg](images/move-bits.svg)는 `Scripts/make-move-bits.ps1`이 그린 예시다. 위치 성분 N = 14일 때 지금 99비트(`ReplicatedMovement` 83 + `ServerFrame` 16)와 `FLabNpcMove` 50비트를 성분별로 그렸다. Edge 헤드리스로 그려 글자가 겹치지 않는지 확인했다.
+- 요약의 도식 [images/move-bits.svg](images/move-bits.svg)는 `Scripts/make-move-bits.ps1`이 그린 예시다. 위치를 축마다 N = 14비트로 쓸 때 지금 99비트(`ReplicatedMovement` 83 + `ServerFrame` 16)와 `FLabNpcMove` 50비트를 값별로 그렸다. Edge 헤드리스로 그려 글자가 겹치지 않는지 확인했다.
 - 원리의 흐름도와 결과의 차트는 본문의 Mermaid다.
 - 클라이언트 화면의 영상은 찍지 않았다. 품질 지표가 구별되지 않아 두 영상이 같게 보일 것이기 때문이다(사용자 결정, 2026-10-07).
 

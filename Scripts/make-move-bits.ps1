@@ -80,7 +80,7 @@ text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif
 </style>
 <rect width="900" height="430" class="bg"/>
 <text x="20" y="34" class="title">NPC 갱신 한 번에 이동으로 가는 비트</text>
-<text x="20" y="56" class="note">칸 하나가 성분 하나이고, 폭이 비트 수다. 위치 성분이 14비트일 때(이 테스트베드에서 가장 흔한 값)의 예다.</text>
+<text x="20" y="56" class="note">칸 하나가 값 하나이고, 폭이 비트 수다. 위치를 축마다 14비트로 쓸 때(이 테스트베드에서 가장 흔한 값)의 예다.</text>
 
 <text x="$X0" y="80" class="head">지금: 엔진의 ReplicatedMovement와 포스팅 11의 ServerFrame</text>
 <path d="M$X0 110 V104 H$RmEnd V110" class="brace"/>
@@ -99,7 +99,7 @@ $(Bar 246 $After)
 <rect x="$X0" y="322" width="14" height="14" class="need"/><text x="$($X0 + 22)" y="334" class="note">NPC에게 필요한 것</text>
 <rect x="$($X0 + 170)" y="322" width="14" height="14" class="handle"/><text x="$($X0 + 192)" y="334" class="note">프로퍼티 핸들(프로퍼티마다 하나)</text>
 <rect x="$($X0 + 430)" y="322" width="14" height="14" class="waste"/><text x="$($X0 + 452)" y="334" class="note">필요 없는 것(늘 같은 값, 범위를 알면 필요 없는 머리)</text>
-<text x="20" y="372" class="note">위치 성분의 비트 수는 값이 클수록 늘어서, 맵 원점에서 멀면 커진다. 이 테스트베드의 평균은 13.8비트, 맵 가장자리는 18비트다.</text>
+<text x="20" y="372" class="note">축마다 쓰는 비트 수는 좌표가 클수록 늘어서, 맵 원점에서 멀면 커진다. 이 테스트베드의 평균은 13.8비트, 맵 가장자리는 18비트다.</text>
 <text x="20" y="394" class="note">FLabNpcMove는 집을 기준으로 재므로 맵 어디서나 50비트다.</text>
 </svg>
 "@
