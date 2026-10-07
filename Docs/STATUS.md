@@ -15,12 +15,13 @@
 - **루트 README의 결과는 2막 여덟 구성(기준선과 ①\~⑦)을 연달아 잰 `act2-all-*2`다(2026-10-07).** 포스팅 11을 ⑦ NPC 보간으로 더하면서 모든 구성을 다시 쟀다(사용자 결정. 처음에는 빼기로 했다가 같은 날 바꿨다). 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 일곱 단계"에 있다. ⑥ → ⑦은 `work_avg_ms` 중앙값 8.591 → 8.501(구별되지 않음), `out_bytes_per_sec_per_conn` 11,807 → 12,701(+7.6%)이다. 사용자가 무거운 프로그램을 닫은 뒤 쟀고, ①을 빼면 각 글의 묶음과 -3.8\~+5.3% 다르다. 틱 예산을 조금 넘는 ① 거리 판정은 프레임 시간이 Consider List를 늘리는 되먹임으로 잰 날마다 크게 다르다(Insights 35.9, 55.1, 44.1ms). 이런 구성은 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 지난 묶음 `act2-all-*1`의 경위는 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "README와 시각화 페이지 갱신"에 있다.
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 여덟 단계(포스팅 11까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 단계를 더하는 기준은 [AGENTS.md](../AGENTS.md) "규칙"에 있다.
 - **태스크 28(포스팅 11, `post-11-npc-interpolation`)이 끝났다(2026-10-07).** 클라이언트가 NPC를 서버 프레임 번호 기준으로 150ms 늦게 보간하자(`-NpcInterpDelay 150`) 표시 속도 오차 평균이 439.9 → 15.0cm/s, 표시 지연이 74 → 155ms, 표시 위치 오차 평균이 22.25 → 46.38cm였다(`act2-interp-base2`, `act2-interp2`). NPC 갱신 한 번은 101 → 117비트(Networking Insights), `out_bytes_per_sec_per_conn`은 11,820 → 12,682(+7.3%)이고 `work_avg_ms`는 구별되지 않았다. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)이고 포스팅 12, 13도 쓴다. 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 28"에 있다.
+- **태스크 29(포스팅 12)를 시작했다(2026-10-07).** 지금 NPC 갱신 한 번의 이동 데이터는 핸들을 포함해 41 + 3N비트(N은 위치 성분당 비트 수, `act2-interp2-r1`에서 평균 13.81)로 평균 82.43비트이고, `ServerFrame` 16비트를 더해 약 98.4비트다. 그중 Z, 속도, 위치 머리, 플래그 38비트는 NPC에게 필요 없다([관찰 자료](../Posts/12-npc-move-netserialize/candidates.md) 1절, 식은 [engine-notes.md](Reference/engine-notes.md) 13절).
 - 다음 시각 자료 라벨은 `visual22`이다(`visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후, 2026-10-07. `visual18`, `visual19`는 포스팅 10의 인벤토리 패널 전후).
 
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **포스팅 12(NPC 이동의 `NetSerialize`)를 시작한다.** [backlog.md](backlog.md) "우선순위 순" 8번. 기준 구성은 포스팅 11의 최종 구성(`-NpcInterpDelay 150`)이고, 품질은 ADR-0020의 지표로 잰다(`-MotionLog`).
+2. **[사람] 포스팅 12(태스크 29, NPC 이동의 `NetSerialize`)의 후보와 값을 고른다.** [관찰 자료](../Posts/12-npc-move-netserialize/candidates.md)의 5절이다. 정할 것은 후보(A 맵 전체 범위의 고정 길이, B 집 기준 상대 좌표, C B에서 회전 빼기), 위치의 단위(1cm, 2cm, 4cm), 서버 프레임 번호를 구조체에 넣을지다. 에이전트 의견은 B, 1cm, 넣기다(4절). 고르면 에이전트가 실행 인자와 함께 구현하고, 기준 구성(`-NpcInterpDelay 150 -MotionLog`)과 연달아 잰다.
 
 ## 포스팅 진행
 
@@ -38,6 +39,7 @@
 | 9. 인벤토리를 소유자에게만 보내기 | 완료 | `post-09-inventory-owner-only` |
 | 10. 인벤토리를 FastArray로 보내기 | 완료 | `post-10-inventory-fastarray` |
 | 11. 클라이언트에서 NPC 위치를 보간하기 | 완료 | `post-11-npc-interpolation` |
+| 12. NPC 이동의 `NetSerialize` | 관찰 자료 | |
 
 ## 명령
 
@@ -146,3 +148,4 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 ## 사용자에게 요청한 일
 
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
+- **포스팅 12의 후보와 값 선택.** 위 "다음 할 일" 2번.

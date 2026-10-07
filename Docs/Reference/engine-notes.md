@@ -261,7 +261,7 @@
 | 반복 타이머는 프레임이 주기보다 길면 밀린 횟수만큼 한 프레임에 여러 번 불린다(`bMaxOncePerFrame`을 켜지 않았을 때) | `Engine/Source/Runtime/Engine/Private/TimerManager.cpp:1235-1248` | 상태 값과 인벤토리를 바꾸는 타이머. 서버가 느린 기준선에서도 초당 바뀌는 횟수가 같다 |
 | 프로퍼티 비교는 객체마다 프레임에 한 번만 하고, 그 결과를 연결들이 함께 쓴다(`GShareShadowState`이고 `LastReplicationFrame`이 이번 프레임이면 비교를 건너뛴다) | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1275-1331` | 밀집과 분산의 비교(설계 5절). 밀집에서는 같은 액터를 여러 연결이 받아 비교 횟수가 줄고, 연결마다 하는 일은 그대로다 |
 | 일반 `TArray` 프로퍼티는 비교할 때마다 모든 원소를 하나씩 비교하고, 바뀐 원소만 변경 목록에 넣는다. 배열이 줄면 배열 핸들만 넣어 크기를 알린다 | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1692-1775`(`CompareProperties_Array_r`) | 인벤토리와 FastArray 포스팅. 한 칸의 수량만 바꾸면 그 원소만 보내므로, 일반 배열의 비용은 배열 전체를 다시 보내는 바이트가 아니라 고려할 때마다 전체를 비교하는 CPU다. 가운데 원소를 지워 뒤가 밀리면 밀린 원소가 모두 바뀐 것이 된다 |
-| `FRepMovement::NetSerialize`는 플래그(2비트 또는 4비트), 위치, 회전 세 성분, 선속도를 보내고, `bRepPhysics`일 때만 각속도를 더 보낸다. 위치와 속도의 정밀도는 `LocationQuantizationLevel`, `VelocityQuantizationLevel`, 회전은 `RotationQuantizationLevel`(바이트 또는 쇼트)이 정한다 | `Engine/Source/Runtime/Engine/Private/Engine/ReplicatedState.cpp:67-117`, `Engine/Source/Runtime/Engine/Classes/Engine/ReplicatedState.h:164-172` | NPC 이동의 `NetSerialize` 포스팅. NPC 갱신의 `ReplicatedMovement` 92비트(`update-frequency3-r1`)가 성분마다 얼마인지는 보지 않았다 |
+| `FRepMovement::NetSerialize`는 플래그(2비트 또는 4비트), 위치, 회전 세 성분, 선속도를 보내고, `bRepPhysics`일 때만 각속도를 더 보낸다. 위치와 속도의 정밀도는 `LocationQuantizationLevel`, `VelocityQuantizationLevel`, 회전은 `RotationQuantizationLevel`(바이트 또는 쇼트)이 정한다 | `Engine/Source/Runtime/Engine/Private/Engine/ReplicatedState.cpp:67-117`, `Engine/Source/Runtime/Engine/Classes/Engine/ReplicatedState.h:164-172` | NPC 이동의 `NetSerialize` 포스팅. NPC 갱신의 `ReplicatedMovement` 92비트(`update-frequency3-r1`)가 성분마다 얼마인지는 보지 않았다. 비트 구성은 13절(가속도 있음 1비트가 더 있다) |
 
 확인하지 않은 것: 지연과 패킷 손실을 넣는 설정의 이름과 위치, Iris가 구조체의 `NetSerialize`를 그대로 쓰는지(`PropertyNetSerializerInfoRegistry.cpp:98-118`에 `FLastResortPropertyNetSerializerInfo`가 있다는 것까지만 봤다), `GameNetDriver` 타이머가 Iris에서 같은 범위를 감싸는지.
 
@@ -359,3 +359,17 @@
 **결론.** ①처럼 틱 예산을 조금 넘는 구성은 코드 배치나 PC 상태의 작은 차이로 약 38ms와 약 50ms 사이를 오간다. 이 구성의 서버 프레임 시간은 다른 묶음과 비교하지 않는다. 예산 안의 구성(② 이후)과 크게 넘는 기준선(D가 이미 43.3ms보다 길다)은 해당하지 않는다.
 
 **확인하지 않은 것.** `243be3d`가 어떤 경로로 프레임 시간을 몇 % 늘렸는지(코드 배치로 짐작한다). PC 상태의 차이(포스팅 6 태그의 소스도 35.674 → 37.320\~40.422)의 원인.
+
+## 13. NPC 이동 데이터의 비트 구성 (2026-10-07, 태스크 29)
+
+엔진 소스에서 읽은 식이다. 포스팅 12의 [관찰 자료](../../Posts/12-npc-move-netserialize/candidates.md) 1절에 비트 분포와 계산이 있다.
+
+| 사실 | 소스 위치 |
+| --- | --- |
+| `FRepMovement::NetSerialize`는 플래그 4비트(연결 버전 25 이상), 위치, 회전, 선속도, 가속도 있음 1비트(버전 35 이상)를 차례로 쓴다. 서버 프레임과 물리 핸들은 0이 아니거나 `INDEX_NONE`이 아닐 때만, 각속도는 `bRepPhysics`일 때만, 가속도는 `bRepAcceleration`일 때만 더 쓴다 | `Engine/Source/Runtime/Engine/Private/Engine/ReplicatedState.cpp:67-152`, `Engine/Source/Runtime/Core/Public/Misc/EngineNetworkCustomVersion.h:40` |
+| 위치와 속도는 성분당 비트 수 N을 7비트 머리에 쓰고 X, Y, Z를 N비트씩 쓴다. N은 세 성분 가운데 가장 큰 절댓값(정밀도 단위로 반올림)에 부호 비트를 더한 길이다. 0 벡터는 성분당 1비트다 | `Engine/Source/Runtime/Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:13-17, 90-96`, `Engine/Source/Runtime/Core/Private/Serialization/BitWriter.cpp:142-146` |
+| `ByteComponents` 회전은 성분마다 "0이 아님" 1비트와, 0이 아니면 1바이트다 | `Engine/Source/Runtime/Core/Private/Math/UnrealMath.cpp:84-` |
+| 따라서 평면에서 움직이고 속도가 0인 액터(`ALabNpc`)의 이동 데이터는 33 + 3N비트, 핸들을 더하면 41 + 3N비트다. 맵 원점에서 멀수록 N이 커진다(163m까지 15 이하, 655m를 넘으면 18) | 계산값. `act2-interp2-r1`의 패킷 하나에서 읽은 NPC의 `ReplicatedMovement`(`Shared`) 83비트가 N = 14일 때와 같다 |
+| 공유 직렬화(`Shared`)의 비트에는 프로퍼티 핸들이 들어 있다 | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:2741-2752`(`WriteSharedProperty`) |
+| 구조체를 공유 직렬화하려면 `WithNetSharedSerialization`을 켠다. 켜지 않은 구조체는 연결마다 직렬화한다 | `RepLayout.cpp:5555-5557`, `Engine/Source/Runtime/Engine/Classes/Engine/ReplicatedState.h:305-312` |
+| 패킷을 잃으면 그 패킷에 담긴 바뀐 프로퍼티에 다시 보냄 표시를 하고, 다시 보낼 때는 그때의 현재 값을 직렬화한다 | `Engine/Source/Runtime/Engine/Private/DataReplication.cpp:888-925`(`FObjectReplicator::ReceivedNak`), `RepLayout.cpp:2262-2279`(`UpdateChangelistHistory`가 다시 보낼 변경 목록을 이번 변경 목록에 합침) |
