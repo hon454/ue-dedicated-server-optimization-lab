@@ -196,17 +196,17 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 		<ul>
 			<li>"측정"이라고 적힌 값만 실제 서버에서 측정했다. 근거는 각 글의 측정 기록에 있다.</li>
 			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 한 단계의 적용 후 값과 다음 단계의 적용 전 값이 조금 다르다. 2막의 루트 README는 아홉 구성을 하루에 연달아 잰 다른 묶음이라 값이 다르다.</li>
-			<li>지도와 흐름의 숫자는 이 브라우저에서 도는 모형이 센 값이다. 모형은 엔진의 기본 리플리케이션 순서를 따른다.</li>
+			<li>지도와 흐름의 숫자는 이 브라우저에서 도는 시뮬레이션이 센 값이다. 시뮬레이션은 엔진의 기본 리플리케이션 순서를 따른다.</li>
 			<li>맵 크기, 액터 수, 플레이어의 자리와 경로, 150m는 실제 값이다. 자원 노드와 NPC, 건축물의 위치는 예시다.</li>
-			<li>모형은 서버 프레임 간격을 측정값에서 가져온다. 틱 예산을 넘는 단계의 서버는 30Hz를 지키지 못해서 지도가 느리게 움직인다.</li>
-			<li>모형은 플레이어 같은 다른 액터, 우선순위 정렬, 패킷 조립을 다루지 않는다.</li>
+			<li>시뮬레이션은 서버 프레임 간격을 측정값에서 가져온다. 틱 예산을 넘는 단계의 서버는 30Hz를 지키지 못해서 지도가 느리게 움직인다.</li>
+			<li>시뮬레이션은 플레이어 같은 다른 액터, 우선순위 정렬, 패킷 조립을 다루지 않는다.</li>
 		</ul>
 	</footer>
 </main>
 
 <script>
 'use strict';
-// 엔진의 레거시 리플리케이션(UNetDriver::ServerReplicateActors)의 순서를 따르는 개념 모형이다.
+// 엔진의 레거시 리플리케이션(UNetDriver::ServerReplicateActors)의 순서를 따르는 개념 시뮬레이션이다.
 // 실제 값: 맵, 액터 수, 플레이어 자리와 경로, Net Cull Distance 150m, 서버 틱, Net Update Frequency의 스케줄링 식,
 //          2막의 무리 중심과 건축물, 주변 NPC가 놓이는 반지름.
 // 예시 값: 자원 노드, NPC, 건축물의 위치, NPC의 배회 경로, 인벤토리의 아이템.
@@ -227,7 +227,7 @@ const STEPS1 = [
 		before: { frame: 198.43, repl: 188.97, bw: 28048, chan: 5314, nodes: 5001 }, indistinct: [],
 		m: { frame: 17.64, repl: 13.14, bw: 2897, chan: 118, nodes: 114 }, flowMeasured: { work: '647~821' } },
 	{ name: 'Dormancy', hint: '바뀌지 않는 액터를 재운다', post: 'Posts/03-dormancy/README.md',
-		desc: '서버가 자원 노드를 Dormant 상태로 재워 둔다. 채널을 닫고 프로퍼티 비교를 건너뛴다.',
+		desc: '서버가 자원 노드를 Dormant 상태로 둔다. 채널을 닫고 프로퍼티 비교를 건너뛴다.',
 		code: 'NetDormancy = DORM_DormantAll;',
 		alwaysRelevant: false, dormancy: true, npcFreq: 100, tick: 1 / 30,
 		before: { frame: 17.64, repl: 13.14, bw: 2897, chan: 118, nodes: 114 }, indistinct: ['bw'],
@@ -580,7 +580,7 @@ function setStep(next) {
 	const wasDormant = STEPS[step].dormancy;
 	step = next;
 	if (wasDormant && !STEPS[step].dormancy) {
-		// Dormancy를 끄면 채널 없이 남아 있던 자원 노드와 건축물을 클라이언트에서 지운다(모형의 단순화).
+		// Dormancy를 끄면 채널 없이 남아 있던 자원 노드와 건축물을 클라이언트에서 지운다(시뮬레이션의 단순화).
 		for (const p of conn) for (let a = 0; a < N; a++) {
 			if (isNpc(a)) continue;
 			if (p.dormant[a]) { p.dormant[a] = 0; dormCount[a]--; }
@@ -738,7 +738,7 @@ function drawClientMap() {
 }
 
 // 받은 위치를 쌓아 두고 renderTime을 끼는 두 위치 사이를 잇는다(LabNpc.cpp의 TickInterpolation).
-// 다음 위치가 아직 없으면 마지막 위치에 멈춘다. 모형은 전달 시간과 서버 시계 추정을 다루지 않는다.
+// 다음 위치가 아직 없으면 마지막 위치에 멈춘다. 시뮬레이션은 전달 시간과 서버 시계 추정을 다루지 않는다.
 function interpolated(renderTime) {
 	const s = showcase.snaps;
 	if (!s.length) return showcase.client;
