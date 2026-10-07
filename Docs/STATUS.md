@@ -116,29 +116,8 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | `act2-baseline1-r3` | 272 | 220.521 | 331.528 | 272 | 211.365 | 36324 | 5871 | 0.000 |
 | **중앙값** | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
 | **변동 폭** | 7 | 5.283 | 69.892 | 7 | 4.807 | 741 | 0 | 0.000 |
-| `act2-npcmove-base1-r1` | 1797 | 8.606 | 12.897 | 0 | 4.198 | 12674 | 77 | 0.000 |
-| `act2-npcmove-base1-r2` | 1788 | 8.681 | 13.237 | 1 | 4.246 | 12672 | 77 | 0.000 |
-| `act2-npcmove-base1-r3` | 1797 | 8.691 | 13.387 | 1 | 4.253 | 12662 | 77 | 0.000 |
-| **중앙값** | 1797 | 8.681 | 13.237 | 1 | 4.246 | 12672 | 77 | 0.000 |
-| **변동 폭** | 9 | 0.085 | 0.490 | 1 | 0.055 | 12 | 0 | 0.000 |
-| `act2-npcmove1-r1` | 1796 | 8.673 | 12.446 | 0 | 4.195 | 10083 | 77 | 0.000 |
-| `act2-npcmove1-r2` | 1790 | 8.484 | 12.246 | 1 | 4.075 | 10088 | 77 | 0.000 |
-| `act2-npcmove1-r3` | 1788 | 8.483 | 12.279 | 0 | 4.059 | 10104 | 77 | 0.000 |
-| **중앙값** | 1790 | 8.484 | 12.279 | 0 | 4.075 | 10088 | 77 | 0.000 |
-| **변동 폭** | 8 | 0.190 | 0.200 | 1 | 0.136 | 21 | 0 | 0.000 |
-| **`act2-npcmove-base1` 대비** | -7 | -0.197(-2.3%) | -0.958(-7.2%) | -1 | -0.171(-4.0%) | -2,584(-20.4%) | 0 | 0 |
 
-1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다. 포스팅 11의 두 묶음(`act2-interp-base2`, `act2-interp2`)의 행과 품질 지표는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 29 준비"로 옮겼다. `act2-npcmove-base1`(포스팅 11의 최종 구성에 `-MotionLog`)과 `act2-npcmove1`(`-NpcCompactMove`)은 2026-10-07 12:07\~12:23에 본체 화면에서 연달아 쟀다. 6회 모두 종료 코드 0이고 `lab_npc_move_clamped`는 없었다. [measurement.md](Guides/measurement.md)의 기준(중앙값의 변화가 큰 쪽 변동 폭보다 큼)으로 `out_bytes_per_sec_per_conn`(-2,584, 예상 -2,589), `work_p99_ms`, `netflush_avg_ms`는 구별되고, `work_avg_ms`는 변화 0.197이 변동 폭 0.190을 겨우 넘는다. 서버가 모션 기록에 쓴 시간은 프레임당 0.0687\~0.0721ms다(서버 로그). 중앙값 실행(두 묶음 모두 `r2`)의 Insights 값은 서버 프레임 시간 평균 8.957 → 8.760ms, `GameNetDriver` 프레임당 3.993 → 3.824ms(Excl 2.449 → 2.337ms), 그중 `LabNpc` 0.884 → 0.842ms다(`export-insights.ps1`).
-
-품질 지표([ADR-0020](Decisions/0020-npc-motion-quality-metrics.md), `analyze-motion.ps1`, 클라이언트 8개, 측정 구간 60초, NPC 66개). 세 실행의 중앙값(변동 폭)이다. 두 묶음은 모든 지표에서 구별되지 않는다.
-
-| 지표 | `act2-npcmove-base1` | `act2-npcmove1` |
-| --- | --- | --- |
-| 표시 위치 오차 평균 / P99(cm) | 46.56(1.01) / 52.93(3.90) | 45.87(0.63) / 49.70(4.08) |
-| 표시 속도 오차 평균 / P99(cm/s) | 14.9(0.3) / 337.8(6.3) | 15.0(0.4) / 328.1(6.7) |
-| 표시 지연(ms) / 그 지연에서의 위치 오차 평균(cm) | 155 / 1.37(0.24) | 154 / 1.22(0.26) |
-| 수신 간격 평균(ms) | 133.4 | 133.5 |
-| 클라이언트 프레임 간격 평균(ms) | 35.42 | 35.25 |
+1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다. 포스팅 11의 두 묶음(`act2-interp-base2`, `act2-interp2`)의 행과 품질 지표는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 29 준비"로 옮겼다. 포스팅 12의 두 묶음(`act2-npcmove-base1`, `act2-npcmove1`)의 행과 품질 지표는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "태스크 30 준비"로 옮겼다.
 
 ## 막힌 것
 
