@@ -49,6 +49,7 @@
 | 결과 표의 실제 | 4절과 3절의 중앙값 | 3절, 4절 |
 | 차트의 값 | 표시 속도 오차 평균 15.1, 41.1, 38.4, 112.1, 134.1 | 4절 |
 | 6절의 그래프 | `Scripts/make-net-trace.ps1`이 모션 기록으로 그린 실제 값 | 6절 |
+| 가장 큰 원뿔이 10m를 왕복하는 시연용 NPC, 4배 느리게 | `ALabShowcaseNpc`의 왕복 구간은 0번 자리에서 (+10m, +2.5m) → (+10m, +12.5m)(`LabGameMode.cpp`의 `SetPatrol` 호출). GIF는 `setpts=4*PTS`(6절) | 프로젝트 소스, 6절 |
 
 ## 3. 서버가 남긴 CSV
 
@@ -147,7 +148,8 @@
 
 - 위치 그래프 [images/npc-trace-loopback.svg](images/npc-trace-loopback.svg), [images/npc-trace-lag.svg](images/npc-trace-lag.svg), [images/npc-trace-loss.svg](images/npc-trace-loss.svg)는 `Scripts/make-net-trace.ps1`이 모션 기록으로 그린 실제 값이다(`act2-net-base1-r3`, `act2-net-lag1-r3`, `act2-net-loss1-r2`의 0번 클라이언트). 측정 구간 시작 10초 뒤부터 0.5초씩 옮기며 1.2초 동안 곧게 걸은 NPC 가운데 NetGUID가 가장 작은 것을 골랐다. 손실만은 그 구간에 수신 간격 250ms를 넘는 곳이 있는 NPC를 골랐다. 고른 NPC는 NetGUID 14(10.0초), 20(10.0초), 44(11.5초)다. 세로축은 구간 시작의 서버 위치에서 이동 방향으로 잰 거리다. Edge 헤드리스로 그려 확인했다.
 - 결과의 차트는 본문의 Mermaid다.
-- 클라이언트 화면의 영상은 찍지 않았다. 찍는다면 포스팅 11과 같은 시연용 NPC(`-ShowcaseNpc`)를 루프백과 `Bad`에서 한 번씩 찍어 위아래로 붙인다(시각 자료 전용 라벨 `visual22`, `visual23`). 사용자가 정한다.
+- 요약의 GIF([images/npc-compare.gif](images/npc-compare.gif))는 시각 자료 전용 실행 `visual22`(루프백 + `-ShowcaseNpc`)와 `visual23`(`-NetEmulationProfile Bad` + `-ShowcaseNpc`)에서 찍었다(2026-10-07 23:26\~23:34). 두 실행은 확정 규모에 `-NoTrace`, 한 번씩이고 수치는 쓰지 않는다. `visual23`의 클라이언트 로그 여덟에 `Applying EmulationProfile Bad`가 있었다. 시작 신호(서버 로그 `Scenario started`) 48.5초 뒤에 `Scripts/capture-video.ps1 -Region "0,0,960,540" -RaiseSlots "0" -Fps 60 -Seconds 8 -NoMouse -AllowMeasuring`로 0번 창을 8초 찍었다(`Saved/Screenshots/Lab/visual22-npc.mp4`, `visual23-npc.mp4`, 각 442와 447프레임).
+- GIF는 ffmpeg로 두 영상에서 영역 520,245 440×80을 잘라 위아래로 붙였다(440×160). 루프백은 60\~299번 프레임, 나쁨은 80\~319번 프레임이다. 나쁨을 20프레임 늦게 자른 것은 시연용 NPC가 같은 자리에 오게 하려고서다(두 영상을 10프레임마다 잘라 큰 원뿔의 x를 비교했다. 나쁨의 표시 지연이 133ms 더 긴 것이 그 가운데 약 8프레임이고, 나머지는 두 실행의 시작 시각 차이다). 4배 느리게(`setpts=4*PTS`), 15fps, 64색(`palettegen=max_colors=64:stats_mode=full`, `paletteuse=dither=none`), 257프레임, 862KB다.
 
 ## 7. 확인하지 않은 것
 
