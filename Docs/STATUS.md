@@ -1,6 +1,6 @@
 # 현재 상태
 
-마지막 갱신: 2026-10-06
+마지막 갱신: 2026-10-07
 
 ## 단계
 
@@ -12,8 +12,8 @@
 - **태스크 25(포스팅 8, `post-08-node-update-frequency`)가 끝났다(2026-10-06).** 자원 노드의 Net Update Frequency를 2로 낮추자 `work_avg_ms` 중앙값이 18.060 → 8.615였다(`act2-nodeuf-base1`, `act2-nodeuf1`). 이제 `GameNetDriver`에서 가장 큰 것은 `Process Prioritized Actors Time`(45.8%)이다. 경위는 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 25"에 있다.
 - **태스크 26(포스팅 9, `post-09-inventory-owner-only`)이 끝났다(2026-10-06).** 인벤토리를 소유자의 연결에만 보내자(`-InventoryOwnerOnly`) `out_bytes_per_sec_per_conn` 중앙값이 16,635 → 12,421(-25.3%)이고 `work_avg_ms`는 구별되지 않았다(`act2-invown-base1`, `act2-invown1`). 소유자는 여전히 바뀔 때마다 200칸(18,190비트)을 받는다. 경위는 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 26"에 있다.
 - **태스크 27(포스팅 10, `post-10-inventory-fastarray`)이 끝났다(2026-10-06).** 인벤토리를 FastArray로 보내자(`-InventoryFastArray`) `out_bytes_per_sec_per_conn` 중앙값이 12,387 → 11,807(-4.7%)이고, `Connection 0`의 인벤토리 한 번이 최대 18,190 → 345비트였다(`act2-fastarr-base1`, `act2-fastarr1`). `work_avg_ms`는 구별되지 않았고 인벤토리의 CPU는 줄지 않았다(프레임당 0.104 → 0.117ms, `-StatNamedEvents` 실행 하나씩). 칸 안 델타 직렬화가 기본으로 켜져 있음을 확인해 engine-notes.md 10절을 바로잡았다. 경위는 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 27"에 있다.
-- **루트 README의 결과는 2막 일곱 구성을 연달아 잰 `act2-all-*1`이다(2026-10-06).** 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 여섯 단계"에 있다. 틱 예산을 조금 넘는 구성(① 거리 판정)은 프레임 시간이 Consider List를 늘리는 되먹임으로 약 38ms와 50ms 사이를 오간다. 이런 구성은 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 경위는 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "README와 시각화 페이지 갱신"에 있다.
-- **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 일곱 단계(포스팅 10까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 2막에 새 기법을 측정하면 단계를 더한다.
+- **루트 README의 결과는 2막 여덟 구성(기준선과 ①\~⑦)을 연달아 잰 `act2-all-*2`다(2026-10-07).** 포스팅 11을 ⑦ NPC 보간으로 더하면서 모든 구성을 다시 쟀다(사용자 결정. 처음에는 빼기로 했다가 같은 날 바꿨다). 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 일곱 단계"에 있다. ⑥ → ⑦은 `work_avg_ms` 중앙값 8.591 → 8.501(구별되지 않음), `out_bytes_per_sec_per_conn` 11,807 → 12,701(+7.6%)이다. 사용자가 무거운 프로그램을 닫은 뒤 쟀고, ①을 빼면 각 글의 묶음과 -3.8\~+5.3% 다르다. 틱 예산을 조금 넘는 ① 거리 판정은 프레임 시간이 Consider List를 늘리는 되먹임으로 잰 날마다 크게 다르다(Insights 35.9, 55.1, 44.1ms). 이런 구성은 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 지난 묶음 `act2-all-*1`의 경위는 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "README와 시각화 페이지 갱신"에 있다.
+- **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 여덟 단계(포스팅 11까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 모형의 한계는 [Site/README.md](../Site/README.md)에 있다. 단계를 더하는 기준은 [AGENTS.md](../AGENTS.md) "규칙"에 있다.
 - **태스크 28(포스팅 11, `post-11-npc-interpolation`)이 끝났다(2026-10-07).** 클라이언트가 NPC를 서버 프레임 번호 기준으로 150ms 늦게 보간하자(`-NpcInterpDelay 150`) 표시 속도 오차 평균이 439.9 → 15.0cm/s, 표시 지연이 74 → 155ms, 표시 위치 오차 평균이 22.25 → 46.38cm였다(`act2-interp-base2`, `act2-interp2`). NPC 갱신 한 번은 101 → 117비트(Networking Insights), `out_bytes_per_sec_per_conn`은 11,820 → 12,682(+7.3%)이고 `work_avg_ms`는 구별되지 않았다. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)이고 포스팅 12, 13도 쓴다. 아래 두 줄(작은 규모 확인, 첫 묶음)은 다음 태스크를 시작할 때 Worklog로 옮긴다.
 - **포스팅 11의 작은 규모 확인(2026-10-07).** 클라이언트 2개, 자원 노드 100개, NPC 10개와 플레이어 주변 50개(`-PlayerSpacing 3 -NpcsNearPlayers 50 -MotionLog`), 준비 20초, 측정 30초다. 보간 없음(`tsmall-motion1-r1`) → 150ms 보간(`tsmall-motion2-r1`)에서 표시 위치 오차 평균 21.19 → 49.03cm, 표시 속도 오차 평균 448.7 → 12.3cm/s, 표시 지연 70 → 165ms, 수신 간격 평균 133.4ms(그대로), `out_bytes_per_sec_per_conn` 7,677 → 8,421이다. 보간 없음의 값은 ADR-0020의 예상(약 25cm, 450cm/s)과 맞는다. 작은 규모라 포스팅의 비교에 쓰지 않는다.
 - **첫 확정 규모 묶음은 쓰지 않는다(2026-10-07).** `act2-interp-base1`, `act2-interp1`(01:32\~01:50, 본체 화면)은 측정 시작 직후(01:33:12)부터 다른 세션이 남긴 `grep.exe`가 코어 하나를 계속 썼다. 기준 묶음의 `work_avg_ms`가 13.43\~14.16(전날 같은 구성 `act2-fastarr-base1` 8.852)이고, Consider List와 호출 횟수는 같은데 모든 타이머가 약 1.5배 느렸다(`GameNetDriver` 4.112 → 6.468ms, `act2-fastarr-base1-r3`과 `act2-interp-base1-r3`의 Insights 내보내기). 이 묶음에서 보간 시계의 결함도 찾았다. 서버가 1분에 1,764\~1,779프레임만 돌자 프레임 길이를 33.3ms로 가정한 시계가 밀려 표시 지연이 139\~144ms(150ms보다 짧음)였다. 클라이언트가 받은 시각에 직선을 맞춰 프레임 길이를 추정하게 고쳤고, 서버를 28Hz로 돌린 작은 규모 확인에서 표시 지연 151ms, 표시 속도 오차 평균 12.9cm/s였다(`tsmall-motion5-r1`, `run-scenario.ps1 -ServerTickRate 28`, 진단용). 같은 두 구성을 `act2-interp-base2`, `act2-interp2`로 다시 쟀다(아래 "측정 결과").
@@ -22,8 +22,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **포스팅 11은 루트 README의 "결과 한눈에 보기"와 시각화 페이지(Site/) 2막에 더하지 않는다(2026-10-07 사용자 결정).** 서버 CPU를 바꾸지 않고 클라이언트 화면의 품질을 바꾸는 단계라서다. README의 "포스팅" 표에는 한 줄이 있다. 위 "시리즈 웹 페이지" 줄의 "2막에 새 기법을 측정하면 단계를 더한다" 같은 문구를 이 결정에 맞게 고치는 일은 다른 세션이 한다.
-3. **포스팅 12(NPC 이동의 `NetSerialize`)를 시작한다.** [backlog.md](backlog.md) "우선순위 순" 8번. 기준 구성은 포스팅 11의 최종 구성(`-NpcInterpDelay 150`)이고, 품질은 ADR-0020의 지표로 잰다(`-MotionLog`).
+2. **포스팅 12(NPC 이동의 `NetSerialize`)를 시작한다.** [backlog.md](backlog.md) "우선순위 순" 8번. 기준 구성은 포스팅 11의 최종 구성(`-NpcInterpDelay 150`)이고, 품질은 ADR-0020의 지표로 잰다(`-MotionLog`).
 
 ## 포스팅 진행
 

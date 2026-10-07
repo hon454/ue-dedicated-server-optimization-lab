@@ -166,7 +166,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 
 		<section class="card">
 			<h2>NPC 하나의 움직임</h2>
-			<div class="sub">10m를 왕복하는 NPC다. 고리는 서버의 위치이고, 빨간 점은 클라이언트가 받은 위치다.</div>
+			<div class="sub" id="npcSub">10m를 왕복하는 NPC다. 고리는 서버의 위치이고, 빨간 점은 클라이언트가 받은 위치다.</div>
 			<canvas id="npcStrip" width="600" height="110" aria-label="서버의 NPC 위치와 클라이언트가 받은 위치"></canvas>
 			<div class="stats">
 				<div class="stat"><span>서버 프레임 간격</span><b id="sTick">0</b></div>
@@ -195,7 +195,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 		<strong>이 페이지의 숫자를 읽는 법</strong>
 		<ul>
 			<li>"측정"이라고 적힌 값만 실제 서버에서 측정했다. 근거는 각 글의 측정 기록에 있다.</li>
-			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 한 단계의 적용 후 값과 다음 단계의 적용 전 값이 조금 다르다. 2막의 루트 README는 일곱 구성을 하루에 연달아 잰 다른 묶음이라 값이 다르다.</li>
+			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 한 단계의 적용 후 값과 다음 단계의 적용 전 값이 조금 다르다. 2막의 루트 README는 여덟 구성을 하루에 연달아 잰 다른 묶음이라 값이 다르다.</li>
 			<li>지도와 흐름의 숫자는 이 브라우저에서 도는 모형이 센 값이다. 모형은 엔진의 기본 리플리케이션 순서를 따른다.</li>
 			<li>맵 크기, 액터 수, 플레이어의 자리와 경로, 150m는 실제 값이다. 자원 노드와 NPC, 건축물의 위치는 예시다.</li>
 			<li>모형은 서버 프레임 간격을 측정값에서 가져온다. 틱 예산을 넘는 단계의 서버는 30Hz를 지키지 못해서 지도가 느리게 움직인다.</li>
@@ -268,7 +268,8 @@ const STEPS2 = [
 		code: 'SetNetUpdateFrequency(2.f);',
 		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'all', tick: 1 / 30,
 		before: { frame: 18.347, repl: 13.339, bw: 16611, chan: 77, consider: 3887 }, indistinct: ['bw'], remeasured: true,
-		m: { frame: 8.895, repl: 3.929, bw: 16570, chan: 77, consider: 413 }, flowMeasured: { active: '5,271', considered: '413' } },
+		m: { frame: 8.895, repl: 3.929, bw: 16570, chan: 77, consider: 413 }, flowMeasured: { active: '5,271', considered: '413' },
+		invRate: 4545 },
 	{ name: '⑤ 인벤토리를 소유자에게만', short: '소유자에게만', hint: '인벤토리는 주인만 받는다', post: 'Posts/09-inventory-owner-only/README.md',
 		desc: '서버가 인벤토리를 그 캐릭터를 조종하는 플레이어의 연결에만 보낸다. 다른 일곱 연결은 받지 않는다.',
 		code: 'Params.Condition = COND_OwnerOnly;',
@@ -281,6 +282,13 @@ const STEPS2 = [
 		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'fast', tick: 1 / 30,
 		before: { frame: 9.133, repl: 4.112, bw: 11827, chan: 77, invRate: 571, invBits: 18190 }, indistinct: ['frame'], remeasured: true,
 		m: { frame: 8.866, repl: 3.933, bw: 11241, chan: 77, invRate: 14.8, invBits: 345 }, flowMeasured: { active: '5,272', considered: '413' } },
+	{ name: '⑦ NPC 보간', short: 'NPC 보간', hint: '받은 위치 사이를 늦게 잇는다', post: 'Posts/11-npc-interpolation/README.md',
+		desc: '클라이언트가 받은 NPC 위치를 쌓아 두고, 150ms 앞선 순간을 끼는 두 위치 사이를 이어 그린다. 서버는 위치마다 서버 프레임 번호를 붙여 보낸다. 서버의 일은 그대로이고, 화면 속 NPC는 끊기지 않는 대신 늦게 보인다.',
+		code: 'UPROPERTY(Replicated) uint8 ServerFrame;',
+		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'fast', interp: 0.15, tick: 1 / 30,
+		before: { frame: 8.880, repl: 3.907, bw: 11820, chan: 77, speedErr: 439.9, delay: 74 }, indistinct: ['frame', 'repl'], remeasured: true,
+		m: { frame: 8.893, repl: 3.934, bw: 12682, chan: 77, speedErr: 15.0, delay: 155 }, flowMeasured: { active: '5,272', considered: '415' },
+		invRate: 14.8 },
 ];
 const SHOW = {
 	repl: ['리플리케이션 시간', v => `${v.toFixed(2)}ms`],
@@ -290,6 +298,8 @@ const SHOW = {
 	consider: ['Consider List 길이', v => `${v.toLocaleString('ko-KR')}개/프레임`],
 	invRate: ['인벤토리 송신량(연결 하나)', v => `${v.toLocaleString('ko-KR')}바이트/초`],
 	invBits: ['인벤토리 한 번의 최대 크기', v => `${v.toLocaleString('ko-KR')}비트`],
+	speedErr: ['표시 속도 오차 평균(화면 속 NPC)', v => `${v.toFixed(1)}cm/s`],
+	delay: ['표시 지연(화면 속 NPC)', v => `${v}ms`],
 };
 const ACTS = [
 	{ name: '1막', sub: '흩어진 플레이어', steps: STEPS1, nNode: 5001, nNpcMap: 300, nNpcNear: 0, nBuild: 0, cluster: false,
@@ -297,7 +307,7 @@ const ACTS = [
 		note: '플레이어 여덟 명이 반지름 500m 원 위에 흩어져 각자 한 변 100m 정사각형을 돈다. 포스팅 1~4의 테스트베드다.' },
 	{ name: '2막', sub: '모인 플레이어', steps: STEPS2, nNode: 5001, nNpcMap: 300, nNpcNear: 50, nBuild: 500, cluster: true,
 		mapSub: '맵 2km × 2km, 클라이언트 8개, 자원 노드 5,001개, NPC 350명, 건축물 500개',
-		note: '플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 한 변 70m 정사각형을 돈다. 곁에 건축물 500개가 있고 1초마다 하나를 새로 짓는다. 포스팅 5~10의 테스트베드다.' },
+		note: '플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 한 변 70m 정사각형을 돈다. 곁에 건축물 500개가 있고 1초마다 하나를 새로 짓는다. 포스팅 5~11의 테스트베드다.' },
 ];
 const TICK_BUDGET = 33.3;
 
@@ -400,7 +410,7 @@ function buildWorld(index) {
 	for (let a = BUILD0; a < N; a++) placeBuilding(a);
 
 	// 왕복하는 NPC 하나. 흐름의 숫자에는 넣지 않는다.
-	showcase = { server: 0, client: 0, next: 0, lastSend: 0, gaps: [] };
+	showcase = { server: 0, client: 0, next: 0, lastSend: 0, gaps: [], snaps: [] };
 	inv = act.cluster ? {
 		items: Array.from({ length: N_CONN }, () => Array.from({ length: INV_ITEMS }, () => Math.floor(rand() * 1000))),
 		flash: Array.from({ length: N_CONN }, () => new Float32Array(INV_ITEMS)),
@@ -550,6 +560,8 @@ function tick() {
 		showcase.client = showcase.server;
 		showcase.gaps.push(time - showcase.lastSend); showcase.lastSend = time;
 		if (showcase.gaps.length > 24) showcase.gaps.shift();
+		showcase.snaps.push({ t: time, x: showcase.server });
+		if (showcase.snaps.length > 8) showcase.snaps.shift();
 	}
 
 	history.push(count);
@@ -586,7 +598,7 @@ function setAct(index) {
 const $ = id => document.getElementById(id);
 const fmt = v => v >= 100 ? Math.round(v).toLocaleString('ko-KR') : v >= 10 ? v.toFixed(0) : v === 0 ? '0' : v.toFixed(1);
 const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-const COLOR = { green: css('--green'), kept: css('--kept'), red: css('--red'), off: css('--off'), orange: css('--orange'), orangeKept: css('--orange-kept') };
+const COLOR = { green: css('--green'), kept: css('--kept'), red: css('--red'), off: css('--off'), orange: css('--orange'), orangeKept: css('--orange-kept'), blue: css('--blue') };
 
 const FLOW = [
 	{ key: 'active', label: '활성 목록의 액터', cls: '' },
@@ -615,6 +627,9 @@ function renderStep() {
 	$('stepDesc').textContent = s.desc;
 	$('stepCode').textContent = s.code;
 	$('stepPost').href = REPO + s.post;
+	$('npcSub').textContent = s.interp
+		? `10m를 왕복하는 NPC다. 고리는 서버의 위치, 빨간 점은 클라이언트가 받은 위치, 파란 점은 클라이언트가 ${Math.round(s.interp * 1000)}ms 늦게 이어 그린 위치다.`
+		: '10m를 왕복하는 NPC다. 고리는 서버의 위치이고, 빨간 점은 클라이언트가 받은 위치다.';
 	for (const r of FLOW) $('m-' + r.key).textContent = s.flowMeasured && s.flowMeasured[r.key] ? FLOW_MEASURED[r.key](s.flowMeasured[r.key]) : '';
 	const delta = key => !prev ? '출발점' : s.m[key] === prev[key] ? '적용 전과 같음' : `적용 전보다 ${s.m[key] < prev[key] ? '-' : '+'}${Math.abs((s.m[key] - prev[key]) / prev[key] * 100).toFixed(1)}%${unclear.includes(key) ? '. 실행 사이의 차이보다 작아 구별되지 않는다' : ''}`;
 	// 단계의 결과: 서버 프레임 시간 평균을 앞 단계와 나란히 보이고, 틱 예산과 견준다.
@@ -637,7 +652,8 @@ function renderStep() {
 		$('iConns').textContent = all ? '8개' : '1개(소유자)';
 		$('iCells').textContent = s.inv === 'fast' ? '새 칸 1개' : '200칸 모두';
 		$('iBits').textContent = s.inv === 'fast' ? '345비트' : '18,190비트';
-		const rate = s.m.invRate !== undefined ? s.m.invRate : step === 4 ? 4545 : null;
+		// 4단계와 7단계는 인벤토리 구성이 바로 뒤나 앞 단계와 같아서 그 단계의 측정값을 쓴다(s.invRate).
+		const rate = s.m.invRate !== undefined ? s.m.invRate : s.invRate !== undefined ? s.invRate : null;
 		$('iRate').textContent = rate === null ? '측정하지 않음' : `${rate.toLocaleString('ko-KR')}바이트/초`;
 	}
 }
@@ -712,12 +728,30 @@ function drawClientMap() {
 	$('cChans').textContent = chans.toLocaleString('ko-KR');
 }
 
+// 받은 위치를 쌓아 두고 renderTime을 끼는 두 위치 사이를 잇는다(LabNpc.cpp의 TickInterpolation).
+// 다음 위치가 아직 없으면 마지막 위치에 멈춘다. 모형은 전달 시간과 서버 시계 추정을 다루지 않는다.
+function interpolated(renderTime) {
+	const s = showcase.snaps;
+	if (!s.length) return showcase.client;
+	if (renderTime <= s[0].t) return s[0].x;
+	for (let i = 1; i < s.length; i++) {
+		if (renderTime <= s[i].t) { const a = s[i - 1], b = s[i]; return a.x + (b.x - a.x) * (renderTime - a.t) / (b.t - a.t); }
+	}
+	return s[s.length - 1].x;
+}
+
 function drawNpcStrip() {
 	const canvas = $('npcStrip'), g = fit(canvas), w = canvas.width, h = canvas.height;
 	const pad = w * .06, x = m => pad + m / 10 * (w - pad * 2), r = h * .16;
 	g.clearRect(0, 0, w, h);
 	g.strokeStyle = COLOR.off; g.lineWidth = 2; g.beginPath(); g.moveTo(x(0), h / 2); g.lineTo(x(10), h / 2); g.stroke();
-	g.fillStyle = COLOR.red; g.beginPath(); g.arc(x(showcase.client), h / 2, r, 0, 7); g.fill();
+	const interp = STEPS[step].interp;
+	if (interp) {
+		g.fillStyle = COLOR.blue; g.beginPath(); g.arc(x(interpolated(time + accumulator - interp)), h / 2, r, 0, 7); g.fill();
+		g.fillStyle = COLOR.red; g.beginPath(); g.arc(x(showcase.client), h / 2, r * .5, 0, 7); g.fill();
+	} else {
+		g.fillStyle = COLOR.red; g.beginPath(); g.arc(x(showcase.client), h / 2, r, 0, 7); g.fill();
+	}
 	g.strokeStyle = '#fff'; g.lineWidth = Math.max(2, h / 40); g.beginPath(); g.arc(x(showcase.server), h / 2, r * 1.5, 0, 7); g.stroke();
 	const gaps = showcase.gaps, avg = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
 	$('sTick').textContent = `${(STEPS[step].tick * 1000).toFixed(0)}ms`;
