@@ -106,7 +106,7 @@
 
 에이전트는 측정이 끝나면 이미지를 직접 열어 보고, 내용이 잘 보이는 것을 골라 `Posts/NN-이름/images/`에 복사한다. 적용 전 이미지는 `before-`, 적용 후 이미지는 `after-`를 앞에 붙인다(예: `before-topdown.png`, `after-topdown.png`). 전후 이미지는 같은 순번에서 고른다.
 
-에이전트는 수치 차트도 만든다. 포스팅의 "결과" 섹션에 Mermaid `xychart-beta` 막대 차트를 하나 넣고, README의 누적 수치 표 아래에도 넣는다. 차트 하나에 지표 하나만 넣는다.
+에이전트는 수치 차트도 만든다. 포스팅의 "결과" 섹션에 Mermaid `xychart-beta` 막대 차트를 하나 넣는다. README의 "결과 한눈에 보기"에 단계로 더하는 글이면 README의 차트에도 그 단계를 더한다([AGENTS.md](../../AGENTS.md) "규칙"). 차트 하나에 지표 하나만 넣는다.
 
 ````markdown
 ```mermaid
