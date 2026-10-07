@@ -95,8 +95,8 @@ text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif
 <rect x="788" y="338" width="38" height="38" rx="4" class="cell" fill="#ff8787"/><text x="807" y="363" class="cid">#5</text>
 <text x="620" y="428" class="act">같은 칸을 덮어쓴다</text>
 <text x="620" y="448" class="cb">PostReplicatedChange</text>
-<text x="20" y="494" class="note">받은 묶음마다 머리 128비트가 붙고, 클라이언트는 묶음 끝에 PostReplicatedReceive를 한 번 부른다(정의돼 있을 때).</text>
-<text x="20" y="516" class="note">이 테스트베드의 "앞 칸 지우기"는 삭제와 추가가 한 묶음으로 간다: 머리 128 + 지운 번호 32 + 새 칸 121 = 281비트다.</text>
+<text x="20" y="494" class="note">갱신마다 헤더 128비트가 붙고, 클라이언트는 갱신 끝에 PostReplicatedReceive를 한 번 부른다(정의돼 있을 때).</text>
+<text x="20" y="516" class="note">이 테스트베드의 "앞 칸 지우기"는 삭제와 추가가 한 갱신으로 간다: 헤더 128 + 지운 번호 32 + 새 칸 121 = 281비트다.</text>
 <text x="20" y="538" class="note">그래서 클라이언트에서는 새 칸이 지운 자리로 들어가, 칸 순서가 서버와 달라진다.</text>
 <text x="20" y="560" class="note">칸 다섯 개는 예시이고 실제는 200칸이다. 비트는 칸이 ItemId와 Count 두 int32일 때의 값이다.</text>
 </svg>

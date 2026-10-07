@@ -29,20 +29,20 @@
 | 0번 연결이 보낸 액터 데이터의 52.3%가 NPC | `LabNpc` Incl ÷ `Actor` Incl = 2,952,335 ÷ 5,645,669 = 52.29%(`act2-npcmove-base1-r2`) | 5.1절 |
 | 문제의 표: 이동 데이터 82.3비트 | `act2-npcmove-base1-r2`의 0번 클라이언트가 측정 구간에 받은 NPC 갱신 25,165번마다 그 순간의 서버 위치로 N을 셈하고 41 + 3N(핸들 포함)을 평균한 값 82.28(N 평균 13.759). Insights로 대조하면 `ReplicatedMovement` 3,264,808비트에서 플레이어 캐릭터 몫(적용 후 트레이스의 평균 1,196,449 ÷ 9,281 = 128.91비트 × 9,268번)을 뺀 2,070,033 ÷ 25,182 = 82.20비트다 | 관찰 자료 1.1절의 식, 5.1절 |
 | 문제의 표: 서버 프레임 번호 16비트 | `ServerFrame` 402,912 ÷ 25,182 = 16.00(핸들 8 + 값 8) | 5.1절 |
-| 문제의 표: 그 밖의 머리 19.0비트 | 117.24 − 82.28 − 16 = 18.96 | 계산 |
+| 문제의 표: 그 밖의 헤더 19.0비트 | 117.24 − 82.28 − 16 = 18.96 | 계산 |
 | `ReplicatedMovement`는 위치, 회전, 속도를 담는 엔진의 구조체, X, Y, Z와 속도를 늘 보낸다 | `FRepMovement::NetSerialize`(`Engine/Source/Runtime/Engine/Private/Engine/ReplicatedState.cpp:67-152`). 비트 구성은 [engine-notes.md](../../Docs/Reference/engine-notes.md) 13절 | 엔진 소스 |
 | NPC의 높이가 늘 같다 | 스폰 높이 Z = 50(`Source/DSOptLab/LabGameMode.cpp:116, 296`), `ALabNpc::TickMovement`가 Z를 바꾸지 않는다. 모션 기록의 서버 위치 Z도 모두 50이었다 | 프로젝트 소스, 모션 기록 |
 | NPC의 속도가 늘 0이다 | 서버는 `GetVelocity()`를 보내고, 이 값은 루트 컴포넌트의 `ComponentVelocity`다. 이동 컴포넌트가 없는 `ALabNpc`는 채우지 않는다([포스팅 11 관찰 자료](../11-npc-interpolation/candidates.md) 1절) | 엔진 소스 |
-| 위치를 축마다 14비트로 쓰면 39비트가 필요 없다 | 플래그 4 + 위치 머리 7 + Z 14 + 회전의 "0이 아님" 비트 3 + 속도 10 + 가속도 있음 1 = 39. 관찰 자료 1.3절은 Yaw의 "0이 아님" 비트를 필요한 쪽으로 세어 38비트로 적었다. 새 구조체는 Yaw를 늘 1바이트로 보내므로 이 비트도 없어진다 | 계산 |
+| 위치를 축마다 14비트로 쓰면 39비트가 필요 없다 | 플래그 4 + 위치 헤더 7 + Z 14 + 회전의 "0이 아님" 비트 3 + 속도 10 + 가속도 있음 1 = 39. 관찰 자료 1.3절은 Yaw의 "0이 아님" 비트를 필요한 쪽으로 세어 38비트로 적었다. 새 구조체는 Yaw를 늘 1바이트로 보내므로 이 비트도 없어진다 | 계산 |
 | 정밀도의 기본값이 이미 가장 거친 단계다 | `LocationQuantizationLevel`, `VelocityQuantizationLevel`이 `RoundWholeNumber`(1cm), `RotationQuantizationLevel`이 `ByteComponents`(`ReplicatedState.cpp:34-36`). 열거형에 더 거친 값이 없다(`Engine/Source/Runtime/Engine/Classes/Engine/ReplicatedState.h:11-28`) | 엔진 소스 |
 | 구조체에 `NetSerialize`를 두면 엔진이 직렬화를 맡긴다 | `TStructOpsTypeTraits`의 `WithNetSerializer`. `FRepMovement`(`ReplicatedState.h:305-312`)와 `FHitResult`(`Classes/Engine/HitResult.h:305`)가 이렇게 직렬화된다 | 엔진 소스 |
-| 엔진은 위치 값의 크기에 맞춰 길이를 정하고 7비트 머리에 적는다 | `UE::Net::WriteQuantizedVector`(`Engine/Source/Runtime/Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:90-96`). `SerializeInt(값, 128)`은 7비트다(`Core/Private/Serialization/BitWriter.cpp:142-146`) | 엔진 소스 |
+| 엔진은 위치 값의 크기에 맞춰 길이를 정하고 7비트 헤더에 적는다 | `UE::Net::WriteQuantizedVector`(`Engine/Source/Runtime/Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:90-96`). `SerializeInt(값, 128)`은 7비트다(`Core/Private/Serialization/BitWriter.cpp:142-146`) | 엔진 소스 |
 | NPC는 집에서 가로세로 30m 안에서만 걷는다, 축마다 13비트 | `ALabNpc::WanderRadius` 3,000cm, `PickTarget`이 집 ± 3,000cm 정사각형 안의 점을 고른다. 집 기준 1cm로 6,001가지라 13비트(8,192)다. 기준점이 집을 반올림한 값이라 0.5cm까지 더 벗어날 수 있어 -4,096\~4,095를 쓴다(`LabNpc.cpp`의 `SerializeMoveOffset`) | 프로젝트 소스 |
 | 프로퍼티 핸들, 프로퍼티 둘을 하나로 합치면 핸들 하나가 준다 | 바뀐 프로퍼티마다 `SerializeIntPacked`로 핸들을 쓴다(`Engine/Source/Runtime/Engine/Private/RepLayout.cpp:1922-1932`). 핸들 번호가 128보다 작아 8비트다 | 엔진 소스 |
 | 흐름도 | 서버가 `PreReplication`에서 `Move`를 채우고(`LabNpc.cpp`), 비교는 객체마다 프레임에 한 번이고(engine-notes.md 8절), 직렬화는 공유 직렬화로 한 번이다(아래) | 프로젝트 소스, 엔진 소스 |
 | 공유 직렬화 | `WithNetSharedSerialization`인 구조체는 프레임에 한 번 직렬화한 결과를 연결들이 함께 쓴다(`RepLayout.cpp:5555-5557`, `2148-2151`, `2716-2752`의 `WriteSharedProperty`). 이 비트에는 핸들이 들어 있다. `Move`가 실제로 공유 직렬화로 갔다는 것은 5.1절의 `Shared` 줄로 확인했다 | 엔진 소스, 5.1절 |
 | 액터 채널, 집의 위치는 채널이 열릴 때 한 번 | `MoveOrigin`의 조건 `COND_InitialOnly`(`LabNpc.cpp`의 `GetLifetimeReplicatedProps`) | 프로젝트 소스 |
-| 패킷을 잃으면 그때의 현재 값을 다시 직렬화한다 | `FObjectReplicator::ReceivedNak`가 그 패킷의 바뀐 기록에 다시 보냄 표시를 하고(`Engine/Source/Runtime/Engine/Private/DataReplication.cpp:888-925`), `FRepLayout::UpdateChangelistHistory`가 그 목록을 이번 변경 목록에 합쳐 지금 값으로 보낸다(`RepLayout.cpp:2262-2279`) | 엔진 소스 |
+| 패킷을 잃으면 그때의 현재 값을 다시 직렬화한다 | `FObjectReplicator::ReceivedNak`가 그 패킷의 바뀐 기록을 재전송 대상으로 표시하고(`Engine/Source/Runtime/Engine/Private/DataReplication.cpp:888-925`), `FRepLayout::UpdateChangelistHistory`가 그 목록을 이번 변경 목록에 합쳐 지금 값으로 보낸다(`RepLayout.cpp:2262-2279`) | 엔진 소스 |
 | 예상: 약 98.4비트에서 50비트 | 지금 41 + 3 × 13.81 + 16 = 98.43(`act2-interp2-r1`의 N 평균, 관찰 자료 1.2절). 새 구조체 8 + 13 + 13 + 8 + 8 = 50 | 계산 |
 | 예상: 약 2,590바이트/초, 20.4% | 48.43 × 427.7 ÷ 8 = 2,589(`act2-interp2-r1`의 클라이언트 하나가 1초에 받은 NPC 갱신 평균 427.7번). 2,589 ÷ 12,682 = 20.42%(포스팅 11의 `act2-interp2` 중앙값) | 계산 |
 | 위치는 엔진과 같은 1cm, 방향도 같은 1바이트 | 엔진은 절대 위치를 1cm로 반올림하고, 새 구조체는 정수 cm인 기준점에서 잰 좌표를 1cm로 반올림한다. Yaw는 같은 `FRotator::CompressAxisToByte`다 | 프로젝트 소스, 엔진 소스 |

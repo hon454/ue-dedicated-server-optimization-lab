@@ -3,8 +3,8 @@
 # 사용법: powershell -ExecutionPolicy Bypass -File Scripts/make-move-bits.ps1
 # 결과:   Posts/12-npc-move-netserialize/images/move-bits.svg
 #
-# 엔진 소스에서 옮긴 것(engine-notes.md 13절): FRepMovement::NetSerialize는 플래그 4비트, 위치(축당 비트 수를 적는 머리 7비트와 X, Y, Z를 N비트씩),
-#   회전(축마다 "0이 아님" 1비트와 0이 아닌 축의 1바이트), 선속도(속도 0이면 머리 7비트와 축마다 1비트), 가속도 있음 1비트를 쓴다
+# 엔진 소스에서 옮긴 것(engine-notes.md 13절): FRepMovement::NetSerialize는 플래그 4비트, 위치(축당 비트 수를 적는 헤더 7비트와 X, Y, Z를 N비트씩),
+#   회전(축마다 "0이 아님" 1비트와 0이 아닌 축의 1바이트), 선속도(속도 0이면 헤더 7비트와 축마다 1비트), 가속도 있음 1비트를 쓴다
 #   (ReplicatedState.cpp:67-152, QuantizedVectorSerialization.cpp:90-96, UnrealMath.cpp의 TRotator::SerializeCompressed).
 #   프로퍼티 핸들은 8비트다(RepLayout.cpp:1922-1932).
 # 이 테스트베드에서 옮긴 것: NPC는 평면에서 속도 0으로 움직여 Pitch, Roll, 속도가 늘 0이고 Z가 늘 50이다. ServerFrame은 uint8이다(포스팅 11).
@@ -46,7 +46,7 @@ function Bar([double]$Y, [object[]]$Segs) {
 }
 
 $Before = @(
-	(Seg '핸들' 8 'handle'), (Seg '플래그' 4 'waste' -Below), (Seg '머리' 7 'waste'),
+	(Seg '핸들' 8 'handle'), (Seg '플래그' 4 'waste' -Below), (Seg '헤더' 7 'waste'),
 	(Seg 'X' 14 'need'), (Seg 'Y' 14 'need'), (Seg 'Z' 14 'waste'),
 	(Seg '회전 있음' 3 'waste' -Below), (Seg 'Yaw' 8 'need'), (Seg '속도' 10 'waste'), (Seg '가속도 있음' 1 'waste' -Below),
 	(Seg '핸들' 8 'handle'), (Seg '프레임' 8 'need')
@@ -61,7 +61,7 @@ $SfEnd = $RmEnd + 16 * $PerBit
 $AfterEnd = $X0 + 50 * $PerBit
 
 $Svg = @"
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 430" width="900" height="430" role="img" aria-label="NPC 갱신 한 번에 이동으로 가는 비트. 지금은 ReplicatedMovement 83비트와 ServerFrame 16비트로 99비트이고 그중 Z, 속도, 위치 머리, 늘 같은 플래그가 필요 없다. FLabNpcMove는 집 기준 X, Y 13비트씩, Yaw, 프레임 번호와 핸들로 50비트다.">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 430" width="900" height="430" role="img" aria-label="NPC 갱신 한 번에 이동으로 가는 비트. 지금은 ReplicatedMovement 83비트와 ServerFrame 16비트로 99비트이고 그중 Z, 속도, 위치 헤더, 늘 같은 플래그가 필요 없다. FLabNpcMove는 집 기준 X, Y 13비트씩, Yaw, 프레임 번호와 핸들로 50비트다.">
 <style>
 text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#e6edf3}
 .bg{fill:#0f141b}
@@ -94,11 +94,11 @@ $(Bar 112 $Before)
 $(Bar 246 $After)
 <text x="$($AfterEnd + 10)" y="272" class="total">50</text>
 <text x="$($AfterEnd + 50)" y="264" class="note">X, Y는 집에서 ±30m 안이라 13비트로 1cm를 담는다.</text>
-<text x="$($AfterEnd + 50)" y="284" class="note">Z, 속도, 머리, 플래그는 보내지 않는다.</text>
+<text x="$($AfterEnd + 50)" y="284" class="note">Z, 속도, 헤더, 플래그는 보내지 않는다.</text>
 
 <rect x="$X0" y="322" width="14" height="14" class="need"/><text x="$($X0 + 22)" y="334" class="note">NPC에게 필요한 것</text>
 <rect x="$($X0 + 170)" y="322" width="14" height="14" class="handle"/><text x="$($X0 + 192)" y="334" class="note">프로퍼티 핸들(프로퍼티마다 하나)</text>
-<rect x="$($X0 + 430)" y="322" width="14" height="14" class="waste"/><text x="$($X0 + 452)" y="334" class="note">필요 없는 것(늘 같은 값, 범위를 알면 필요 없는 머리)</text>
+<rect x="$($X0 + 430)" y="322" width="14" height="14" class="waste"/><text x="$($X0 + 452)" y="334" class="note">필요 없는 것(늘 같은 값, 범위를 알면 필요 없는 헤더)</text>
 <text x="20" y="372" class="note">축마다 쓰는 비트 수는 좌표가 클수록 늘어서, 맵 원점에서 멀면 커진다. 이 테스트베드의 평균은 13.8비트, 맵 가장자리는 18비트다.</text>
 <text x="20" y="394" class="note">FLabNpcMove는 집을 기준으로 재므로 맵 어디서나 50비트다.</text>
 </svg>

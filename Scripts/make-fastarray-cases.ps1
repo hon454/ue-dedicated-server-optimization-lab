@@ -3,14 +3,14 @@
 # 사용법: powershell -ExecutionPolicy Bypass -File Scripts/make-fastarray-cases.ps1
 # 결과:   Posts/10-inventory-fastarray/images/fastarray-cases.svg
 #
-# 엔진 소스에서 옮긴 것: 머리는 int32 넷(128비트, FastArraySerializer.h의 WriteDeltaHeader), 지운 칸은 번호 int32다.
+# 엔진 소스에서 옮긴 것: 헤더는 int32 넷(128비트, FastArraySerializer.h의 WriteDeltaHeader), 지운 칸은 번호 int32다.
 #   칸 안 델타 직렬화가 기본으로 켜져 있어(FastArraySerializer.cpp 생성자) 칸마다 번호 uint32, 1비트, 프로퍼티마다 핸들 8비트와 값,
 #   끝 핸들 8비트를 쓴다(RepLayout.cpp DeltaSerializeFastArrayProperty). 새 칸은 프로퍼티를 모두 보내고(net.DeltaInitialFastArrayElements 기본 0),
 #   바뀐 칸은 바뀐 프로퍼티만 보낸다. 실행 act2-fastarr1-r2의 ChangedElement 2,382비트 = 15 x 121 + 7 x 81과 맞는다. 클라이언트는 새 칸을 맨 뒤에 더하고
 #   (1524, AddDefaulted_GetRef) 지운 칸을 마지막에 RemoveAtSwap으로 지운다(1186-1197). 칸의 콜백은 FFastArraySerializerItem의 것이고,
-#   PostReplicatedReceive는 배열 구조체에 정의돼 있을 때 받은 묶음마다 한 번 불린다(699-707).
+#   PostReplicatedReceive는 배열 구조체에 정의돼 있을 때 갱신마다 한 번 불린다(699-707).
 # 이 테스트베드에서 옮긴 것: 칸 하나는 ItemId와 Count 두 int32(64비트)다.
-# 예시로 그리는 것: 칸 다섯 개와 그 번호. 실제 인벤토리는 200칸이다. 프로퍼티 머리 같은 덧붙는 비트는 그리지 않는다.
+# 예시로 그리는 것: 칸 다섯 개와 그 번호. 실제 인벤토리는 200칸이다. 프로퍼티 헤더 같은 덧붙는 비트는 그리지 않는다.
 
 param(
 	[string]$Out = (Join-Path $PSScriptRoot '..\Posts\10-inventory-fastarray\images\fastarray-cases.svg')
@@ -130,8 +130,8 @@ text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif
 <text x="20" y="34" class="title">FastArray가 보내는 것과 클라이언트가 하는 일</text>
 <text x="20" y="56" class="note">칸마다 번호(#)가 붙는다. 서버는 자리가 아니라 번호로 바뀐 것을 찾는다. 흰 테두리가 바뀐 칸, 노란 상자가 칸 하나에 가는 것이다.</text>
 $($Body -join "`n")
-<text x="20" y="494" class="note">받은 묶음마다 머리 128비트가 붙고, 클라이언트는 묶음 끝에 PostReplicatedReceive를 한 번 부른다(정의돼 있을 때).</text>
-<text x="20" y="516" class="note">이 테스트베드의 "앞 칸 지우기"는 삭제와 추가가 한 묶음으로 간다: 머리 128 + 지운 번호 32 + 새 칸 121 = 281비트다.</text>`r`n<text x="20" y="538" class="note">그래서 클라이언트에서는 새 칸이 지운 자리로 들어가, 칸 순서가 서버와 달라진다.</text>`r`n<text x="20" y="560" class="note">칸 다섯 개는 예시이고 실제는 200칸이다. 비트는 칸이 ItemId와 Count 두 int32일 때의 값이다.</text>
+<text x="20" y="494" class="note">갱신마다 헤더 128비트가 붙고, 클라이언트는 갱신 끝에 PostReplicatedReceive를 한 번 부른다(정의돼 있을 때).</text>
+<text x="20" y="516" class="note">이 테스트베드의 "앞 칸 지우기"는 삭제와 추가가 한 갱신으로 간다: 헤더 128 + 지운 번호 32 + 새 칸 121 = 281비트다.</text>`r`n<text x="20" y="538" class="note">그래서 클라이언트에서는 새 칸이 지운 자리로 들어가, 칸 순서가 서버와 달라진다.</text>`r`n<text x="20" y="560" class="note">칸 다섯 개는 예시이고 실제는 200칸이다. 비트는 칸이 ItemId와 Count 두 int32일 때의 값이다.</text>
 </svg>
 "@
 

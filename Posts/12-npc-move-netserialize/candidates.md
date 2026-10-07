@@ -11,10 +11,10 @@
 | 순서 | 내용 | 비트 | 소스 |
 | --- | --- | ---: | --- |
 | 1 | 플래그 4개(물리 휴면, 물리, 서버 프레임 있음, 물리 핸들 있음) | 4 | `ReplicatedState.cpp:73-74`. 연결 버전이 `RepMoveServerFrameAndHandle`(25) 이상이면 4비트(`Core/Public/Misc/EngineNetworkCustomVersion.h:40`) |
-| 2 | 위치: 축당 비트 수를 적는 머리 | 7 | `Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:90-92`. `SerializeInt(값, 128)`은 7비트(`Core/Private/Serialization/BitWriter.cpp:142-146`) |
+| 2 | 위치: 축당 비트 수를 적는 헤더 | 7 | `Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:90-92`. `SerializeInt(값, 128)`은 7비트(`Core/Private/Serialization/BitWriter.cpp:142-146`) |
 | 3 | 위치: X, Y, Z를 같은 비트 수 N으로 | 3 × N | `QuantizedVectorSerialization.cpp:94-96`. N은 세 축 가운데 가장 큰 절댓값(cm 단위로 반올림)에 부호 비트를 더한 길이다(`13-17`) |
 | 4 | 회전: 축마다 "0이 아님" 1비트, 0이 아니면 1바이트 | 3 + 8 | `Core/Private/Math/UnrealMath.cpp:84-` (`TRotator::SerializeCompressed`). NPC는 평면에서만 돌아서 Pitch, Roll이 0이다(`LabNpc.cpp`의 `Direction.Rotation()`, `Direction.Z`가 0) |
-| 5 | 선속도: 머리 7비트와 축마다 1비트 | 7 + 3 | NPC의 속도는 늘 0이다([포스팅 11 관찰 자료](../11-npc-interpolation/candidates.md) 1절). 0은 축마다 1비트(`QuantizedVectorSerialization.cpp:13-17`) |
+| 5 | 선속도: 헤더 7비트와 축마다 1비트 | 7 + 3 | NPC의 속도는 늘 0이다([포스팅 11 관찰 자료](../11-npc-interpolation/candidates.md) 1절). 0은 축마다 1비트(`QuantizedVectorSerialization.cpp:13-17`) |
 | 6 | 가속도 있음 1비트 | 1 | `ReplicatedState.cpp:133-137`(`RepMoveOptionalAcceleration`, 버전 35) |
 
 - 합계는 33 + 3N비트이고, 프로퍼티 핸들 8비트(`RepLayout.cpp:1922-1932`의 `SerializeIntPacked`)를 더하면 41 + 3N비트다.
@@ -49,7 +49,7 @@ NPC 갱신 한 번은 117.20비트이고(`act2-interp2-r1`, Networking Insights)
 | 핸들 | 8 | 프로퍼티 하나에 하나 |
 | Z | 14 | 늘 50cm라 필요 없음(`LabGameMode.cpp:116, 296`의 스폰 높이, `TickMovement`가 Z를 바꾸지 않음. 모션 기록의 서버 위치도 모두 50) |
 | 속도 | 10 | 늘 0이라 필요 없음 |
-| 위치 머리 | 7 | 범위를 알면 필요 없음 |
+| 위치 헤더 | 7 | 범위를 알면 필요 없음 |
 | 플래그, 가속도 있음, Pitch와 Roll 있음 | 7 | 늘 같은 값이라 필요 없음 |
 
 필요 없는 값이 38비트다. `ServerFrame`의 핸들 8비트도 이동과 한 구조체에 넣으면 없어진다.
@@ -74,7 +74,7 @@ NPC 갱신 한 번은 117.20비트이고(`act2-interp2-r1`, Networking Insights)
 
 - 구현: X, Y를 (값 + 98,000)으로 바꿔 18비트씩 쓴다. 클라이언트는 같은 식으로 되돌린다. Z는 보내지 않고 클라이언트가 스폰 때 받은 높이를 쓴다.
 - 이 테스트베드에서는 X, Y가 엔진보다 비싸다(18비트 대 평균 13.81비트). 엔진은 크기에 맞춰 길이를 줄이고, 고정 길이는 범위 끝에 맞춰야 해서다. 줄어드는 것은 필요 없는 값을 뺀 몫뿐이다.
-- 맵 가장자리의 NPC라면 엔진의 N이 18이라(위치 머리 7 + 54) A가 훨씬 유리하다. 이 테스트베드는 엔진에 유리한 자리다.
+- 맵 가장자리의 NPC라면 엔진의 N이 18이라(위치 헤더 7 + 54) A가 훨씬 유리하다. 이 테스트베드는 엔진에 유리한 자리다.
 
 ### B. 집 기준 상대 좌표
 
@@ -114,7 +114,7 @@ NPC 갱신 한 번은 117.20비트이고(`act2-interp2-r1`, Networking Insights)
 | --- | --- |
 | 엔진의 정밀도 설정 낮추기 | 기본값이 이미 가장 거친 단계다(1.1절). 설정만으로는 더 줄일 수 없다 |
 | 직전에 보낸 값과의 차이 보내기 | `NetSerialize`의 결과는 모든 연결이 함께 쓰므로 연결마다의 기준값이 없다. 연결마다 확인받은 값을 기억하려면 `NetDeltaSerialize`(FastArray와 같은 방식)를 직접 짜야 한다. 패킷 손실 처리까지 직접 해야 하는 큰 작업이다 |
-| 바뀐 때만 보내는 필드(예: 방향을 틀 때만 Yaw) | 패킷을 잃으면 엔진은 그 프로퍼티를 다시 보내는데, 그때의 현재 값을 직렬화한다(`DataReplication.cpp:888-925`의 `FObjectReplicator::ReceivedNak`가 바뀐 기록에 다시 보냄 표시, `RepLayout.cpp:2262-2279`가 그 목록을 이번 변경 목록에 합침). 그 사이 "바뀌지 않음"이 되면 클라이언트는 새 Yaw를 받지 못한다. 안전한 것은 `FHitResult`처럼 기본값이면 빼는 필드다(`HitResult.cpp`의 `NetSerialize` 플래그 8개). NPC의 속도가 그런 경우라 후보 모두 빼기로 했다 |
+| 바뀐 때만 보내는 필드(예: 방향을 틀 때만 Yaw) | 패킷을 잃으면 엔진은 그 프로퍼티를 다시 보내는데, 그때의 현재 값을 직렬화한다(`DataReplication.cpp:888-925`의 `FObjectReplicator::ReceivedNak`가 바뀐 기록을 재전송 대상으로 표시, `RepLayout.cpp:2262-2279`가 그 목록을 이번 변경 목록에 합침). 그 사이 "바뀌지 않음"이 되면 클라이언트는 새 Yaw를 받지 못한다. 안전한 것은 `FHitResult`처럼 기본값이면 빼는 필드다(`HitResult.cpp`의 `NetSerialize` 플래그 8개). NPC의 속도가 그런 경우라 후보 모두 빼기로 했다 |
 | Yaw를 별도 프로퍼티로 나눠 바뀔 때만 보내기 | 구조체를 나누는 것이고 `NetSerialize`가 아니다. Yaw는 직선 구간(평균 약 10초)마다 한 번 바뀐다. 보낼 때 핸들 8비트가 더 든다. 다른 기법이라 이 포스팅에 넣지 않는다 |
 | Iris로 바꾸기 | 포스팅 15에서 다룬다. 이 시리즈는 그때까지 레거시 리플리케이션이다 |
 
