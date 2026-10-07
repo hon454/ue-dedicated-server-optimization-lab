@@ -5,7 +5,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "LabMetricsSubsystem.generated.h"
 
-/** 서버 측정. 준비 구간과 측정 구간을 관리하고 요약을 CSV로 남긴 뒤 서버를 종료한다. */
+/** 서버 측정. 워밍업 구간과 측정 구간을 관리하고 요약을 CSV로 남긴 뒤 서버를 종료한다. */
 UCLASS()
 class DSOPTLAB_API ULabMetricsSubsystem : public UWorldSubsystem
 {
@@ -45,7 +45,7 @@ private:
 	void HandlePostActorTick(UWorld* World, ELevelTick TickType, float DeltaSeconds);
 	void HandleEndFrame();
 
-	/** 게임 모드가 공통 시작 신호를 냈을 때 준비 구간을 시작한다. */
+	/** 게임 모드가 공통 시작 신호를 냈을 때 워밍업 구간을 시작한다. */
 	void HandleScenarioStarted();
 
 	FConnectionSample SampleConnections() const;

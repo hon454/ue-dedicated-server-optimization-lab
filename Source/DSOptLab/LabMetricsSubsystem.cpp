@@ -71,7 +71,7 @@ void ULabMetricsSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	PostActorTickHandle = FWorldDelegates::OnWorldPostActorTick.AddUObject(this, &ULabMetricsSubsystem::HandlePostActorTick);
 	EndFrameHandle = FCoreDelegates::OnEndFrame.AddUObject(this, &ULabMetricsSubsystem::HandleEndFrame);
 
-	// 시작 조건은 게임 모드가 판단한다. 여기서는 시작 신호를 듣고 준비 구간을 시작한다.
+	// 시작 조건은 게임 모드가 판단한다. 여기서는 시작 신호를 듣고 워밍업 구간을 시작한다.
 	// 게임 모드는 월드가 초기화될 때 만들어지므로 이 시점에 이미 있다(World.cpp의 UWorld::BeginPlay).
 	ALabGameMode* GameMode = InWorld.GetAuthGameMode<ALabGameMode>();
 	if (!GameMode)
@@ -191,7 +191,7 @@ void ULabMetricsSubsystem::HandleEndFrame()
 	const double OpenChannelsPerConnection = Sample.NumConnections > 0
 		? static_cast<double>(Sample.OpenActorChannels) / Sample.NumConnections : 0.0;
 
-	// 준비 구간 길이와 초기 전송 완료 여부를 판단할 수 있게 5초마다 상태를 남긴다.
+	// 워밍업 구간 길이와 초기 전송 완료 여부를 판단할 수 있게 5초마다 상태를 남긴다.
 	if (Now - LastStatusLogTime >= 5.0)
 	{
 		LastStatusLogTime = Now;

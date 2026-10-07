@@ -10,7 +10,7 @@ class UStaticMeshComponent;
 
 /**
  * NPC 한 번의 이동(포스팅 12, -LabNpcCompactMove). 엔진의 FRepMovement 대신 평면 이동에 필요한 것만 담는다.
- * FRepMovement는 핸들을 빼고 33 + 3N비트(N은 위치 성분당 비트 수)를 쓰고, 그중 Z, 속도, 위치 머리, 늘 같은 플래그는 NPC에게 필요 없다
+ * FRepMovement는 핸들을 빼고 33 + 3N비트(N은 위치의 축당 비트 수)를 쓰고, 그중 Z, 속도, 위치 헤더, 늘 같은 플래그는 NPC에게 필요 없다
  * (ReplicatedState.cpp:67-152, engine-notes.md 13절). 이 구조체는 X, Y 13비트씩, Yaw 8비트, 서버 프레임 번호 8비트로 42비트다.
  */
 USTRUCT()

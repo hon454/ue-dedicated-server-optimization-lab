@@ -391,7 +391,7 @@ void ALabNpc::PostNetReceiveLocationAndRotation()
 		return;
 	}
 
-	// 같은 묶음의 프로퍼티는 모두 받은 뒤에 RepNotify가 불리므로 ServerFrame은 이 위치와 같은 프레임의 값이다.
+	// 같은 Bunch의 프로퍼티는 모두 받은 뒤에 RepNotify가 불리므로 ServerFrame은 이 위치와 같은 프레임의 값이다.
 	const FRepMovement& Rep = GetReplicatedMovement();
 	if (AddSnapshot(FRepMovement::RebaseOntoLocalOrigin(Rep.Location, this), Rep.Rotation.Quaternion(), ServerFrame))
 	{
@@ -401,7 +401,7 @@ void ALabNpc::PostNetReceiveLocationAndRotation()
 
 void ALabNpc::OnRep_Move()
 {
-	// MoveOrigin은 채널이 열릴 때 Move와 같은 묶음으로 오고, RepNotify는 묶음을 다 받은 뒤에 불린다.
+	// MoveOrigin은 채널이 열릴 때 Move와 같은 Bunch로 오고, RepNotify는 Bunch를 다 받은 뒤에 불린다.
 	const FVector Location(MoveOrigin.X + Move.Offset.X, MoveOrigin.Y + Move.Offset.Y, MoveOrigin.Z);
 	const FRotator Rotation(0.f, Move.Yaw, 0.f);
 	RecordReceive(Move.ServerFrame);

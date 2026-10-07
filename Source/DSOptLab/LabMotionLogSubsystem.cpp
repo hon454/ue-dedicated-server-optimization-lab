@@ -17,7 +17,7 @@
 
 namespace
 {
-	// 파일 머리. Scripts/analyze-motion.ps1이 같은 순서로 읽는다.
+	// 파일 헤더. Scripts/analyze-motion.ps1이 같은 순서로 읽는다.
 	constexpr uint32 MotionLogMagic = 0x4D42414C; // "LABM"
 	constexpr int32 MotionLogVersion = 1;
 }

@@ -24,7 +24,7 @@ public:
 	/** 플레이어가 준비를 보고했을 때 호출된다. 시작 조건이 채워지면 시작하고, 이미 시작한 뒤라면 그 플레이어를 바로 출발시킨다. */
 	void HandlePlayerReady(ALabPlayerController& Player);
 
-	/** 공통 시작 신호를 낸 직후에 한 번 불린다. 측정 서브시스템이 준비 구간을 여기서 시작한다. */
+	/** 공통 시작 신호를 낸 직후에 한 번 불린다. 측정 서브시스템이 워밍업 구간을 여기서 시작한다. */
 	FSimpleMulticastDelegate OnScenarioStarted;
 
 	static FVector GetSlotLocation(int32 Slot);
