@@ -21,7 +21,7 @@
 ## 다음 할 일
 
 1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. **포스팅 12(태스크 29)의 확정 규모 측정.** 기준 묶음 `act2-npcmove-base1`(포스팅 11의 최종 구성: 2막의 요소, `-NodeUpdateFrequency 2 -InventoryOwnerOnly -InventoryFastArray -NpcInterpDelay 150 -MotionLog`)과 적용 묶음 `act2-npcmove1`(`-NpcCompactMove`를 더함)을 세 번씩 연달아 잰다. 시작하기 전에 사용자의 답을 받는다. 그 뒤 Networking Insights로 `LabNpc` 갱신 한 번의 비트를 읽고, 시각 자료를 고르고, 초안을 쓴다.
+2. **포스팅 12(태스크 29)의 Insights 값, 시각 자료, 초안.** 확정 규모 측정은 끝났다(`act2-npcmove-base1`, `act2-npcmove1`, 아래 "측정 결과"). `out_bytes_per_sec_per_conn` 중앙값 12,672 → 10,088(-20.4%)이고 품질 지표는 구별되지 않는다. 남은 것: Networking Insights로 `LabNpc` 갱신 한 번의 비트와 `Move`의 `Shared` 비트를 읽는다(예상 117 → 약 69비트, `Move` 50비트), 시각 자료 후보를 낸다, 본문과 측정 기록의 초안을 쓴다.
 
 ## 포스팅 진행
 
@@ -116,30 +116,29 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | `act2-baseline1-r3` | 272 | 220.521 | 331.528 | 272 | 211.365 | 36324 | 5871 | 0.000 |
 | **중앙값** | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
 | **변동 폭** | 7 | 5.283 | 69.892 | 7 | 4.807 | 741 | 0 | 0.000 |
-| `act2-interp-base2-r1` | 1788 | 8.601 | 12.616 | 1 | 4.162 | 11820 | 77 | 0.000 |
-| `act2-interp-base2-r2` | 1788 | 8.515 | 12.304 | 1 | 4.108 | 11826 | 77 | 0.000 |
-| `act2-interp-base2-r3` | 1797 | 8.653 | 13.000 | 1 | 4.145 | 11815 | 77 | 0.000 |
-| **중앙값** | 1788 | 8.601 | 12.616 | 1 | 4.145 | 11820 | 77 | 0.000 |
-| **변동 폭** | 9 | 0.138 | 0.696 | 0 | 0.054 | 11 | 0 | 0.000 |
-| `act2-interp2-r1` | 1788 | 8.616 | 12.632 | 1 | 4.188 | 12682 | 77 | 0.000 |
-| `act2-interp2-r2` | 1797 | 8.525 | 13.092 | 1 | 4.094 | 12675 | 77 | 0.000 |
-| `act2-interp2-r3` | 1796 | 8.740 | 13.181 | 0 | 4.212 | 12689 | 77 | 0.000 |
-| **중앙값** | 1796 | 8.616 | 13.092 | 1 | 4.188 | 12682 | 77 | 0.000 |
-| **변동 폭** | 9 | 0.215 | 0.549 | 1 | 0.118 | 14 | 0 | 0.000 |
-| **`act2-interp-base2` 대비** | +8 | +0.015(+0.2%) | +0.476(+3.8%) | 0 | +0.043(+1.0%) | +862(+7.3%) | 0 | 0 |
+| `act2-npcmove-base1-r1` | 1797 | 8.606 | 12.897 | 0 | 4.198 | 12674 | 77 | 0.000 |
+| `act2-npcmove-base1-r2` | 1788 | 8.681 | 13.237 | 1 | 4.246 | 12672 | 77 | 0.000 |
+| `act2-npcmove-base1-r3` | 1797 | 8.691 | 13.387 | 1 | 4.253 | 12662 | 77 | 0.000 |
+| **중앙값** | 1797 | 8.681 | 13.237 | 1 | 4.246 | 12672 | 77 | 0.000 |
+| **변동 폭** | 9 | 0.085 | 0.490 | 1 | 0.055 | 12 | 0 | 0.000 |
+| `act2-npcmove1-r1` | 1796 | 8.673 | 12.446 | 0 | 4.195 | 10083 | 77 | 0.000 |
+| `act2-npcmove1-r2` | 1790 | 8.484 | 12.246 | 1 | 4.075 | 10088 | 77 | 0.000 |
+| `act2-npcmove1-r3` | 1788 | 8.483 | 12.279 | 0 | 4.059 | 10104 | 77 | 0.000 |
+| **중앙값** | 1790 | 8.484 | 12.279 | 0 | 4.075 | 10088 | 77 | 0.000 |
+| **변동 폭** | 8 | 0.190 | 0.200 | 1 | 0.136 | 21 | 0 | 0.000 |
+| **`act2-npcmove-base1` 대비** | -7 | -0.197(-2.3%) | -0.958(-7.2%) | -1 | -0.171(-4.0%) | -2,584(-20.4%) | 0 | 0 |
 
-1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다. `act2-interp-base2`(포스팅 10의 최종 구성에 `-MotionLog`)와 `act2-interp2`(`-NpcInterpDelay 150`)는 2026-10-07 06:15\~06:31에 본체 화면에서 연달아 쟀다. `work_avg_ms`, `work_p99_ms`, `netflush_avg_ms`의 차이는 변동 폭 안이라 구별되지 않고, `out_bytes_per_sec_per_conn`만 구별된다. 서버가 모션 기록에 쓴 시간은 프레임당 0.0655\~0.0673ms다(서버 로그). 중앙값 실행(두 묶음 모두 `r1`)의 Insights 값은 서버 프레임 시간 평균 8.880 → 8.893ms, `GameNetDriver` 프레임당 3.907 → 3.934ms, 그중 `LabNpc` 0.857 → 0.886ms다(`export-insights.ps1`).
+1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다. 포스팅 11의 두 묶음(`act2-interp-base2`, `act2-interp2`)의 행과 품질 지표는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 29 준비"로 옮겼다. `act2-npcmove-base1`(포스팅 11의 최종 구성에 `-MotionLog`)과 `act2-npcmove1`(`-NpcCompactMove`)은 2026-10-07 12:07\~12:23에 본체 화면에서 연달아 쟀다. 6회 모두 종료 코드 0이고 `lab_npc_move_clamped`는 없었다. [measurement.md](Guides/measurement.md)의 기준(중앙값의 변화가 큰 쪽 변동 폭보다 큼)으로 `out_bytes_per_sec_per_conn`(-2,584, 예상 -2,589), `work_p99_ms`, `netflush_avg_ms`는 구별되고, `work_avg_ms`는 변화 0.197이 변동 폭 0.190을 겨우 넘는다. 서버가 모션 기록에 쓴 시간은 프레임당 0.0687\~0.0721ms다(서버 로그). 중앙값 실행(두 묶음 모두 `r2`)의 Insights 값은 서버 프레임 시간 평균 8.957 → 8.760ms, `GameNetDriver` 프레임당 3.993 → 3.824ms(Excl 2.449 → 2.337ms), 그중 `LabNpc` 0.884 → 0.842ms다(`export-insights.ps1`).
 
-품질 지표([ADR-0020](Decisions/0020-npc-motion-quality-metrics.md), `analyze-motion.ps1`, 클라이언트 8개, 측정 구간 60초, NPC 66개). 세 실행의 중앙값(변동 폭)이다.
+품질 지표([ADR-0020](Decisions/0020-npc-motion-quality-metrics.md), `analyze-motion.ps1`, 클라이언트 8개, 측정 구간 60초, NPC 66개). 세 실행의 중앙값(변동 폭)이다. 두 묶음은 모든 지표에서 구별되지 않는다.
 
-| 지표 | `act2-interp-base2` | `act2-interp2` |
+| 지표 | `act2-npcmove-base1` | `act2-npcmove1` |
 | --- | --- | --- |
-| 표시 위치 오차 평균 / P99(cm) | 22.25(0.12) / 42.27(0.22) | 46.38(0.75) / 52.43(3.16) |
-| 표시 속도 오차 평균 / P99(cm/s) | 439.9(0.7) / 957.6(7.0) | 15.0(0.1) / 338.5(8.1) |
-| 표시 위치가 바뀐 간격 평균(ms) | 133.6 | 35.4 |
-| 수신 간격 평균(ms) | 133.6 | 133.4 |
-| 표시 지연(ms) | 74 | 155 |
-| 클라이언트 프레임 간격 평균(ms) | 35.3 | 35.4 |
+| 표시 위치 오차 평균 / P99(cm) | 46.56(1.01) / 52.93(3.90) | 45.87(0.63) / 49.70(4.08) |
+| 표시 속도 오차 평균 / P99(cm/s) | 14.9(0.3) / 337.8(6.3) | 15.0(0.4) / 328.1(6.7) |
+| 표시 지연(ms) / 그 지연에서의 위치 오차 평균(cm) | 155 / 1.37(0.24) | 154 / 1.22(0.26) |
+| 수신 간격 평균(ms) | 133.4 | 133.5 |
+| 클라이언트 프레임 간격 평균(ms) | 35.42 | 35.25 |
 
 ## 막힌 것
 
@@ -148,4 +147,3 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 ## 사용자에게 요청한 일
 
 - **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
-- **포스팅 12의 확정 규모 측정 시작.** 위 "다음 할 일" 2번.
