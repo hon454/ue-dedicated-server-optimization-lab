@@ -170,7 +170,7 @@ xychart-beta horizontal
 | --- | --- |
 | [LabScenarioConfig](Source/DSOptLab/LabScenarioConfig.h) | 실행 인자에서 시나리오 값과, 최적화를 켜고 끄는 값을 읽는다 |
 | [LabResourceNode](Source/DSOptLab/LabResourceNode.cpp) | 자원 노드 |
-| [LabNpc](Source/DSOptLab/LabNpc.cpp) | AI NPC, 영상용 왕복 NPC, 클라이언트의 NPC 보간(실행 인자를 줄 때만 켜진다) |
+| [LabNpc](Source/DSOptLab/LabNpc.cpp) | AI NPC, 영상용 왕복 NPC, 클라이언트의 NPC 보간과 평면 이동만 담은 이동 구조체(둘 다 실행 인자를 줄 때만 켜진다) |
 | [LabGameMode](Source/DSOptLab/LabGameMode.cpp) | 월드 생성, 시작 신호, 플레이어 배치 |
 | [LabPlayerController](Source/DSOptLab/LabPlayerController.cpp) | 준비 보고, 자동 이동과 채집, 채집 RPC |
 | [LabCharacterMovement](Source/DSOptLab/LabCharacterMovement.cpp) | 수동 조작용 달리기 |

@@ -24,6 +24,10 @@ struct FLabScenarioConfig
 	// 서버는 NPC의 서버 프레임 번호(ALabNpc::ServerFrame)를 함께 보낸다. 0이면 받은 위치를 바로 적용한다(엔진 기본 동작).
 	float NpcInterpDelayMs = 0.f;      // -LabNpcInterpDelay=
 
+	// 켜면 서버가 NPC의 이동을 엔진의 ReplicatedMovement 대신 평면 이동만 담은 FLabNpcMove로 보낸다(포스팅 12).
+	// 집 기준 상대 좌표(1cm), Yaw 1바이트, 서버 프레임 번호를 직접 직렬화한다. 서버 프레임 번호는 이 구조체에 들어간다.
+	bool bNpcCompactMove = false;      // -LabNpcCompactMove
+
 	static const FLabScenarioConfig& Get();
 };
 

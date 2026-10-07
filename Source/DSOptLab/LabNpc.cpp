@@ -1,6 +1,7 @@
 #include "LabNpc.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "DSOptLab.h"
 #include "Engine/NetDriver.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
@@ -159,6 +160,58 @@ namespace
 		static FLabServerClock Clock;
 		return Clock;
 	}
+
+	/**
+	 * FLabNpcMove::Offset의 한 축. 1cm로 반올림해 13비트로 보낸다.
+	 * NPC는 집에서 축마다 ±3,000cm 안에서만 걷는다(ALabNpc::WanderRadius, PickTarget). 기준점은 집을 반올림한 값이라
+	 * 0.5cm까지 더 벗어날 수 있으므로, 13비트가 담는 -4,096부터 4,095까지를 다 쓴다.
+	 */
+	constexpr int32 MoveOffsetBits = 13;
+	constexpr int32 MoveOffsetBias = 1 << (MoveOffsetBits - 1);
+
+	void SerializeMoveOffset(FArchive& Ar, double& Value)
+	{
+		uint32 Packed = 0;
+		if (Ar.IsSaving())
+		{
+			const int32 Rounded = FMath::RoundToInt32(Value);
+			const int32 Clamped = FMath::Clamp(Rounded, -MoveOffsetBias, MoveOffsetBias - 1);
+			if (Clamped != Rounded)
+			{
+				// 배회 규칙이 바뀌지 않는 한 일어나지 않는다. 일어나면 클라이언트의 위치가 틀리므로 서버 로그에 남긴다.
+				static int32 NumClamped = 0;
+				if (NumClamped++ == 0)
+				{
+					UE_LOG(LogDSOptLab, Warning, TEXT("lab_npc_move_clamped offset=%d"), Rounded);
+				}
+			}
+			Packed = static_cast<uint32>(Clamped + MoveOffsetBias);
+		}
+		Ar.SerializeBits(&Packed, MoveOffsetBits);
+		if (Ar.IsLoading())
+		{
+			Value = static_cast<double>(static_cast<int32>(Packed) - MoveOffsetBias);
+		}
+	}
+}
+
+bool FLabNpcMove::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+{
+	SerializeMoveOffset(Ar, Offset.X);
+	SerializeMoveOffset(Ar, Offset.Y);
+
+	// 엔진의 ByteComponents와 같은 압축이다(UnrealMath.cpp의 TRotator::SerializeCompressed). 0인지 알리는 비트는 쓰지 않는다.
+	uint8 YawByte = Ar.IsSaving() ? FRotator::CompressAxisToByte(Yaw) : 0;
+	Ar << YawByte;
+	if (Ar.IsLoading())
+	{
+		Yaw = static_cast<float>(FRotator::DecompressAxisFromByte(YawByte));
+	}
+
+	Ar << ServerFrame;
+
+	bOutSuccess = !Ar.IsError();
+	return true;
 }
 
 ALabNpc::ALabNpc()
@@ -167,7 +220,9 @@ ALabNpc::ALabNpc()
 	// 시작 신호 전에는 틱하지 않는다. 실행마다 같은 시점에 같은 위치에 있게 하기 위해서다.
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	bReplicates = true;
-	SetReplicatingMovement(true);
+
+	// 포스팅 12에서는 엔진의 ReplicatedMovement 대신 FLabNpcMove(Move)를 보낸다.
+	SetReplicatingMovement(!IsCompactMove());
 
 	const FLabServerConfig& Config = FLabServerConfig::Get();
 
@@ -194,21 +249,44 @@ bool ALabNpc::IsInterpolating()
 	return FLabScenarioConfig::Get().NpcInterpDelayMs > 0.f;
 }
 
+bool ALabNpc::IsCompactMove()
+{
+	return FLabScenarioConfig::Get().bNpcCompactMove;
+}
+
 void ALabNpc::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	// 조건은 보내는 쪽(서버)이 거르는 데만 쓴다(LabInventoryComponent.cpp의 GetItemsCondition과 같다).
 	// 보간을 끈 실행에서는 보내지 않아 기준 구성의 대역폭이 바뀌지 않는다.
+	// 포스팅 12의 구성에서는 프레임 번호가 Move 안에 들어가므로 따로 보내지 않는다.
 	FDoRepLifetimeParams Params;
-	Params.Condition = IsInterpolating() ? COND_None : COND_Never;
+	Params.Condition = IsInterpolating() && !IsCompactMove() ? COND_None : COND_Never;
 	DOREPLIFETIME_WITH_PARAMS(ALabNpc, ServerFrame, Params);
+
+	FDoRepLifetimeParams MoveParams;
+	MoveParams.Condition = IsCompactMove() ? COND_None : COND_Never;
+	MoveParams.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(ALabNpc, Move, MoveParams);
+
+	FDoRepLifetimeParams OriginParams;
+	OriginParams.Condition = IsCompactMove() ? COND_InitialOnly : COND_Never;
+	DOREPLIFETIME_WITH_PARAMS(ALabNpc, MoveOrigin, OriginParams);
 }
 
 void ALabNpc::PreReplication(IRepChangedPropertyTracker& ChangedPropertyTracker)
 {
 	// 리플리케이트하기 직전, 같은 프레임에 모으는 위치(AActor::PreReplication의 GatherCurrentMovement)와 짝이 되는 프레임 번호다.
-	if (IsInterpolating())
+	if (IsCompactMove())
+	{
+		// 엔진이 GatherCurrentMovement로 ReplicatedMovement를 채우는 자리에서 Move를 채운다.
+		const FVector Location = GetActorLocation();
+		Move.Offset = FVector2D(Location.X - MoveOrigin.X, Location.Y - MoveOrigin.Y);
+		Move.Yaw = static_cast<float>(GetActorRotation().Yaw);
+		Move.ServerFrame = static_cast<uint8>(GFrameCounter & 0xFF);
+	}
+	else if (IsInterpolating())
 	{
 		ServerFrame = static_cast<uint8>(GFrameCounter & 0xFF);
 	}
@@ -230,6 +308,7 @@ void ALabNpc::BeginPlay()
 		// 시작 위치로 시드를 정해, 같은 배치에서는 같은 경로로 움직이게 한다.
 		Rng.Initialize(static_cast<int32>(GetTypeHash(Home)));
 		PickTarget();
+		MoveOrigin = FVector_NetQuantize(FMath::RoundToDouble(Home.X), FMath::RoundToDouble(Home.Y), FMath::RoundToDouble(Home.Z));
 	}
 	else if (IsInterpolating())
 	{
@@ -293,12 +372,17 @@ void ALabNpc::PickTarget()
 		0.f);
 }
 
-void ALabNpc::PostNetReceiveLocationAndRotation()
+void ALabNpc::RecordReceive(uint8 Frame)
 {
 	if (ULabMotionLogSubsystem* MotionLog = GetWorld()->GetSubsystem<ULabMotionLogSubsystem>())
 	{
-		MotionLog->RecordReceive(*this, ServerFrame);
+		MotionLog->RecordReceive(*this, Frame);
 	}
+}
+
+void ALabNpc::PostNetReceiveLocationAndRotation()
+{
+	RecordReceive(ServerFrame);
 
 	// 보간을 끄면 엔진 기본 동작대로 받은 위치로 바로 옮긴다(ActorReplication.cpp의 AActor::PostNetReceiveLocationAndRotation).
 	if (!IsInterpolating())
@@ -308,35 +392,57 @@ void ALabNpc::PostNetReceiveLocationAndRotation()
 	}
 
 	// 같은 묶음의 프로퍼티는 모두 받은 뒤에 RepNotify가 불리므로 ServerFrame은 이 위치와 같은 프레임의 값이다.
+	const FRepMovement& Rep = GetReplicatedMovement();
+	if (AddSnapshot(FRepMovement::RebaseOntoLocalOrigin(Rep.Location, this), Rep.Rotation.Quaternion(), ServerFrame))
+	{
+		Super::PostNetReceiveLocationAndRotation();
+	}
+}
+
+void ALabNpc::OnRep_Move()
+{
+	// MoveOrigin은 채널이 열릴 때 Move와 같은 묶음으로 오고, RepNotify는 묶음을 다 받은 뒤에 불린다.
+	const FVector Location(MoveOrigin.X + Move.Offset.X, MoveOrigin.Y + Move.Offset.Y, MoveOrigin.Z);
+	const FRotator Rotation(0.f, Move.Yaw, 0.f);
+	RecordReceive(Move.ServerFrame);
+
+	// 보간을 끄면 받은 위치로 바로 옮긴다(엔진의 AActor::PostNetReceiveLocationAndRotation과 같은 일).
+	if (!IsInterpolating() || AddSnapshot(Location, Rotation.Quaternion(), Move.ServerFrame))
+	{
+		SetActorLocationAndRotation(Location, Rotation);
+	}
+}
+
+bool ALabNpc::AddSnapshot(const FVector& Location, const FQuat& Rotation, uint8 Frame)
+{
 	const UNetDriver* NetDriver = GetWorld()->GetNetDriver();
 	FLabServerClock& Clock = GetServerClock();
 	Clock.NominalPeriod = 1.0 / FMath::Clamp(NetDriver ? NetDriver->GetNetServerMaxTickRate() : 30, 1, 1000);
-	const int64 Frame = Clock.Unwrap(ServerFrame);
-	Clock.AddSample(FPlatformTime::Seconds(), Frame);
+	const int64 UnwrappedFrame = Clock.Unwrap(Frame);
+	Clock.AddSample(FPlatformTime::Seconds(), UnwrappedFrame);
 
-	const FRepMovement& Rep = GetReplicatedMovement();
 	FSnapshot Snapshot;
-	Snapshot.Frame = static_cast<double>(Frame);
-	Snapshot.Location = FRepMovement::RebaseOntoLocalOrigin(Rep.Location, this);
-	Snapshot.Rotation = Rep.Rotation.Quaternion();
+	Snapshot.Frame = static_cast<double>(UnwrappedFrame);
+	Snapshot.Location = Location;
+	Snapshot.Rotation = Rotation;
 
 	// 처음 받은 위치는 그대로 놓는다. 보간할 두 번째 위치가 아직 없다.
 	if (Snapshots.IsEmpty())
 	{
-		Super::PostNetReceiveLocationAndRotation();
 		Snapshots.Add(Snapshot);
-		return;
+		return true;
 	}
 	// 같거나 이전 프레임의 위치는 버린다.
 	if (Snapshot.Frame <= Snapshots.Last().Frame)
 	{
-		return;
+		return false;
 	}
 	if (Snapshots.Num() >= 32)
 	{
 		Snapshots.RemoveAt(0);
 	}
 	Snapshots.Add(Snapshot);
+	return false;
 }
 
 void ALabNpc::TickInterpolation()

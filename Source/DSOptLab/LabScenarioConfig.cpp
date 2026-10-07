@@ -12,6 +12,7 @@ const FLabScenarioConfig& FLabScenarioConfig::Get()
 		FParse::Value(Cmd, TEXT("LabLabel="), C.Label);
 		C.bMotionLog = FParse::Param(Cmd, TEXT("LabMotionLog"));
 		FParse::Value(Cmd, TEXT("LabNpcInterpDelay="), C.NpcInterpDelayMs);
+		C.bNpcCompactMove = FParse::Param(Cmd, TEXT("LabNpcCompactMove"));
 		return C;
 	}();
 	return Config;
@@ -111,6 +112,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (Shared.NpcInterpDelayMs > 0.f)
 	{
 		Parts.Add(FString::Printf(TEXT("NpcInterpDelay=%g"), Shared.NpcInterpDelayMs));
+	}
+	if (Shared.bNpcCompactMove)
+	{
+		Parts.Add(TEXT("NpcCompactMove"));
 	}
 	if (Shared.bMotionLog)
 	{

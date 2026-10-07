@@ -1,11 +1,48 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/NetSerialization.h"
 #include "GameFramework/Actor.h"
 #include "Math/RandomStream.h"
 #include "LabNpc.generated.h"
 
 class UStaticMeshComponent;
+
+/**
+ * NPC 한 번의 이동(포스팅 12, -LabNpcCompactMove). 엔진의 FRepMovement 대신 평면 이동에 필요한 것만 담는다.
+ * FRepMovement는 핸들을 빼고 33 + 3N비트(N은 위치 성분당 비트 수)를 쓰고, 그중 Z, 속도, 위치 머리, 늘 같은 플래그는 NPC에게 필요 없다
+ * (ReplicatedState.cpp:67-152, engine-notes.md 13절). 이 구조체는 X, Y 13비트씩, Yaw 8비트, 서버 프레임 번호 8비트로 42비트다.
+ */
+USTRUCT()
+struct FLabNpcMove
+{
+	GENERATED_BODY()
+
+	/** 기준점(ALabNpc::MoveOrigin)에서 잰 평면 위치(cm). 서버는 반올림하기 전의 값을 넣고, 직렬화할 때 1cm로 반올림한다. */
+	UPROPERTY()
+	FVector2D Offset = FVector2D::ZeroVector;
+
+	/** 엔진의 ByteComponents와 같은 1바이트(약 1.41°)로 보낸다. NPC는 평면에서만 돌아 Pitch와 Roll이 늘 0이다. */
+	UPROPERTY()
+	float Yaw = 0.f;
+
+	/** 이 위치를 정한 서버 프레임 번호의 아래 8비트. 포스팅 11의 보간이 쓴다(ALabNpc::ServerFrame과 같은 값). */
+	UPROPERTY()
+	uint8 ServerFrame = 0;
+
+	bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess);
+};
+
+template<>
+struct TStructOpsTypeTraits<FLabNpcMove> : public TStructOpsTypeTraitsBase2<FLabNpcMove>
+{
+	enum
+	{
+		WithNetSerializer = true,
+		// 프레임마다 한 번 직렬화한 결과를 모든 연결이 함께 쓴다(RepLayout.cpp:5555-5557). FRepMovement와 같다.
+		WithNetSharedSerialization = true,
+	};
+};
 
 /** 서버에서 시작 위치 주변을 배회하는 NPC. 이동만 리플리케이트한다. */
 UCLASS()
@@ -56,9 +93,30 @@ private:
 	UPROPERTY(Replicated)
 	uint8 ServerFrame = 0;
 
+	/**
+	 * 평면 이동(포스팅 12). -LabNpcCompactMove일 때만 ReplicatedMovement와 ServerFrame 대신 보낸다.
+	 * 서버가 프레임 번호를 넣으므로 NPC가 리플리케이트될 때마다 간다.
+	 */
+	UPROPERTY(ReplicatedUsing = OnRep_Move)
+	FLabNpcMove Move;
+
+	/**
+	 * Move.Offset의 기준점. 서버의 Home을 cm 정수로 반올림한 값이라 FVector_NetQuantize로 잃는 것이 없다.
+	 * 채널이 열릴 때 한 번만 보낸다(COND_InitialOnly). Home 자체를 반올림하면 난수 시드(GetTypeHash(Home))가 바뀌어 경로가 기준 구성과 달라진다.
+	 */
+	UPROPERTY(Replicated)
+	FVector_NetQuantize MoveOrigin = FVector_NetQuantize::ZeroVector;
+
+	UFUNCTION()
+	void OnRep_Move();
+
 	void PickTarget();
 	void TickInterpolation();
+	/** 클라이언트 전용. 받은 위치를 보간 버퍼에 넣는다. 처음 받은 위치라서 바로 놓아야 하면 true다. */
+	bool AddSnapshot(const FVector& Location, const FQuat& Rotation, uint8 Frame);
+	void RecordReceive(uint8 Frame);
 	static bool IsInterpolating();
+	static bool IsCompactMove();
 
 	FVector Home = FVector::ZeroVector;
 	FVector Target = FVector::ZeroVector;
