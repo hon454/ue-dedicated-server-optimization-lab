@@ -1,15 +1,15 @@
-﻿# NPC 이동의 NetSerialize 포스팅의 도식(NPC 갱신 한 번에 이동으로 가는 비트를 성분별 막대로)을 SVG로 만든다.
+﻿# NPC 이동의 NetSerialize 포스팅의 도식(NPC 갱신 한 번에 이동으로 가는 비트를 값별 막대로)을 SVG로 만든다.
 #
 # 사용법: powershell -ExecutionPolicy Bypass -File Scripts/make-move-bits.ps1
 # 결과:   Posts/12-npc-move-netserialize/images/move-bits.svg
 #
-# 엔진 소스에서 옮긴 것(engine-notes.md 13절): FRepMovement::NetSerialize는 플래그 4비트, 위치(성분당 비트 수 머리 7비트와 X, Y, Z를 N비트씩),
-#   회전(성분마다 "0이 아님" 1비트와 0이 아닌 성분의 1바이트), 선속도(속도 0이면 머리 7비트와 성분당 1비트), 가속도 있음 1비트를 쓴다
+# 엔진 소스에서 옮긴 것(engine-notes.md 13절): FRepMovement::NetSerialize는 플래그 4비트, 위치(축당 비트 수를 적는 머리 7비트와 X, Y, Z를 N비트씩),
+#   회전(축마다 "0이 아님" 1비트와 0이 아닌 축의 1바이트), 선속도(속도 0이면 머리 7비트와 축마다 1비트), 가속도 있음 1비트를 쓴다
 #   (ReplicatedState.cpp:67-152, QuantizedVectorSerialization.cpp:90-96, UnrealMath.cpp의 TRotator::SerializeCompressed).
 #   프로퍼티 핸들은 8비트다(RepLayout.cpp:1922-1932).
 # 이 테스트베드에서 옮긴 것: NPC는 평면에서 속도 0으로 움직여 Pitch, Roll, 속도가 늘 0이고 Z가 늘 50이다. ServerFrame은 uint8이다(포스팅 11).
 #   FLabNpcMove는 X, Y 13비트씩, Yaw 8비트, 서버 프레임 번호 8비트다(LabNpc.cpp의 FLabNpcMove::NetSerialize).
-# 예시로 그리는 것: 위치 성분의 비트 수 N = 14. act2-interp2-r1에서 받은 갱신의 59.4%가 14였고 평균은 13.81이었다(candidates.md 1.2절).
+# 예시로 그리는 것: 위치의 축마다 쓰는 비트 수 N = 14. act2-interp2-r1에서 받은 갱신의 59.4%가 14였고 평균은 13.81이었다(candidates.md 1.2절).
 
 param(
 	[string]$Out = (Join-Path $PSScriptRoot '..\Posts\12-npc-move-netserialize\images\move-bits.svg')
@@ -20,7 +20,7 @@ $ErrorActionPreference = 'Stop'
 $PerBit = 8
 $X0 = 40
 
-# 성분 하나: 이름, 비트 수, 종류(need = NPC에게 필요, handle = 프로퍼티 핸들, waste = 필요 없음), 막대 아래에 이름을 적을지
+# 값 하나: 이름, 비트 수, 종류(need = NPC에게 필요, handle = 프로퍼티 핸들, waste = 필요 없음), 막대 아래에 이름을 적을지
 function Seg([string]$Name, [int]$Bits, [string]$Kind, [switch]$Below) {
 	return @{ Name = $Name; Bits = $Bits; Kind = $Kind; Below = [bool]$Below }
 }

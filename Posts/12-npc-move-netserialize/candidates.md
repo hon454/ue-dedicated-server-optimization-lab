@@ -11,10 +11,10 @@
 | 순서 | 내용 | 비트 | 소스 |
 | --- | --- | ---: | --- |
 | 1 | 플래그 4개(물리 휴면, 물리, 서버 프레임 있음, 물리 핸들 있음) | 4 | `ReplicatedState.cpp:73-74`. 연결 버전이 `RepMoveServerFrameAndHandle`(25) 이상이면 4비트(`Core/Public/Misc/EngineNetworkCustomVersion.h:40`) |
-| 2 | 위치: 성분당 비트 수 머리 | 7 | `Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:90-92`. `SerializeInt(값, 128)`은 7비트(`Core/Private/Serialization/BitWriter.cpp:142-146`) |
-| 3 | 위치: X, Y, Z를 같은 비트 수 N으로 | 3 × N | `QuantizedVectorSerialization.cpp:94-96`. N은 세 성분 가운데 가장 큰 절댓값(cm 단위로 반올림)에 부호 비트를 더한 길이다(`13-17`) |
-| 4 | 회전: 성분마다 "0이 아님" 1비트, 0이 아니면 1바이트 | 3 + 8 | `Core/Private/Math/UnrealMath.cpp:84-` (`TRotator::SerializeCompressed`). NPC는 평면에서만 돌아서 Pitch, Roll이 0이다(`LabNpc.cpp`의 `Direction.Rotation()`, `Direction.Z`가 0) |
-| 5 | 선속도: 머리 7비트와 성분당 1비트 | 7 + 3 | NPC의 속도는 늘 0이다([포스팅 11 관찰 자료](../11-npc-interpolation/candidates.md) 1절). 0은 성분당 1비트(`QuantizedVectorSerialization.cpp:13-17`) |
+| 2 | 위치: 축당 비트 수를 적는 머리 | 7 | `Net/Core/Private/Net/Core/Serialization/QuantizedVectorSerialization.cpp:90-92`. `SerializeInt(값, 128)`은 7비트(`Core/Private/Serialization/BitWriter.cpp:142-146`) |
+| 3 | 위치: X, Y, Z를 같은 비트 수 N으로 | 3 × N | `QuantizedVectorSerialization.cpp:94-96`. N은 세 축 가운데 가장 큰 절댓값(cm 단위로 반올림)에 부호 비트를 더한 길이다(`13-17`) |
+| 4 | 회전: 축마다 "0이 아님" 1비트, 0이 아니면 1바이트 | 3 + 8 | `Core/Private/Math/UnrealMath.cpp:84-` (`TRotator::SerializeCompressed`). NPC는 평면에서만 돌아서 Pitch, Roll이 0이다(`LabNpc.cpp`의 `Direction.Rotation()`, `Direction.Z`가 0) |
+| 5 | 선속도: 머리 7비트와 축마다 1비트 | 7 + 3 | NPC의 속도는 늘 0이다([포스팅 11 관찰 자료](../11-npc-interpolation/candidates.md) 1절). 0은 축마다 1비트(`QuantizedVectorSerialization.cpp:13-17`) |
 | 6 | 가속도 있음 1비트 | 1 | `ReplicatedState.cpp:133-137`(`RepMoveOptionalAcceleration`, 버전 35) |
 
 - 합계는 33 + 3N비트이고, 프로퍼티 핸들 8비트(`RepLayout.cpp:1922-1932`의 `SerializeIntPacked`)를 더하면 41 + 3N비트다.
@@ -42,7 +42,7 @@
 
 NPC 갱신 한 번은 117.20비트이고(`act2-interp2-r1`, Networking Insights), 그중 이동과 프레임 번호가 약 98.4비트(82.43 + 16)다. N = 14인 갱신의 83비트를 나누면 다음과 같다.
 
-| 성분 | 비트 | NPC에게 |
+| 값 | 비트 | NPC에게 |
 | --- | ---: | --- |
 | X, Y | 28 | 필요 |
 | Yaw | 8 | 필요(클라이언트가 보간한다) |
@@ -52,11 +52,11 @@ NPC 갱신 한 번은 117.20비트이고(`act2-interp2-r1`, Networking Insights)
 | 위치 머리 | 7 | 범위를 알면 필요 없음 |
 | 플래그, 가속도 있음, Pitch와 Roll 있음 | 7 | 늘 같은 값이라 필요 없음 |
 
-필요 없는 성분이 38비트다. `ServerFrame`의 핸들 8비트도 이동과 한 구조체에 넣으면 없어진다.
+필요 없는 값이 38비트다. `ServerFrame`의 핸들 8비트도 이동과 한 구조체에 넣으면 없어진다.
 
 ## 2. 후보
 
-모두 같은 틀이다. `ALabNpc`가 `ReplicatedMovement`를 끄고(`SetReplicatingMovement(false)`), NPC 이동만 담은 구조체 `FLabNpcMove`를 `NetSerialize`로 보낸다. 다른 점은 위치의 범위와 담는 성분이다.
+모두 같은 틀이다. `ALabNpc`가 `ReplicatedMovement`를 끄고(`SetReplicatingMovement(false)`), NPC 이동만 담은 구조체 `FLabNpcMove`를 `NetSerialize`로 보낸다. 다른 점은 위치의 범위와 담는 값이다.
 
 | 후보 | 위치 | 회전 | 갱신 한 번(핸들 포함) | 지금 대비 | 연결당 송신 대역폭 변화(예상) |
 | --- | --- | --- | ---: | ---: | ---: |
@@ -73,7 +73,7 @@ NPC 갱신 한 번은 117.20비트이고(`act2-interp2-r1`, Networking Insights)
 ### A. 맵 전체 범위의 고정 길이
 
 - 구현: X, Y를 (값 + 98,000)으로 바꿔 18비트씩 쓴다. 클라이언트는 같은 식으로 되돌린다. Z는 보내지 않고 클라이언트가 스폰 때 받은 높이를 쓴다.
-- 이 테스트베드에서는 X, Y가 엔진보다 비싸다(18비트 대 평균 13.81비트). 엔진은 크기에 맞춰 길이를 줄이고, 고정 길이는 범위 끝에 맞춰야 해서다. 줄어드는 것은 필요 없는 성분을 뺀 몫뿐이다.
+- 이 테스트베드에서는 X, Y가 엔진보다 비싸다(18비트 대 평균 13.81비트). 엔진은 크기에 맞춰 길이를 줄이고, 고정 길이는 범위 끝에 맞춰야 해서다. 줄어드는 것은 필요 없는 값을 뺀 몫뿐이다.
 - 맵 가장자리의 NPC라면 엔진의 N이 18이라(위치 머리 7 + 54) A가 훨씬 유리하다. 이 테스트베드는 엔진에 유리한 자리다.
 
 ### B. 집 기준 상대 좌표
@@ -122,7 +122,7 @@ NPC 갱신 한 번은 117.20비트이고(`act2-interp2-r1`, Networking Insights)
 
 화면이나 실행에서 읽은 사실이 아니라 판단이다.
 
-- **B를 1cm 단위로, 서버 프레임 번호를 구조체에 넣어 고르기를 추천한다.** 줄어드는 몫이 크고(예상 -20.4%) 정밀도가 엔진과 같아서, 품질 지표가 그대로인 것으로 "같은 화면을 더 적은 비트로"를 보일 수 있다. 줄어드는 비트의 대부분은 필요 없는 성분을 뺀 몫이고, 범위를 아는 몫은 이 테스트베드에서 축당 약 1비트다. 본문에서는 맵 가장자리라면 범위를 아는 몫이 축당 약 5비트로 커진다는 것을 계산으로 보일 수 있다.
+- **B를 1cm 단위로, 서버 프레임 번호를 구조체에 넣어 고르기를 추천한다.** 줄어드는 몫이 크고(예상 -20.4%) 정밀도가 엔진과 같아서, 품질 지표가 그대로인 것으로 "같은 화면을 더 적은 비트로"를 보일 수 있다. 줄어드는 비트의 대부분은 필요 없는 값을 뺀 몫이고, 범위를 아는 몫은 이 테스트베드에서 축당 약 1비트다. 본문에서는 맵 가장자리라면 범위를 아는 몫이 축당 약 5비트로 커진다는 것을 계산으로 보일 수 있다.
 - **A를 고르면** `Home`을 보내지 않아 구조가 단순하다. 대신 이 테스트베드에서 X, Y가 엔진보다 비싸져서, 고정 길이가 늘 이득이 아니라는 결과가 섞인다.
 - **C를 고르면** 가장 많이 준다. 대신 회전을 받지 않고 계산하는 동작의 변경이 섞이고, 실제 게임의 NPC에 그대로 쓰기 어렵다.
 - **4cm 단위를 고르면** 정밀도를 낮춘 대가를 품질 지표로 보이는 글이 된다. 대신 더 주는 것은 4비트(약 1.7%)이고, 품질 변화가 변동 폭 안일 수 있다.
