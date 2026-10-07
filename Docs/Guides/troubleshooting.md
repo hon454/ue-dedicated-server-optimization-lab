@@ -18,6 +18,7 @@
 | 서버가 `Run failed: connection count changed after start`로 끝난다 | 측정 중에 클라이언트 창이 닫힌 것이다(`smoke6-r1`은 Alt-F4). 수치를 쓰지 않고 새 라벨로 다시 실행한다 | [Worklog/00-testbed.md](../Worklog/00-testbed.md) "실행 인자 `-DisablePython`" |
 | 같은 구성인데 서버가 몇 배 느리다(`frames`가 100 안팎) | 서버 마스크가 252(논리 프로세서 2\~7)인지 확인한다. 1번 프로세서는 DPC에 CPU를 빼앗긴다 | engine-notes.md 6절, [ADR-0009](../Decisions/0009-server-cores-without-dpc-load.md) |
 | 측정 수치가 같은 구성의 다른 실행보다 나쁘다 | 측정 구간에 다른 체크아웃의 빌드나 실행이 겹쳤는지 시각으로 확인한다. 겹쳤으면 수치를 쓰지 않는다 | Worklog/00-testbed.md "수동 조작에 달리기"(`vis-e-r2`) |
+| 같은 구성의 묶음이 전날보다 약 1.5배 느리다. Consider List와 타이머 호출 횟수는 같고, 모든 타이머가 비슷한 비율로 느리다 | 측정하는 동안 코어 하나를 계속 쓰는 프로세스가 있는지 확인한다(다른 세션이 남긴 `grep.exe` 등). 있었으면 그 묶음의 수치를 쓰지 않고, 프로세스를 끝낸 뒤 새 라벨로 다시 잰다 | `act2-interp-base1-r3`, `act2-fastarr-base1-r3`의 Insights 내보내기, [Worklog/11-npc-interpolation.md](../Worklog/11-npc-interpolation.md) "태스크 28" |
 | 실행 로그에 `LogPython: Error`가 나온다 | 실행 인자에 `-DisablePython`이 있는지 확인한다. `run-scenario.ps1`과 `run-manual.ps1`에는 들어 있다 | engine-notes.md 4절 |
 | PowerShell 스크립트의 한글이 깨지거나 구문 오류가 난다 | 스크립트를 UTF-8 BOM으로 저장한다 | engine-notes.md 11절 |
 | 한글 문서를 PowerShell로 일괄 치환했더니 치환한 자리의 링크와 조사가 통째로 사라진다 | 큰따옴표 문자열에서 변수 바로 뒤에 한글이 오면 한글까지 변수 이름으로 읽혀 빈 문자열이 된다(`"$L1에서"`). `"${L1}에서"`로 쓰거나 작은따옴표 문자열을 이어 붙인다. 치환 뒤에는 바뀐 줄을 검색으로 확인하고, 잘못됐으면 `git checkout -- <파일>`로 되돌려 다시 한다 | 2026-10-02 태스크 14.2(`50209df`를 만들 때 한 번 되돌렸다) |
