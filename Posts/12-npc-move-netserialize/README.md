@@ -54,7 +54,7 @@ flowchart TB
     end
     subgraph Client["연결마다"]
         direction LR
-        D["서버: 그 비트를<br/>Bunch에 복사"] --> E["클라이언트: 집 + 좌표로<br/>위치를 되살림"]
+        D["서버: 그 비트를<br/>Bunch에 복사"] --> E["클라이언트: 집 + 좌표로<br/>위치를 복원"]
         E ~~~ Pad["여백여백여백"]
     end
     Server --> Client

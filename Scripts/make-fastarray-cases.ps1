@@ -10,7 +10,7 @@
 #   (1524, AddDefaulted_GetRef) 지운 칸을 마지막에 RemoveAtSwap으로 지운다(1186-1197). 칸의 콜백은 FFastArraySerializerItem의 것이고,
 #   PostReplicatedReceive는 배열 구조체에 정의돼 있을 때 갱신마다 한 번 불린다(699-707).
 # 이 테스트베드에서 옮긴 것: 칸 하나는 ItemId와 Count 두 int32(64비트)다.
-# 예시로 그리는 것: 칸 다섯 개와 그 번호. 실제 인벤토리는 200칸이다. 프로퍼티 헤더 같은 덧붙는 비트는 그리지 않는다.
+# 예시로 그리는 것: 칸 다섯 개와 그 번호. 실제 인벤토리는 200칸이다. 프로퍼티 헤더 같은 오버헤드는 그리지 않는다.
 
 param(
 	[string]$Out = (Join-Path $PSScriptRoot '..\Posts\10-inventory-fastarray\images\fastarray-cases.svg')

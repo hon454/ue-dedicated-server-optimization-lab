@@ -45,7 +45,7 @@
 | 배열 구조체에 `PostReplicatedReceive`가 있으면 갱신 끝에 한 번 | `CallPostReplicatedReceiveOrNot`가 정의돼 있을 때만 부른다(`FastArraySerializer.h:699-707`). 이 테스트베드의 구조체는 정의하지 않았다 | 엔진 소스 |
 | 클라이언트는 지운 자리에 맨 뒤 칸을 옮겨 채운다 | 새 칸은 맨 뒤에 더하고(`FastArraySerializer.h:1524`, `AddDefaulted_GetRef`), 지운 칸은 마지막에 `RemoveAtSwap`으로 지운다(`1186-1197`) | 엔진 소스, engine-notes.md 10절 |
 | 일반 배열의 비교는 객체마다 프레임에 한 번, FastArray는 연결마다 확인한다 | 비교: `RepLayout.cpp:1275-1331`. FastArray 같은 사용자 정의 델타 프로퍼티는 `IsLifetime`을 받지 않아 비교에서 빠지고(`RepLayout.cpp:5848-5855`, `6318-6321`, `1424-1431`), 연결마다 `ReplicateCustomDeltaProperties`가 돈다(`Engine/Source/Runtime/Engine/Private/DataReplication.cpp:1646, 1719`) | 엔진 소스, 관찰 자료 3.2절 |
-| 예상: 앞 칸 지우기 약 340비트, 256비트에 덧붙는 비트 | 헤더 128 + 지운 번호 32 + 새 칸(번호 32 + `ItemId` 32 + `Count` 32) = 256. 덧붙는 비트는 일반 배열의 채집 118비트에서 `Count` 32비트를 뺀 86비트를 바탕으로 약 80비트로 짐작했다 | 관찰 자료 5.1절 |
+| 예상: 앞 칸 지우기 약 340비트, 256비트에 오버헤드 | 헤더 128 + 지운 번호 32 + 새 칸(번호 32 + `ItemId` 32 + `Count` 32) = 256. 오버헤드는 일반 배열의 채집 118비트에서 `Count` 32비트를 뺀 86비트를 바탕으로 약 80비트로 짐작했다 | 관찰 자료 5.1절 |
 | 예상: 인벤토리 약 15바이트/초, 연결당 송신 대역폭 약 4.5% 감소 | (15 × 340 + 7 × 300) ÷ 8 ÷ 59.886 = 15.0. CSV 12,421 − 15 × (18,190 − 340) ÷ 8 ÷ 60 = 11,863, -4.5%(포스팅 9의 `act2-invown1`에서 계산) | 관찰 자료 5.1절 |
 | 예상: 인벤토리의 CPU는 조금 준다 | 비교 0.024ms가 빠지고 연결마다의 확인과 번호 표가 생긴다. 합은 프레임당 0.01\~0.02ms 감소로 짐작했다 | 관찰 자료 5.2절 |
 | 적용의 코드 | `Source/DSOptLab/LabInventoryFastArrayComponent.h`, `LabInventoryFastArrayComponent.cpp`(커밋 `243be3d`). 본문은 줄여 옮겼다 | 프로젝트 소스 |
@@ -81,7 +81,7 @@
 - 요약의 두 GIF는 인벤토리 패널을 2번 클라이언트(3인칭 이동)에 띄운 시각 자료 전용 실행 `visual18`(적용 전 구성)과 `visual19`(적용 후 구성)에서 찍었다. 측정 구간에 `Scripts/capture-video.ps1 -Region "1920,0,960,540" -RaiseSlots "2" -NoMouse -AllowMeasuring -Seconds 10 -Out <이름>.mp4`로 10초씩 MP4로 찍고, ffmpeg로 패널(960×540 화면의 610×150 영역)만 잘라 GIF로 바꿨다(폭 915px, 8fps, 64색). 변환 명령은 [STATUS.md](../../Docs/STATUS.md) "명령"의 인벤토리 패널 줄에 있다. 두 실행의 수치는 쓰지 않는다.
 - 처음 찍은 `visual16`, `visual17`의 48색 GIF(폭 960px)에서는 적용 후의 한 칸 번쩍임이 팔레트에 들지 못해 사라졌다. 그래서 MP4로 다시 찍고 팔레트를 만들 때만 흰 사각형을 덧그려 흰색을 넣었다(관찰 자료 14절).
 - 패널은 `LabHUD.cpp`의 `DrawInventoryPanel`이 그린다. 칸 색은 아이템 번호, 클라이언트가 지난 틱에 본 값과 같은 자리의 값이 다르면 0.4초 흰색, 받은 칸이 없으면 회색이다. 자리는 클라이언트 배열의 순서라서 FastArray에서는 서버의 순서와 다르다.
-- 원리의 도식은 `Scripts/make-fastarray-cases.ps1`이 만든 [images/fastarray-cases.svg](images/fastarray-cases.svg)다. 헤더, 번호, 칸의 비트와 클라이언트의 처리 순서는 엔진 소스에서 옮겼고, 칸 다섯 개와 그 번호는 예시다. 프로퍼티 헤더 같은 덧붙는 비트는 그리지 않았다.
+- 원리의 도식은 `Scripts/make-fastarray-cases.ps1`이 만든 [images/fastarray-cases.svg](images/fastarray-cases.svg)다. 헤더, 번호, 칸의 비트와 클라이언트의 처리 순서는 엔진 소스에서 옮겼고, 칸 다섯 개와 그 번호는 예시다. 프로퍼티 헤더 같은 오버헤드는 그리지 않았다.
 - 결과의 차트 값은 2절 "차트의 값" 줄이다.
 
 ### Networking Insights 캡처 (`Connection 0`, `Outgoing`)

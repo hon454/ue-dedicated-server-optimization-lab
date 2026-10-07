@@ -79,7 +79,7 @@
 backlog.md "우선순위 순" 5번의 제목이다.
 
 - **원리**: 칸마다 서버가 정한 번호(`ReplicationID`)와 바뀐 횟수(`ReplicationKey`)를 둔다(`Net/Core/Classes/Net/Serialization/FastArraySerializer.h:298-332`). 연결마다 지난번에 보낸 번호와 키의 표를 기억하고, 번호로 칸을 찾아 키가 달라진 칸과 없어진 번호만 보낸다(`FastArraySerializer.h:896-975`, `BuildChangedAndDeletedBuffers`). 자리가 당겨져도 번호와 키는 그대로라 보내지 않는다(같은 함수의 "Stayed the same, it might have moved but we dont care"). 배열 전체의 키(`ArrayReplicationKey`)가 그대로면 칸을 보지 않고 끝낸다(`819-853`, `ConditionalCreateNewDeltaState`).
-- **보내는 것**: 머리(배열 키, 기준 키, 지운 수, 바뀐 수. `int32` 넷, `FastArraySerializer.h:980-1007`, `WriteDeltaHeader`), 지운 번호, 바뀐 칸의 번호와 칸 전체다. 칸 안의 바뀐 프로퍼티만 보내는 기능은 따로 켜야 한다(`SetDeltaSerializationEnabled`, `549-566`. 생성자의 기본값은 끔, `Net/Core/Private/Net/Serialization/FastArraySerializer.cpp:33`). 칸이 `int32` 둘이라 여기서는 상관없다. (정정 2026-10-06: 기본으로 켜져 있다. 33행은 초기화 목록이고 생성자 본문이 `SetDeltaSerializationEnabled(true)`를 부른다. 바뀐 칸은 바뀐 프로퍼티만 보낸다. [포스팅 10 관찰 자료](../10-inventory-fastarray/candidates.md) 3.1절, engine-notes.md 10절)
+- **보내는 것**: 헤더(배열 키, 기준 키, 지운 수, 바뀐 수. `int32` 넷, `FastArraySerializer.h:980-1007`, `WriteDeltaHeader`), 지운 번호, 바뀐 칸의 번호와 칸 전체다. 칸 안의 바뀐 프로퍼티만 보내는 기능은 따로 켜야 한다(`SetDeltaSerializationEnabled`, `549-566`. 생성자의 기본값은 끔, `Net/Core/Private/Net/Serialization/FastArraySerializer.cpp:33`). 칸이 `int32` 둘이라 여기서는 상관없다. (정정 2026-10-06: 기본으로 켜져 있다. 33행은 초기화 목록이고 생성자 본문이 `SetDeltaSerializationEnabled(true)`를 부른다. 바뀐 칸은 바뀐 프로퍼티만 보낸다. [포스팅 10 관찰 자료](../10-inventory-fastarray/candidates.md) 3.1절, engine-notes.md 10절)
 - **구현**: `FLabItem`이 `FFastArraySerializerItem`을 상속하고, 배열을 감싼 `FFastArraySerializer` 하위 구조체에 `NetDeltaSerialize`와 `TStructOpsTypeTraits`의 `WithNetDeltaSerializer`를 둔다. `Fill`, `Churn`, `AddHarvest`에서 `MarkItemDirty`나 `MarkArrayDirty`를 부른다(`FastArraySerializer.h:441-473`). 끈 구성이 지금 코드와 같도록 FastArray 쪽을 별도 컴포넌트 클래스로 두고, 서버가 인자(예: `run-scenario.ps1 -InventoryFastArray`, 서버 `-LabInventoryFastArray`)로 붙일 클래스를 고르게 한다. 수십\~100줄이다.
 - **대가**: 클라이언트는 지운 칸을 `RemoveAtSwap`으로 지운다(`FastArraySerializer.h:1193`). 클라이언트의 칸 순서가 서버와 달라진다. 화면 글자의 "first id"는 서버의 첫 칸이 아니게 되므로, 바뀐 것을 화면에서 확인할 다른 값(예: 가장 최근에 더한 칸의 `ItemId`)으로 바꿔야 한다. 바뀔 때 연결마다 200칸의 번호 표를 새로 만든다(`BuildChangedAndDeletedBuffers`의 `NewIDToKeyMap`).
 - **바꾸지 않는 것**: 누가 받는지(여덟 연결 모두), 바꾸는 방식(맨 앞 칸 지우기).
@@ -106,7 +106,7 @@ backlog.md "우선순위 순" 5번의 제목이다.
 | A(FastArray) | 약 80 | 약 11,430(-28.1%) | 비교 0.024ms가 빠지고 연결마다의 번호 표 비용이 생긴다. 재 봐야 안다 |
 | B(소유자에게만) | 약 570 | 약 11,920(-25.0%) | 비교는 그대로, 연결 7개의 직렬화가 빠진다 |
 
-- A: 한 번 바뀔 때 머리 128비트 + 지운 번호 32비트 + 바뀐 칸(번호 32비트 + 칸 약 64\~90비트)으로 약 300비트로 둔다. 127번 × 300 ÷ 8 ÷ 59.973 = 약 79바이트/초. 연결당 송신량은 (7,626,709 − 2,182,034 + 127 × 300) ÷ 8 ÷ 59.973 = 약 11,428. 프로퍼티 머리 같은 덧붙는 비트는 재지 않았다.
+- A: 한 번 바뀔 때 헤더 128비트 + 지운 번호 32비트 + 바뀐 칸(번호 32비트 + 칸 약 64\~90비트)으로 약 300비트로 둔다. 127번 × 300 ÷ 8 ÷ 59.973 = 약 79바이트/초. 연결당 송신량은 (7,626,709 − 2,182,034 + 127 × 300) ÷ 8 ÷ 59.973 = 약 11,428. 프로퍼티 헤더 같은 오버헤드는 재지 않았다.
 - B: 120번 가운데 자기 인벤토리는 15번이다. 2,182,034 × 15 ÷ 120 ÷ 8 ÷ 59.973 = 약 568바이트/초. 연결당 송신량은 (7,626,709 − 2,182,034 × 105 ÷ 120) ÷ 8 ÷ 59.973 = 약 11,917. 채집 7번의 몫은 무시했다.
 - 서버 프레임 시간: 인벤토리의 CPU 몫이 프레임의 1.6%라, 어느 쪽이든 `work_avg_ms`의 변화가 `act2-nodeuf1`의 변동 폭 0.223ms보다 작을 수 있다(계산이 아니라 짐작이다).
 
@@ -136,7 +136,7 @@ B(포스팅 9)는 한 줄로 연결당 송신량을 약 25% 줄이고, "다른 �
 
 ## 7. 확인하지 않은 것
 
-- FastArray 한 번의 실제 비트 수(5절의 300비트는 머리와 칸의 합으로 둔 값이다).
+- FastArray 한 번의 실제 비트 수(5절의 300비트는 헤더와 칸의 합으로 둔 값이다).
 - FastArray가 연결마다 번호 표를 만드는 CPU 비용.
 - 다른 연결(`Connection 1`\~`7`)의 인벤토리 몫. 모든 연결이 여덟 인벤토리를 받으므로 같다고 보았다.
 - 기본 트레이스(`act2-nodeuf1-r3`)에서 인벤토리의 CPU. 기본 트레이스에는 `LabInventoryComponent` 타이머가 없다(`LabCharacter` 0.548ms에 들어 있다).
