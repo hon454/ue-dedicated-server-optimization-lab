@@ -17,7 +17,7 @@
 | `act2-net-loss1` | 손실만 | `-NetEmulationProfile LabLossOnly` | 손실 5%, 지연 0 | `r2` |
 
 - `Average`와 `Bad`는 엔진 `BaseEngine.ini:3541-3556`의 프로필이고, `LabLagOnly`와 `LabLossOnly`는 `Config/DefaultEngine.ini`에 둔 프로젝트 프로필이다. 지연은 `PktLagMin`\~`PktLagMax`(송신)와 `PktIncomingLagMin`\~`PktIncomingLagMax`(수신) 사이의 난수(ms), 손실은 `PktLoss`와 `PktIncomingLoss`(%)다.
-- 15회 모두 서버 로그의 `lab_config`, `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`이 같았고 `lab_npc_move_clamped`가 없었다. 준비 구간 마지막 세 줄의 `open_actor_channels_per_conn`은 76\~79였다. 서버가 모션 기록에 쓴 시간은 프레임당 0.0689\~0.0761ms다.
+- 15회 모두 서버 로그의 `lab_config`, `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`이 같았고 `lab_npc_move_clamped`가 없었다. 워밍업 구간 마지막 세 줄의 `open_actor_channels_per_conn`은 76\~79였다. 서버가 모션 기록에 쓴 시간은 프레임당 0.0689\~0.0761ms다.
 - 품질 지표는 `Scripts/analyze-motion.ps1 -Label <라벨>-rN`이 계산했다. 표시 지연의 탐색 범위는 이 글에서 600ms로 넓혔다(measurement.md). Timing 값은 `Scripts/export-insights.ps1`로 내보냈다. 프레임 수는 `WorldTick` Count가 CSV `frames`와 같았다.
 
 ## 2. 본문의 수치와 출처

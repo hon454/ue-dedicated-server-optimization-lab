@@ -50,7 +50,7 @@
 - 빌드: `powershell -ExecutionPolicy Bypass -File Scripts/build.ps1` (`UnrealEditor`가 떠 있으면 스크립트가 빌드를 거부한다. 에디터나 다른 체크아웃의 실행이 끝난 뒤에 한다)
 - 시나리오 실행(확정 규모, `-Label`과 `-Runs` 없이): `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Clients 8 -Nodes 5000 -Npcs 300 -Warmup 30 -Measure 60`. 측정할 때는 `-Label <새 라벨> -Runs 3`을 더한다. 서버 마스크는 스크립트 기본값 252(논리 프로세서 2\~7)이고 트레이스는 켜진다. `calib-f-r1`이 이 조건의 실행이다.
 - 작은 규모 확인용: `powershell -ExecutionPolicy Bypass -File Scripts/run-scenario.ps1 -Label <새 라벨> -Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`
-- 확정 규모 측정은 시작하기 전에 잴 구성, 라벨, 걸리는 시간, 화면 조건을 알리고 답을 받는다. 실행마다 서버 로그(`lab_config`, `lab_buildings`, `lab_npcs_near_players`, `lab_nodes_moved_from_harvest_spot`, 준비 구간의 `open_actor_channels_per_conn`)와 자동 스크린샷을 확인한다. `-NpcCompactMove` 실행은 서버 로그에 `lab_npc_move_clamped`(NPC의 집 기준 좌표를 잘라 보낸 기록)가 없어야 한다.
+- 확정 규모 측정은 시작하기 전에 잴 구성, 라벨, 걸리는 시간, 화면 조건을 알리고 답을 받는다. 실행마다 서버 로그(`lab_config`, `lab_buildings`, `lab_npcs_near_players`, `lab_nodes_moved_from_harvest_spot`, 워밍업 구간의 `open_actor_channels_per_conn`)와 자동 스크린샷을 확인한다. `-NpcCompactMove` 실행은 서버 로그에 `lab_npc_move_clamped`(NPC의 집 기준 좌표를 잘라 보낸 기록)가 없어야 한다.
 - 측정 중에는 클라이언트 창에 키 입력을 하지 않고, Insights 분석이나 빌드 같은 무거운 작업을 하지 않는다. 에이전트도 문서 편집을 포함해 다른 작업을 하지 않는다(`calib-g-r1` 실행 중의 문서 편집, [Worklog/00-testbed.md](Worklog/00-testbed.md) "태스크 9.1\~9.3"). 서버만 논리 프로세서 2\~7에 고정하므로 다른 프로그램은 그 코어를 쓸 수 있다. 에디터가 열려 있으면 스크립트가 실행을 거부한다.
 - 구성 사이의 비교는 같은 화면 조건에서 연달아 잰 묶음끼리 한다. 코드가 같은 `dormancy2`(원격 데스크톱 화면)와 `dormancy6`(본체 화면)의 `work_avg_ms` 중앙값이 1.066 달랐다([Worklog/04-update-frequency.md](Worklog/04-update-frequency.md) "태스크 11.1\~11.4"). 화면 조건이 같아도 몇 시간 떨어진 묶음은 비교하지 않는다. 소스가 같은 `toggle1`과 두 시간 뒤의 `abcheck-old2`의 중앙값이 0.628 달랐다(13.581, 12.953). 지난 구성과 비교해야 하면 그 소스를 다시 빌드해 연달아 잰다(`git restore --source=<커밋> --worktree Source/`, 빌드, 측정, `git restore Source/`, 빌드. 그동안 다른 세션은 커밋하지 않는다).
 - Insights: `powershell -ExecutionPolicy Bypass -File Scripts/open-insights.ps1 -Label <라벨>-rN`. 읽는 순서는 [insights-reading.md](Guides/insights-reading.md)에 있다. 측정 구간의 Timing 값(서버 프레임 시간 평균과 P99, `GameNetDriver` 아래 클래스별 프레임당 값)은 창 없이 `powershell -ExecutionPolicy Bypass -File Scripts/export-insights.ps1 -Label <라벨>-rN`으로 얻는다(결과는 `Saved/InsightsExport/<라벨>-rN/summary.txt`).
@@ -79,7 +79,7 @@
 | 클라이언트 수 | 8 | 8 | 측정값: `calib-a-r1` 실행 중 UE 프로세스 9개의 메모리 합계 27.5GB, 사용 가능 메모리 최저 14.9GB로 줄일 필요가 없었다(태스크 8.2) |
 | 자원 노드 수 | 5,000 | 5,000(와 검증용 1개, 합 5,001) | 측정값: 포화가 없는 실행에서 `over_budget_frames`가 `frames`와 같아(`calib-b-r1` 100/100, `calib-f-r1` 356/356) 늘리지 않았다(태스크 8.4) |
 | AI NPC 수 | 300 | 300 | 출발값 그대로. 네 조건을 모두 만족해 바꾸지 않았다(태스크 8.6) |
-| 준비 구간 | 30초 | 30초 | 측정값: `calib-f-r1`에서 측정 시작 22초 전에 `open_actor_channels_per_conn`이 5,314에 도달해 더 늘지 않았다(태스크 8.3) |
+| 워밍업 구간 | 30초 | 30초 | 측정값: `calib-f-r1`에서 측정 시작 22초 전에 `open_actor_channels_per_conn`이 5,314에 도달해 더 늘지 않았다(태스크 8.3) |
 | 측정 구간 | 60초 | 60초 | 출발값 그대로. Insights에서 두 북마크 사이가 60.018초(`calib-f-r1`) |
 | 서버 코어 | 논리 프로세서 0\~7 | 논리 프로세서 2\~7(마스크 252) | [ADR-0009](Decisions/0009-server-cores-without-dpc-load.md). 측정값: `diag-d-r1`, `calib-f-r1` |
 | 리플리케이션 시간 타이머 | 미정 | `GameNetDriver` | 측정값: `calib-f-r1` 측정 구간에서 Incl 57.45초, `WorldTick`의 96.01%. 프레임당 161.4ms가 CSV `netflush_avg_ms` 161.744와 0.2% 차이(태스크 8.5, 사용자 확정) |

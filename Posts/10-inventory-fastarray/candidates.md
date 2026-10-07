@@ -188,7 +188,7 @@
 | `act2-fastarr-base-split1` | (CPU 나누기) | `-StatNamedEvents` | 한 번 |
 | `act2-fastarr-split1` | (CPU 나누기) | `-InventoryFastArray -StatNamedEvents` | 한 번 |
 
-- 서버 로그는 여덟 실행이 같았다: `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`, 준비 구간 끝의 `open_actor_channels_per_conn` 77\~79, `lab_consider_list avg_per_frame` 412.5\~415.9, 경고 없음.
+- 서버 로그는 여덟 실행이 같았다: `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`, 워밍업 구간 끝의 `open_actor_channels_per_conn` 77\~79, `lab_consider_list avg_per_frame` 412.5\~415.9, 경고 없음.
 - 자동 스크린샷(`act2-fastarr1-r2-tpp-01`): "own items=200 newest id=867 | other items=0".
 
 ## 11. CSV

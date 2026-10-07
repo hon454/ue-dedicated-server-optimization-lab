@@ -154,7 +154,7 @@ B(포스팅 9)는 한 줄로 연결당 송신량을 약 25% 줄이고, "다른 �
 | `act2-invown-base1` | 적용 전 | 없음 | `r2` |
 | `act2-invown1` | 적용 후 | `-InventoryOwnerOnly` | `r2` |
 
-- 서버 로그는 여섯 실행이 같았다: `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`, 준비 구간 끝의 `open_actor_channels_per_conn` 77\~79, `lab_consider_list avg_per_frame` 411.9\~415.5.
+- 서버 로그는 여섯 실행이 같았다: `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`, 워밍업 구간 끝의 `open_actor_channels_per_conn` 77\~79, `lab_consider_list avg_per_frame` 411.9\~415.5.
 
 ## 9. CSV
 

@@ -181,7 +181,7 @@ function Start-LabClient([int]$Index, [string]$RunLabel) {
     if ($Index -eq $InventoryPanelSlot) {
         $ClientArgs += "-LabInventoryPanel"
     }
-    # 클라이언트는 측정 구간이 언제 끝나는지 모르므로 시작 신호 뒤 준비 구간 + 측정 구간 + 2초를 기록하고 파일을 쓴다.
+    # 클라이언트는 측정 구간이 언제 끝나는지 모르므로 시작 신호 뒤 워밍업 구간 + 측정 구간 + 2초를 기록하고 파일을 쓴다.
     if ($MotionLog) {
         $ClientArgs += @("-LabMotionLog", "-LabMotionLogSeconds=$($Warmup + $Measure + 2)")
     }

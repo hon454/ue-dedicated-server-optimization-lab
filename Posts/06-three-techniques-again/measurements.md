@@ -9,7 +9,7 @@
 - 2막의 요소: `-PlayerSpacing 3 -NpcsNearPlayers 50 -StateInterval 5 -InventoryItems 200 -InventoryChurn 4 -Buildings 500 -BuildInterval 1`. 구성 인자는 기준선 `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100`, Relevancy `-NoNodeDormancy -NpcUpdateFrequency 100`, Dormancy `-NpcUpdateFrequency 100`, Net Update Frequency는 없음이다. 서버 로그의 `lab_config`가 실행마다 이 인자와 같았다.
 - 서버와 클라이언트를 Job 객체로 코어에 묶은 스크립트로 쟀다([ADR-0016](../../Docs/Decisions/0016-affinity-through-job-objects.md), 커밋 `35c589b`). 12회 모두 종료 코드 0이고 선호도 재설정이 한 번도 없었다. [포스팅 5의 기준선](../05-expanded-testbed/measurements.md) `act2-baseline1`은 Job 없이 잰 묶음이라 이 표와 비교하지 않는다.
 - Job 없이 같은 날 시작한 기준선 `act2-baseline2`, `3`, `5`, `7`, `8`, `9`, `10`의 `r1`은 측정 중 클라이언트 선호도 재설정으로 실패해 쓰지 않는다(`4`, `6`은 시작하지 않았다).
-- 채널 수는 측정 시작 전에 안정됐다: 기준선 5,871, Relevancy 694\~697, Dormancy와 Net Update Frequency 77(서버 로그의 준비 구간 마지막 세 줄).
+- 채널 수는 측정 시작 전에 안정됐다: 기준선 5,871, Relevancy 694\~697, Dormancy와 Net Update Frequency 77(서버 로그의 워밍업 구간 마지막 세 줄).
 
 ## 2. 본문의 수치와 출처
 

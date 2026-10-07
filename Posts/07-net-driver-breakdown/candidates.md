@@ -24,7 +24,7 @@
 | **중앙값** | 1787 | 17.703 | 26.013 | 1 | 13.061 | 16614 | 77 | 0.000 |
 | **변동 폭** | 1 | 0.229 | 0.274 | 0 | 0.170 | 44 | 0 | 0.000 |
 
-- 채널 수는 측정 시작 전에 77로 안정됐다(서버 로그의 준비 구간 마지막 세 줄). `act2-split-base1-r1`만 마지막 줄(측정 시작 3초 전)이 79였고 CSV의 측정 구간 평균은 77이다.
+- 채널 수는 측정 시작 전에 77로 안정됐다(서버 로그의 워밍업 구간 마지막 세 줄). `act2-split-base1-r1`만 마지막 줄(측정 시작 3초 전)이 79였고 CSV의 측정 구간 평균은 77이다.
 - 서버 로그의 `lab_config`, `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`이 여섯 실행 모두 같았다. 자동 스크린샷도 정상이다(내려다보기 화면에서 자원 노드 169개, `act2-split1-r2-topdown-02.png`).
 
 ## 2. 기본 트레이스의 `GameNetDriver` (기준 묶음, 프레임당 ms)
