@@ -45,6 +45,7 @@ const FLabServerConfig& FLabServerConfig::Get()
 		FParse::Value(Cmd, TEXT("LabNodeUpdateFrequency="), C.NodeUpdateFrequency);
 		C.bInventoryOwnerOnly = FParse::Param(Cmd, TEXT("LabInventoryOwnerOnly"));
 		C.bInventoryFastArray = FParse::Param(Cmd, TEXT("LabInventoryFastArray"));
+		FParse::Value(Cmd, TEXT("LabNetEmulationProfile="), C.NetEmulationProfile);
 		return C;
 	}();
 	return Config;
@@ -106,6 +107,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (bInventoryFastArray != Defaults.bInventoryFastArray)
 	{
 		Parts.Add(TEXT("InventoryFastArray"));
+	}
+	if (!NetEmulationProfile.IsEmpty())
+	{
+		Parts.Add(FString::Printf(TEXT("NetEmulationProfile=%s"), *NetEmulationProfile));
 	}
 	// 서버와 클라이언트가 함께 쓰는 값. 모션 기록은 기법이 아니지만 켠 묶음과 끈 묶음을 구별하려고 적는다(ADR-0020).
 	const FLabScenarioConfig& Shared = FLabScenarioConfig::Get();

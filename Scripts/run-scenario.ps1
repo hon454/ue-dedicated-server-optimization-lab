@@ -56,7 +56,13 @@
     [switch]$NpcCompactMove,
     # 진단용. 0보다 크면 서버의 틱 상한(NetServerMaxTickRate, 엔진 기본값 30)을 이 값으로 바꾼다. 클라이언트는 30 그대로다.
     # 서버가 30Hz를 못 지킬 때 클라이언트의 보간 시계가 프레임 길이를 따라가는지 보려고 둔다. 작은 규모 확인(tsmall-*)에서만 받는다.
-    [int]$ServerTickRate = 0
+    [int]$ServerTickRate = 0,
+    # 포스팅 13(진단). 엔진의 패킷 시뮬레이션 프로필 이름. 모든 클라이언트에 -PktEmulationProfile=<이름>을 주어 각 클라이언트가
+    # 자기 연결의 송신과 수신을 늦추거나 버리게 한다(NetDriver.h의 FPacketSimulationSettings, Shipping이 아닐 때만).
+    # 서버는 바꾸지 않고, 같은 이름을 -LabNetEmulationProfile=로 받아 수치 CSV의 config 열에만 적는다.
+    # 엔진 프로필은 Average(손실 1%, 지연 30~60ms)와 Bad(손실 5%, 지연 100~200ms)이고(엔진 BaseEngine.ini),
+    # 프로젝트 프로필은 LabLagOnly와 LabLossOnly다(Config/DefaultEngine.ini). 비우면 루프백 그대로다.
+    [string]$NetEmulationProfile = ""
 )
 
 . "$PSScriptRoot\common.ps1"
@@ -185,6 +191,9 @@ function Start-LabClient([int]$Index, [string]$RunLabel) {
     if ($NpcCompactMove) {
         $ClientArgs += "-LabNpcCompactMove"
     }
+    if ($NetEmulationProfile) {
+        $ClientArgs += "-PktEmulationProfile=$NetEmulationProfile"
+    }
     $Client = Start-Process -FilePath $Editor -ArgumentList $ClientArgs -PassThru
     Set-LabJobAffinity $Client $ClientMask
     $null = Set-Affinity $Client $ClientMask
@@ -273,6 +282,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     if ($ServerTickRate -gt 0) {
         $ServerArgs += "-ini:Engine:[/Script/OnlineSubsystemUtils.IpNetDriver]:NetServerMaxTickRate=$ServerTickRate"
     }
+    if ($NetEmulationProfile) {
+        $ServerArgs += "-LabNetEmulationProfile=$NetEmulationProfile"
+    }
     if (-not $NoTrace) {
         $ServerArgs += @("-trace=default,net", "-NetTrace=1", "-tracefile=`"$TraceFile`"")
         if ($StatNamedEvents) {
@@ -359,8 +371,24 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
             } while ((Get-Date) -lt $MotionDeadline)
         }
 
+        # 패킷 시뮬레이션 프로필은 클라이언트의 넷 드라이버가 명령줄에서 읽으면서 로그를 남긴다(NetEmulationHelper.cpp의 ParseSettings,
+        # LoadEmulationProfile). 프로필이 없으면 "was not found"를 남기고 설정을 바꾸지 않으므로 그 실행은 실패로 본다.
+        $EmulationMissing = @()
+        if ($NetEmulationProfile -and $DeadIndex -lt 0 -and $Server.HasExited) {
+            for ($Index = 0; $Index -lt $Clients; $Index++) {
+                $ClientLog = "$LogDir\client$Index-$RunLabel.log"
+                $Lines = @(Get-Content $ClientLog -ErrorAction SilentlyContinue | Where-Object { $_.Contains("EmulationProfile") })
+                $Applied = @($Lines | Where-Object { $_.Contains("Applying EmulationProfile $NetEmulationProfile") }).Count -gt 0
+                $NotFound = @($Lines | Where-Object { $_.Contains("was not found") }).Count -gt 0
+                if (-not $Applied -or $NotFound) { $EmulationMissing += "client$Index" }
+            }
+        }
+
         if ($DeadIndex -ge 0) {
             Write-Host "FAIL: client$DeadIndex exited before the server finished. See Saved\Logs\client$DeadIndex-$RunLabel.log"
+        }
+        elseif ($EmulationMissing.Count -gt 0) {
+            Write-Host "FAIL: the packet simulation profile '$NetEmulationProfile' was not applied on $($EmulationMissing -join ', '). See Saved\Logs\client*-$RunLabel.log"
         }
         elseif (-not $Server.HasExited) {
             Write-Host "FAIL: server did not finish within $TimeoutSeconds seconds"

@@ -373,3 +373,16 @@
 | 공유 직렬화(`Shared`)의 비트에는 프로퍼티 핸들이 들어 있다. Networking Insights의 `Shared` 범위는 공유 직렬화한 비트를 패킷에 복사할 때만 남는다. 그래서 어떤 프로퍼티가 공유 직렬화로 갔는지는 `Shared`의 Incl에서 그 프로퍼티의 비트를 빼 보면 안다(포스팅 12 측정 기록 5.1절) | `Engine/Source/Runtime/Engine/Private/RepLayout.cpp:2741-2752`(`WriteSharedProperty`), `2856-2861`(`Shared` 범위와 `GNumSharedSerializationHit`) |
 | 구조체를 공유 직렬화하려면 `WithNetSharedSerialization`을 켠다. 켜지 않은 구조체는 연결마다 직렬화한다 | `RepLayout.cpp:5555-5557`, `Engine/Source/Runtime/Engine/Classes/Engine/ReplicatedState.h:305-312` |
 | 패킷을 잃으면 그 패킷에 담긴 바뀐 프로퍼티에 다시 보냄 표시를 하고, 다시 보낼 때는 그때의 현재 값을 직렬화한다 | `Engine/Source/Runtime/Engine/Private/DataReplication.cpp:888-925`(`FObjectReplicator::ReceivedNak`), `RepLayout.cpp:2262-2279`(`UpdateChangelistHistory`가 다시 보낼 변경 목록을 이번 변경 목록에 합침) |
+
+## 14. 패킷 시뮬레이션(지연과 손실) (2026-10-07, 태스크 30)
+
+엔진 소스에서 읽은 것이다. 포스팅 13의 [관찰 자료](../../Posts/13-lag-and-packet-loss/candidates.md) 1절이 이것을 쓴다. 적용한 것을 실행에서 확인한 값은 그 2절과 4절에 있다.
+
+| 사실 | 소스 위치 |
+| --- | --- |
+| 패킷 시뮬레이션 설정은 `FPacketSimulationSettings` 하나에 모여 있고, Shipping이 아닌 빌드에서만 컴파일된다(`DO_ENABLE_NET_TEST`). 송신 쪽은 `PktLoss`(%), `PktLag`와 `PktLagVariance`(일정 지연 ± 흔들림, ms), `PktLagMin`/`PktLagMax`(범위 안의 난수, `PktLag`가 0일 때만), `PktOrder`, `PktDup`, `PktJitter`, 수신 쪽은 `PktIncomingLoss`(%), `PktIncomingLagMin`/`PktIncomingLagMax`(ms)다 | `Engine/Source/Runtime/Engine/Classes/Engine/NetDriver.h:450, 458-586` |
+| 넷 드라이버가 뜰 때 `Engine.ini`의 `[PacketSimulationSettings]`를 읽고, 그다음 명령줄을 읽어 덮어쓴다(`-PktLoss=`, `-PktLagMin=`, `-PktIncomingLoss=` 같은 `-Pkt<이름>=`와 `-PktEmulationProfile=<이름>`). 드라이버 정의 이름을 앞에 붙인 키(`GameNetDriverPktLoss=`)가 있으면 그것을 먼저 쓴다. 연결이 만들어질 때 드라이버의 값을 복사한다 | `Engine/Source/Runtime/Engine/Private/NetDriver.cpp:764-789`(`InitPacketSimulationSettings`), `Private/Net/NetEmulationHelper.cpp:384-415`(`LoadConfig`), `534-626`(`ParseSettings`), `Private/NetConnection.cpp:582-585, 691-694, 5500-5504`(`UpdatePacketSimulationSettings`) |
+| 프로필은 `Engine.ini`의 `[PacketSimulationProfile.<이름>]` 섹션이다. 읽을 때 설정을 모두 0으로 되돌린 뒤 섹션의 값만 넣는다. 엔진 `BaseEngine.ini`에 `Off`, `Average`(손실 1%, 지연 30\~60ms, 양방향), `Bad`(손실 5%, 지연 100\~200ms, 양방향), `BufferBloat`가 있다. 적용하면 `LogNet`에 `Applying EmulationProfile <이름>`, 섹션이 없으면 `EmulationProfile [...] was not found`를 남긴다 | `NetEmulationHelper.cpp:417-461`(`LoadEmulationProfile`), `540-545`, `Engine/Config/BaseEngine.ini:3533-3568` |
+| 송신: `FlushNet`에서 패킷을 보내기 직전에 `PktLoss` 확률로 버리고, 지연 설정이 있으면 보낼 시각을 붙여 `Delayed` 배열에 넣는다. 늦춘 패킷은 연결의 `Tick`에서 시각이 지난 것부터 보내고, 첫 번째로 시각이 안 된 패킷에서 멈춰 순서를 지킨다(`PktJitter`일 때만 순서를 바꾼다). 그래서 지연은 틱 간격(서버 30Hz, 클라이언트 약 28fps) 단위로 반올림된다 | `NetConnection.cpp:2497-2503`, `2601-2693`(`CheckOutgoingPacketEmulation`), `2697-2705`(`ShouldDropOutgoingPacketForLossSimulation`), `4796`, `5156-5192`(`UpdateDelayedPackets`) |
+| 수신: 받은 패킷을 처리하기 전에 `PktIncomingLoss` 확률로 버리고, `PktIncomingLagMin`\~`Max` 사이의 난수만큼 늦춰 `DelayedIncomingPackets`에 넣는다. 늦춘 패킷은 월드 틱의 `PostTickDispatch`에서 시각이 지난 것부터 처리하고 역시 순서를 지킨다. 클라이언트의 서버 연결도 이 경로를 탄다 | `NetConnection.cpp:3184-3229`(`CheckIncomingPacketEmulation`), `2304-2312`, `2376-2408`(`ReinjectDelayedPackets`), `NetDriver.cpp:2985` |
+| 패킷을 잃으면 그 패킷에 담긴 프로퍼티는 다시 보냄 표시가 되고, 그 액터가 다음에 리플리케이트될 때 그때의 현재 값으로 간다. 다음 차례는 `NetUpdateFrequency`로 정해지므로 손실 하나가 갱신 간격을 약 두 배로 늘린다(NPC는 약 134 → 268ms) | 13절의 마지막 줄, `NetDriver.cpp:5319`(`NextUpdateTime`), `DataReplication.cpp:1872`(`NumNaks`가 있으면 건너뛰지 않음) |

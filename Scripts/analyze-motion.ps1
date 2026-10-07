@@ -10,7 +10,8 @@
 #   표시 위치 오차 = |p_c(t_k) - p_s(t_k)|(cm). 표시 속도 오차 = |Δp_c - Δp_s| ÷ Δt(cm/s), Δ는 클라이언트 프레임 한 칸.
 #   표시 위치가 바뀐 간격 = 표시 위치가 1cm 넘게 바뀐 프레임 사이의 시간(ms).
 #   수신 간격 = NPC 하나의 이동 갱신을 받은 시각의 차(ms). 2초가 넘는 간격(다시 나타남)은 뺀다.
-#   표시 지연 = 평균 |p_c(t) - p_s(t - τ)|가 가장 작은 τ(0~300ms, 5ms 간격으로 찾고 그 주변을 1ms 간격으로 다시 찾음).
+#   표시 지연 = 평균 |p_c(t) - p_s(t - τ)|가 가장 작은 τ(0~600ms, 5ms 간격으로 찾고 그 주변을 1ms 간격으로 다시 찾음).
+#     ADR-0020은 0~300ms로 적었다. 포스팅 13의 지연 100~200ms가 보간 지연 150ms에 더해지면 300ms를 넘으므로 범위만 넓혔다(2026-10-07).
 #     계산량을 줄이려고 표본 다섯 개 중 하나만 쓴다.
 #   P99는 정렬 후 ceil(N × 0.99)번째 값이다(수치 CSV와 같다).
 #
@@ -271,12 +272,12 @@ public static class LabMotionAnalyzer
             }
             return N > 0 ? Sum / N : double.MaxValue;
         };
-        for (int ms = 0; ms <= 300; ms += 5)
+        for (int ms = 0; ms <= 600; ms += 5)
         {
             double E = MeanErrAt(ms / 1000.0);
             if (E < BestErr) { BestErr = E; BestTau = ms; }
         }
-        int Lo = Math.Max(0, (int)BestTau - 5), Hi = Math.Min(300, (int)BestTau + 5);
+        int Lo = Math.Max(0, (int)BestTau - 5), Hi = Math.Min(600, (int)BestTau + 5);
         for (int ms = Lo; ms <= Hi; ms++)
         {
             double E = MeanErrAt(ms / 1000.0);
