@@ -35,7 +35,6 @@
 | 모든 클라이언트에서 Dormant 상태가 되어야 활성 목록에서 빠진다 | `FNetworkObjectList::MarkDormant`가 모든 연결에서 Dormant일 때만 옮긴다(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`) | 엔진 소스, [포스팅 7](../07-net-driver-breakdown/measurements.md) |
 | 16프레임에 한 번 | 빈도 2: 500\~533ms 뒤 | [포스팅 8 측정 기록](../08-node-update-frequency/measurements.md) 2절 |
 | 문제의 표: 1단계 0.959ms, 2단계 0.845ms, 3단계 1.87ms(그 글의 적용 후 구성에서 잰 값) | `Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845, `Process Prioritized Actors Time` 1.868(`act2-nodeuf-split1-r3`, 포스팅 8의 적용 후. ⑤\~⑧ 전의 구성이고 이 글의 묶음에서는 재지 않았다) | 포스팅 8 측정 기록 2절 |
-| 1단계의 약 3분의 2는 차례가 아닌 자원 노드를 순회하는 시간 | 4,857.2 × 0.128µs = 0.622ms, 0.622 ÷ 0.959 = 64.8% | 포스팅 8 측정 기록 2절 |
 | 레거시는 엔진의 기본 리플리케이션 방식 | Iris를 쓰지 않고(`net.Iris.UseIrisReplication` 기본값 0, `Engine/Source/Runtime/Net/Iris/Private/Iris/IrisConfig.cpp:15-16`) `ReplicationDriverClassName`이 비어 있으면 드라이버 없이 넷 드라이버가 직접 보낸다(`ND.cpp:1820-1831`). 서버 로그의 모델 이름은 `Generic`이다 | 엔진 소스, [engine-notes.md](../../Docs/Reference/engine-notes.md) 2절 |
 | Net Update Frequency는 서버가 액터를 확인하는 빈도 | 레거시는 다음 확인 시각을 1 ÷ 빈도 뒤로 잡는다(`ND.cpp:5421-5425`). 그래프는 빈도로 정한 프레임 간격마다 확인한다(`RG.cpp:2097-2098`) | 엔진 소스 |
 | 수치는 구성마다 세 번 실행한 중앙값 | 중앙값 실행은 1절의 표, CSV 중앙값은 3절 | 실행 조건 |
@@ -70,11 +69,10 @@
 | 한 프레임에 하나씩 거리와 상관없이 보낸다, 받은 액터는 목록에서 빠진다 | gather에서 지울 Dormant 액터가 없으면 남은 액터 하나에 `bForceCullDistanceToZero`를 켠다(`RG.cpp:4717-4721`). 컬 거리 0은 거리 검사를 하지 않는다(`RG.cpp:1571`). Dormant 상태가 되면 그 플래그를 끄고 목록에서 지운다(`RG.cpp:4702-4708`) | 엔진 소스 |
 | 콘솔 변수 `Net.RepGraph.TrickleDistCullOnDormancyNodes` | 기본값 1(`RG.cpp:165`). 이 글은 `-LabRepGraphNoTrickle`일 때 그래프가 초기화하며 0으로 둔다 | 엔진 소스, `Source/DSOptLab/LabReplicationGraph.cpp` |
 | trickle을 끄면 서버 프레임 시간 7.64 → 8.04ms | Timing Insights 7.640(`act2-rg-trk1-r3`) → 8.039(`act2-rg-notrk1-r3`). CSV `work_avg_ms` 중앙값 7.362 → 7.763, 차이 0.401이 변동 폭 0.341보다 크다. 그래프 자체 시간(`UReplicationGraph_ServerReplicateActors` Excl) 0.771 → 1.183 | 관찰 자료 10.1절, 10.2절 |
-| 함께 잰 지금 구성 8.83ms | Timing Insights 8.832(`act2-rg-trk-base1-r3`) | 관찰 자료 10.2절 |
 | trickle을 꺼도 연결당 송신 대역폭은 같았다 | CSV 중앙값 10,969 → 10,964, 차이 5가 변동 폭 21, 30보다 작다 | 관찰 자료 10.1절 |
 | 그래프는 보낼 액터를 고르는 방법만 바꾸므로 보내는 액터와 횟수가 같으면 연결당 송신 대역폭도 같다 | [Unreal Engine - Replication Graph](https://hon454.github.io/posts/unreal-engine-replication-graph/) TL;DR의 "어느 연결에 무엇을 보낼지가 같다면 송신량도 같다"를 풀어 썼다. 그래프도 레거시와 같은 `UActorChannel::ReplicateActor`로 보낸다(`RG.cpp:2151, 2157`) | 외부 글, 엔진 소스 |
 | NPC의 표시 위치 오차와 표시 지연은 네 구성에서 구별되지 않았다 | 표시 위치 오차 평균 45.29\~46.60cm(빈도 기본값 레거시 48.08\~48.73cm는 서버 프레임이 길어 표시 지연이 약 8ms 길다), 표시 지연 152\~155ms. NPC 수신 간격 평균 레거시 133.4\~133.7ms, 그래프 133.7\~134.5ms | 관찰 자료 9.3절, 10.5절 |
-| 배운 것: 서버 프레임 시간 13.8% | 위 요약 표의 줄 | 관찰 자료 9.2절 |
+| 결과 제목의 13.8% | 위 요약 표의 줄 | 관찰 자료 9.2절 |
 
 ## 3. 서버가 남긴 CSV
 
