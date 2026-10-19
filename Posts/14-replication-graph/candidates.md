@@ -279,3 +279,63 @@ X−는 서버 프레임이 길어서(평균 17.8ms) 표시 지연이 약 8ms �
 ### 10.5 품질 지표
 
 세 묶음 모두 표시 위치 오차 평균 45.35\~46.60cm, 표시 속도 오차 평균 14.8\~15.5cm/s, 표시 지연 152\~155ms로 구별되지 않는다. NPC 수신 간격 평균은 레거시 133.4\~133.7ms, 그래프 134.3\~134.5ms다.
+
+## 11. Networking Insights (`Connection 0`, `Outgoing`, 둘째 묶음의 중앙값 실행 `r3`)
+
+측정 구간의 뒤쪽을 패킷 그래프에서 클릭과 Shift-클릭으로 골랐다(레거시 1,748패킷 58.339초, 그래프 1,746패킷 58.584초). 측정 구간 1,797프레임보다 약 50패킷 짧게 골랐으므로 초당 값으로 비교한다. 캡처는 [레거시](images/insights-netstats-legacy.png), [그래프](images/insights-netstats-graph.png)다.
+
+| 줄 | 레거시 Count / Incl(비트) | 그래프 Count / Incl(비트) | 초당 바이트(레거시 → 그래프) |
+| --- | ---: | ---: | --- |
+| `Actor` | 34,949 / 4,304,957 | 37,301 / 4,811,575 | 9,224 → 10,266(+1,042) |
+| `BP_LabCharacter_C` | 9,502 / 1,435,500 | 11,986 / 1,819,718 | 3,076 → 3,883(+807, +26.2%) |
+| `LabNpc` | 24,506 / 1,691,940 | 24,385 / 1,683,703 | 3,625 → 3,593 |
+| `BunchHeader` | 34,949 / 1,035,761 | 37,301 / 1,165,525 | 2,219 → 2,487(+268) |
+| `LabResourceNode` | 12 / 866 | 13 / 907 | 1.9 → 1.9 |
+| `NewActor` | 68 / 18,155 | 69 / 18,224 | 39 → 39 |
+| `PacketHeaderAndInfo` | 1,748 / 160,816 | 1,746 / 160,632 | 345 → 343 |
+
+- 0번 연결의 송신량((`Actor` + `PacketHeaderAndInfo`) ÷ 8 ÷ 시간)은 9,569 → 10,609바이트/초(+10.9%)다. CSV 연결 평균의 +8.8%보다 큰 것은 0번이 제자리에서 채집하는 연결이라 다른 일곱 캐릭터를 모두 계속 받기 때문으로 보며, 확인하지 않았다.
+- 늘어난 `Actor` 1,042바이트/초 가운데 캐릭터의 프로퍼티가 807(77%)이고, 캐릭터 Bunch가 2,484개 늘면서 Bunch 헤더가 268 늘었다(Bunch 수 +2,352). 늘어난 몫은 캐릭터를 더 자주 보낸 것이다.
+- 캐릭터의 초당 송신 횟수는 162.9 → 204.6번(+25.6%)이다. 클래스 타이머로 본 +29%(연결 8개 합, 10.2절)와 같은 방향이다.
+- `LabResourceNode`는 측정 구간에서 13번, 907비트로 레거시와 같다. trickle이 보내는 자원 노드는 측정 구간의 바이트에 드러나지 않는다.
+
+## 12. 시각 자료 후보
+
+| 자료 | 파일 | 넣을 곳 | 무엇을 보이나 |
+| --- | --- | --- | --- |
+| 원리 개념도 | [images/repgraph-cell.svg](images/repgraph-cell.svg)(`Scripts/make-repgraph-cell.ps1`) | 본문 "원리" | 레거시는 150m 밖 자원 노드를 활성 목록에서 매 프레임 돌고, 그래프는 시점 칸의 목록만 모은다. 칸 경계(28.48m + 100m × n), 150m 원, 칸 목록의 범위(400m)는 실제 값, 자원 노드 위치는 같은 밀도의 예시. trickle 인용구도 이 그림의 주황 점을 가리킬 수 있다 |
+| 흐름도 | 아래 Mermaid | 본문 "원리" | 한 프레임의 단계. 레거시의 ①②가 그래프의 gather와 연결별 정렬로 바뀌는 자리를 색으로 표시. 개념도와 흐름도 중 하나만 넣어도 된다 |
+| 차트 | 아래 Mermaid | 본문 "결과" | 2 × 2의 `work_avg_ms`(첫 묶음) |
+| 내려다보기 화면 셋 | [레거시](images/topdown-legacy.png), [그래프](images/topdown-graph.png), [trickle 끔](images/topdown-graph-notrickle.png)(둘째 묶음 `r2`, t=75s, 1번 클라이언트) | 본문의 trickle 인용구 | 같은 자리에서 클라이언트의 자원 노드가 176, 380, 176개. 그래프에서 150m 밖 초록 점이 늘어난다 |
+| Networking Insights 캡처 둘 | [레거시](images/insights-netstats-legacy.png), [그래프](images/insights-netstats-graph.png) | 측정 기록 | 늘어난 바이트가 `BP_LabCharacter_C` 몫(11절) |
+
+영상은 후보로 두지 않았다. 바뀌는 것이 클라이언트가 가진 자원 노드 수뿐이라 내려다보기 화면 셋으로 보인다.
+
+흐름도 초안(한 프레임, 연결 8개):
+
+```mermaid
+flowchart LR
+  subgraph L["레거시"]
+    direction LR
+    L1["활성 목록 5,272개를<br/>모두 돈다"] --> L2["연결마다 Consider List를<br/>거리 검사, 정렬"] --> L3["보낸다<br/>ReplicateActor"]
+  end
+  subgraph G["Replication Graph"]
+    direction LR
+    G1["연결마다 시점 칸의<br/>목록만 모은다"] --> G2["모은 목록을<br/>거리 검사, 정렬"] --> G3["보낸다<br/>ReplicateActor"]
+  end
+  L ~~~ G
+  classDef cut fill:#5a3b12,stroke:#f0a33a,color:#fff
+  classDef keep fill:#16301e,stroke:#3fb950,color:#fff
+  class L1,L2 cut
+  class G1,G2,L3,G3 keep
+```
+
+차트 초안(첫 묶음 중앙값):
+
+```mermaid
+xychart-beta horizontal
+  title "서버 프레임 시간 work_avg_ms (첫 묶음 중앙값)"
+  x-axis ["레거시, 빈도 100", "레거시, 빈도 2(⑧)", "그래프, 빈도 100", "그래프, 빈도 2"]
+  y-axis "ms" 0 --> 20
+  bar [17.506, 8.662, 7.537, 7.437]
+```

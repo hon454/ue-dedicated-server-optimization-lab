@@ -22,7 +22,7 @@
 
 ## 다음 할 일
 
-1. Networking Insights(`act2-rg-trk-base1-r2`, `act2-rg-trk1-r2`)로 늘어난 바이트가 캐릭터 몫인지 확인하고, 시각 자료 후보(도식, 차트, 캡처)를 모은다([2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기" 5).
+1. **[사람] 포스팅 14의 시각 자료를 고른다.** Networking Insights로 늘어난 바이트가 캐릭터 몫(+807바이트/초, `Actor` 증가의 77%)임을 확인했고, 후보는 [관찰 자료](../Posts/14-replication-graph/candidates.md) 11\~12절이다(원리 개념도 `Scripts/make-repgraph-cell.ps1`, 흐름도, 차트, 내려다보기 화면 셋, Insights 캡처 둘).
 2. 본문 초안(문제, 원리는 사용자 승인), 측정 기록을 쓴다. trickle은 인용구로 설명한다. 이어서 README의 ⑨ 단계와 웹 페이지(모든 구성을 다시 재는 묶음은 [AGENTS.md](../AGENTS.md) "규칙").
 
 ## 포스팅 진행
@@ -146,4 +146,4 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 사용자에게 요청한 일
 
-- 없음.
+- **포스팅 14의 시각 자료 선택.** 위 "다음 할 일" 1번.
