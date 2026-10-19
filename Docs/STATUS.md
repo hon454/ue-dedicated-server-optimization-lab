@@ -6,6 +6,8 @@
 
 **1막(포스팅 0\~4)과 2막의 포스팅 5\~14가 끝났다.** 끝낸 태스크의 경위는 아래 "포스팅 진행" 표의 작업 기록에 있다. 여기에는 다음 작업을 제약하는 것만 둔다.
 
+- **태스크 32(포스팅 15, Iris)를 시작했다(2026-10-19).** [관찰 자료](../Posts/15-iris/candidates.md)를 엔진 소스와 프로젝트 소스로 썼고, 아직 Iris로 실행하지 않았다. 소스대로라면 지금 빌드로 Iris를 켜면 비교가 틀어진다. Iris 플러그인과 Build.cs의 `SetupIrisSupport`가 없어 FastArray 인벤토리가 가지 않고, 인벤토리 조건을 서버에만 줘서 클라이언트와 프로토콜이 어긋날 수 있다. 또 ⑧의 `FLabNpcMove::NetSerialize`를 Iris가 쓰지 않는다. 지표 가운데 `open_actor_channels_per_conn`, `saturated_ratio`, Consider List 길이, `lab_network_objects`는 Iris에서 0이 되거나 비게 된다(관찰 자료 2\~4절).
+
 - **루트 README의 결과는 2막 아홉 구성(기준선과 ①\~⑧)을 연달아 잰 `act2-all-*3`이다(2026-10-07).** 포스팅 12를 ⑧ NPC 이동 구조체로 더하면서 모든 구성을 다시 쟀다(13:04\~14:15, 본체 화면, 사용자가 무거운 프로그램을 닫은 뒤). 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 여덟 단계"에 있다. ⑦ → ⑧은 `out_bytes_per_sec_per_conn` 중앙값 12,681 → 10,094(-20.4%), `work_avg_ms` 8.690 → 8.493(구별되지 않음)이다. 이 묶음에서는 ⑤ → ⑥의 `work_avg_ms`가 +0.183으로 변동 폭 0.182를 겨우 넘었다(포스팅 10과 `act2-all-*2`에서는 구별되지 않음). 기준선 `r1`은 다른 두 실행보다 17% 느렸고 원인은 확인하지 않았다. ①을 빼면 각 글의 묶음과 -3.3\~+9.2% 다르다. 틱 예산을 조금 넘는 ① 거리 판정은 잰 날마다 크게 다르므로 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 지난 묶음 `act2-all-*2`의 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "README와 시각화 페이지 갱신"에 있다.
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 아홉 단계(포스팅 12까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 시뮬레이션의 한계는 [Site/README.md](../Site/README.md)에 있다. 단계를 더하는 기준은 [AGENTS.md](../AGENTS.md) "규칙"에 있다.
 - 다음 시각 자료 라벨은 `visual24`이다(`visual22`, `visual23`은 포스팅 13의 시연용 NPC 루프백과 `Bad`, 2026-10-07. `visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후).
@@ -34,6 +36,7 @@
 | 12. NPC 이동을 필요한 비트만 담은 구조체로 보내기 | 완료 | `post-12-npc-move-netserialize` | [12-npc-move-netserialize](Worklog/12-npc-move-netserialize.md) |
 | 13. 지연과 패킷 손실에서의 동기화 품질(진단) | 완료 | `post-13-lag-and-packet-loss` | [13-lag-and-packet-loss](Worklog/13-lag-and-packet-loss.md) |
 | 14. 레거시 리플리케이션을 Replication Graph로 바꾸기 | 완료 | `post-14-replication-graph` | [14-replication-graph](Worklog/14-replication-graph.md) |
+| 15. Iris 전환과 실측 비교 | 관찰 자료 | | |
 
 ## 명령
 
@@ -58,4 +61,4 @@
 
 ## 사용자에게 요청한 일
 
-- 없음.
+- **[사람] 포스팅 15의 "관찰"과 "선택".** [관찰 자료](../Posts/15-iris/candidates.md) 7절의 네 가지를 정한다: 간격(엔진 그대로, 레거시 평균에 맞춤, 둘 다), ⑧ 구조체(그대로, LastResort 등록, Iris 직렬화기 작성), 서브오브젝트 목록 설정을 줄 묶음, Replication Graph 묶음을 넣을지. 에이전트 의견은 8절이다.
