@@ -3,10 +3,12 @@
 #include "DSOptLab.h"
 #include "Engine/NetConnection.h"
 #include "Engine/NetDriver.h"
+#include "HAL/IConsoleManager.h"
 #include "LabBuilding.h"
 #include "LabCharacter.h"
 #include "LabNpc.h"
 #include "LabResourceNode.h"
+#include "LabScenarioConfig.h"
 #include "UObject/UObjectIterator.h"
 
 uint16 ULabReplicationGraph::GetLegacyPeriodFrame(float NetUpdateFrequency) const
@@ -84,8 +86,18 @@ void ULabReplicationGraph::InitGlobalGraphNodes()
 	AlwaysRelevantNode = CreateNewNode<UReplicationGraphNode_ActorList>();
 	AddGlobalGraphNode(AlwaysRelevantNode);
 
-	UE_LOG(LogDSOptLab, Display, TEXT("lab_repgraph cell_size_cm=%.0f buckets=%d"),
-		GridNode->CellSize, UReplicationGraphNode_ActorListFrequencyBuckets::DefaultSettings.NumBuckets);
+	// 연결별 Dormancy 노드는 Dormant 상태가 된 액터를 목록에서 지우다가, 한 번의 gather에서 지울 것이 없으면 남은 액터 하나의
+	// 컬 거리를 0으로 만들어 150m 밖이어도 보낸다(ReplicationGraph.cpp의 UReplicationGraphNode_ConnectionDormancyNode::
+	// ConditionalGatherDormantActorsForConnection). -LabRepGraphNoTrickle이면 이 동작을 끈다. 이 값은 gather 때마다 읽힌다.
+	IConsoleVariable* Trickle = IConsoleManager::Get().FindConsoleVariable(TEXT("Net.RepGraph.TrickleDistCullOnDormancyNodes"));
+	if (Trickle && FLabServerConfig::Get().bRepGraphNoTrickle)
+	{
+		Trickle->Set(0, ECVF_SetByCode);
+	}
+
+	UE_LOG(LogDSOptLab, Display, TEXT("lab_repgraph cell_size_cm=%.0f buckets=%d trickle=%d"),
+		GridNode->CellSize, UReplicationGraphNode_ActorListFrequencyBuckets::DefaultSettings.NumBuckets,
+		Trickle ? Trickle->GetInt() : -1);
 }
 
 void ULabReplicationGraph::InitConnectionGraphNodes(UNetReplicationGraphConnection* RepGraphConnection)

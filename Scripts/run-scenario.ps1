@@ -46,6 +46,9 @@
     [switch]$InventoryFastArray,
     # 2막의 기법. 레거시 리플리케이션 대신 Replication Graph(ULabReplicationGraph)로 보낸다. 포스팅 14.
     [switch]$ReplicationGraph,
+    # -ReplicationGraph와 함께만 쓴다. Dormancy 노드가 거리에서 걸러진 액터를 한 프레임에 하나씩 거리 무시로 보내는
+    # 엔진 기본 동작(Net.RepGraph.TrickleDistCullOnDormancyNodes 1)을 끈다. 포스팅 14.
+    [switch]$RepGraphNoTrickle,
     # 이 번호의 클라이언트 화면에 인벤토리 패널(-LabInventoryPanel)을 그린다. -1이면 그리지 않는다.
     # 측정 실행의 화면과 자동 스크린샷을 바꾸지 않도록 시각 자료 라벨(visualN)과 작은 규모 확인(tsmall-*)에서만 받는다.
     [int]$InventoryPanelSlot = -1,
@@ -86,6 +89,11 @@ if ($InventoryPanelSlot -ge 0 -and $Label -notmatch '^(visual\d+|tsmall-.+)$') {
 
 if ($ServerTickRate -gt 0 -and $Label -notmatch '^tsmall-.+$') {
     Write-Host "FAIL: -ServerTickRate changes the server tick, so it is only allowed with a small check (tsmall-*)."
+    exit 1
+}
+
+if ($RepGraphNoTrickle -and -not $ReplicationGraph) {
+    Write-Host "FAIL: -RepGraphNoTrickle only changes the replication graph, so it needs -ReplicationGraph."
     exit 1
 }
 
@@ -274,6 +282,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($ReplicationGraph) {
         $ServerArgs += "-LabReplicationGraph"
+    }
+    if ($RepGraphNoTrickle) {
+        $ServerArgs += "-LabRepGraphNoTrickle"
     }
     if ($MotionLog) {
         $ServerArgs += "-LabMotionLog"

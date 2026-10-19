@@ -125,6 +125,11 @@
 - 클래스별 CSV(`FReplicationGraphCSVTracker`)는 켜지 않았다. CSV 프로파일러를 쓰지 않고, 클래스별 시간은 Insights의 클래스 타이머로 본다.
 - 실행 인자는 `-ReplicationGraph`(서버 `-LabReplicationGraph`)다. 게임 모듈이 뜰 때 `CreateReplicationDriverDelegate`를 묶고, 인자가 없으면 묶지 않는다(`Source/DSOptLab/DSOptLab.cpp`).
 
+사용자가 첫 묶음(9절)과 [Replication Graph 블로그 글](https://hon454.github.io/posts/unreal-engine-replication-graph/)을 보고 아래를 정했다(2026-10-19).
+
+- trickle을 끈 그래프 묶음을 더해 세 묶음(⑧, 그래프, 그래프 trickle 끔)을 연달아 잰다. 실행 인자는 `-RepGraphNoTrickle`(서버 `-LabRepGraphNoTrickle`, `-ReplicationGraph`와 함께만)이고, 그래프가 초기화 때 `Net.RepGraph.TrickleDistCullOnDormancyNodes`를 0으로 둔다(에이전트가 정함).
+- 본문에서 trickle은 인용구로 따로 설명한다. 블로그 글의 "어느 연결에 무엇을 보낼지가 같다면 송신량도 같다"와 이 테스트베드의 결과가 어떻게 이어지는지를 함께 적는다.
+
 작은 규모 확인(클라이언트 2, 자원 노드 100, NPC 10과 플레이어 주변 50, ⑧의 인자, `-NoTrace`. 수치는 비교에 쓰지 않는다):
 
 | 값 | `tsmall-rg-base2-r1`(레거시) | `tsmall-rg2-r1`(그래프) |
@@ -202,4 +207,21 @@ X−는 서버 프레임이 길어서(평균 17.8ms) 표시 지연이 약 8ms �
 - 클라이언트 1번(내려다보기)의 화면 글자에서 t=75s의 자원 노드 수가 X0 176개, X1 380개였다(`act2-rg-base1-r2-topdown-04.png`, `act2-rg1-r2-topdown-04.png`). 서버 로그에서 모든 연결에서 Dormant 상태인 자원 노드가 114 → 241개, 일부 연결에서 Dormant 상태인 것이 75 → 139개였다(`lab_network_objects`, `act2-rg-base1-r3`, `act2-rg1-r1`).
 - 엔진 소스: 연결별 Dormancy 노드는 Dormant 상태가 된 액터를 목록에서 지우다가, 한 번의 gather에서 지울 것이 없으면 남은 액터 하나에 `bForceCullDistanceToZero`를 켠다(`RG.cpp:4717-4721`). 컬 거리가 0이면 거리 검사를 하지 않으므로(`RG.cpp:1571`) 그 액터는 150m 밖이어도 보내진다. 한 프레임에 하나씩이고, 콘솔 변수 `Net.RepGraph.TrickleDistCullOnDormancyNodes`(기본값 1, `RG.cpp:165`)로 끈다.
 - 칸에는 칸에서 150m 안의 자원 노드가 모두 들어 있으므로(2.1절), 시점이 있는 칸의 400m × 400m 사각형 안의 자원 노드가 결국 모두 클라이언트에 간다. 플레이어가 칸을 옮기면 새 칸에서 다시 시작한다.
-- 에이전트 의견: 송신량 +8.8%의 대부분은 이 몫으로 본다. 처음 한 번 보내고 Dormant 상태가 되므로 CPU 비용은 작다. 확인하지 않았다(Networking Insights의 `LabResourceNode` 비트로 확인할 수 있다).
+- 에이전트 의견(처음): 송신량 +8.8%의 대부분은 이 몫으로 본다. 처음 한 번 보내고 Dormant 상태가 되므로 CPU 비용은 작다. 확인하지 않았다(Networking Insights의 `LabResourceNode` 비트로 확인할 수 있다).
+
+### 9.5 늘어난 송신량은 캐릭터 몫 (9.4의 의견을 고침)
+
+`export-insights.ps1`이 `UReplicationGraph_ServerReplicateActors` 아래 클래스 타이머도 내보내게 고친 뒤 다시 읽었다. 프레임당 호출 수(레거시 X0 `r3` → 그래프 X1 `r1`):
+
+| 클래스 | 레거시 | 그래프 |
+| --- | ---: | ---: |
+| `LabNpc` | 115.0 | 112.8 |
+| `LabCharacter` | 49.6 | 64.0 |
+| `LabPlayerController` | 6.2 | 8.0 |
+| `GameplayDebuggerCategoryReplicator` | 6.2 | 8.0 |
+| `LabResourceNode` | 0.2 | 0.3 |
+
+- 자원 노드의 호출은 거의 같다. trickle로 더 가는 자원 노드는 대부분 워밍업 동안 보내지고, 측정 구간에서는 칸을 옮길 때만 더 간다.
+- 캐릭터는 연결 8 × 캐릭터 8 = 64로 매 프레임 간다. 레거시는 1/빈도 + 0\~1프레임 난수 뒤에 다시 고려해서 평균 1.3프레임 간격이고(7절), 그래프는 정수 간격이라 1프레임이다. 64 ÷ 49.6 = 1.29배다.
+- 계산: 0번 연결의 캐릭터 송신량은 포스팅 12에서 `BP_LabCharacter_C` 1,480,075비트 / 60.023초 = 3,082바이트/초였다([포스팅 12 측정 기록](../12-npc-move-netserialize/measurements.md)). 29% 늘면 약 +894바이트/초이고, CSV의 증가 +889바이트/초(10,073 → 10,962)와 거의 같다. 송신량 +8.8%는 캐릭터 간격의 몫으로 본다. Networking Insights로는 아직 확인하지 않았다.
+- 그래서 trickle을 꺼도 송신량은 같아지지 않을 것으로 예상한다. trickle을 끈 묶음에서 볼 것은 클라이언트의 자원 노드 수와, 걸러진 자원 노드가 연결별 목록에 남아 매 프레임 다시 도는 CPU 비용이다.

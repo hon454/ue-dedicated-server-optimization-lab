@@ -155,6 +155,16 @@ if ($Driver) {
         $Summary.Add(("  {0,-40} {1,10} {2,9} {3,9}" -f $Row.TimerName, ([double]$Row.Count / $WorldTickCount).ToString('0.0', $Inv),
             (& $PerFrame $Row.'Inc.Time').ToString('0.000', $Inv), (& $PerFrame $Row.'Exc.Time').ToString('0.000', $Inv)))
     }
+    # Replication Graph 실행(포스팅 14)에서는 클래스 타이머가 GameNetDriver 바로 아래가 아니라
+    # UReplicationGraph_ServerReplicateActors(ReplicationGraph.cpp의 SCOPED_NAMED_EVENT) 아래에 있어서 그 아래도 적는다.
+    $Graph = $Callees | Where-Object { $_.ParentId -eq $Driver.TimerId -and $_.TimerName -eq 'UReplicationGraph_ServerReplicateActors' } | Select-Object -First 1
+    if ($Graph) {
+        $Summary.Add("children of UReplicationGraph_ServerReplicateActors (per frame: count, incl ms, excl ms):")
+        foreach ($Row in ($Callees | Where-Object { $_.ParentId -eq $Graph.TimerId } | Sort-Object { - [double]$_.'Inc.Time' })) {
+            $Summary.Add(("  {0,-40} {1,10} {2,9} {3,9}" -f $Row.TimerName, ([double]$Row.Count / $WorldTickCount).ToString('0.0', $Inv),
+                (& $PerFrame $Row.'Inc.Time').ToString('0.000', $Inv), (& $PerFrame $Row.'Exc.Time').ToString('0.000', $Inv)))
+        }
+    }
     if ($NamedEvents) { Add-Tree $Callees $Driver }
 }
 if ($NamedEvents) {

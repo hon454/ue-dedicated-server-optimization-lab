@@ -47,6 +47,7 @@ const FLabServerConfig& FLabServerConfig::Get()
 		C.bInventoryFastArray = FParse::Param(Cmd, TEXT("LabInventoryFastArray"));
 		FParse::Value(Cmd, TEXT("LabNetEmulationProfile="), C.NetEmulationProfile);
 		C.bReplicationGraph = FParse::Param(Cmd, TEXT("LabReplicationGraph"));
+		C.bRepGraphNoTrickle = FParse::Param(Cmd, TEXT("LabRepGraphNoTrickle"));
 		return C;
 	}();
 	return Config;
@@ -112,6 +113,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (bReplicationGraph != Defaults.bReplicationGraph)
 	{
 		Parts.Add(TEXT("ReplicationGraph"));
+	}
+	if (bRepGraphNoTrickle != Defaults.bRepGraphNoTrickle)
+	{
+		Parts.Add(TEXT("RepGraphNoTrickle"));
 	}
 	if (!NetEmulationProfile.IsEmpty())
 	{
