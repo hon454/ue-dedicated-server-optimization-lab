@@ -66,7 +66,7 @@
 | trickle을 끄면 서버 프레임 시간 7.64 → 8.04ms | Timing Insights 7.640(`act2-rg-trk1-r3`) → 8.039(`act2-rg-notrk1-r3`). CSV `work_avg_ms` 중앙값 7.362 → 7.763, 차이 0.401이 변동 폭 0.341보다 크다. 그래프 자체 시간(`UReplicationGraph_ServerReplicateActors` Excl) 0.771 → 1.183 | 관찰 자료 10.1절, 10.2절 |
 | 함께 잰 지금 구성 8.83ms | Timing Insights 8.832(`act2-rg-trk-base1-r3`) | 관찰 자료 10.2절 |
 | trickle을 꺼도 연결당 송신 대역폭은 같았다 | CSV 중앙값 10,969 → 10,964, 차이 5가 변동 폭 21, 30보다 작다 | 관찰 자료 10.1절 |
-| 블로그 글의 인용 | [Unreal Engine - Replication Graph](https://hon454.github.io/posts/unreal-engine-replication-graph/)의 TL;DR | 외부 글 |
+| 그래프는 보낼지 확인하는 방법만 바꾸므로 보내는 액터와 횟수가 같으면 송신량도 같다 | [Unreal Engine - Replication Graph](https://hon454.github.io/posts/unreal-engine-replication-graph/) TL;DR의 "어느 연결에 무엇을 보낼지가 같다면 송신량도 같다"를 풀어 썼다. 그래프도 레거시와 같은 `UActorChannel::ReplicateActor`로 보낸다(`RG.cpp:2151, 2157`) | 외부 글, 엔진 소스 |
 | NPC의 표시 위치 오차와 표시 지연은 네 구성에서 구별되지 않았다 | 표시 위치 오차 평균 45.29\~46.60cm(빈도 기본값 레거시 48.08\~48.73cm는 서버 프레임이 길어 표시 지연이 약 8ms 길다), 표시 지연 152\~155ms. NPC 수신 간격 평균 레거시 133.4\~133.7ms, 그래프 133.7\~134.5ms | 관찰 자료 9.3절, 10.5절 |
 | 배운 것: 서버 프레임 시간 13.8% | 위 요약 표의 줄 | 관찰 자료 9.2절 |
 

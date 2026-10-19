@@ -1,4 +1,4 @@
-﻿# Replication Graph 포스팅의 원리 도식(한 연결이 보는 자원 노드)을 SVG로 만든다.
+﻿# Replication Graph 포스팅의 원리 도식(서버가 1번 클라이언트에게 보낼지 확인하는 자원 노드)을 SVG로 만든다.
 #
 # 사용법: powershell -ExecutionPolicy Bypass -File Scripts/make-repgraph-cell.ps1
 # 결과:   Posts/14-replication-graph/images/repgraph-cell.svg
@@ -53,7 +53,7 @@ function Classify($N) {
 }
 
 $Svg = [System.Text.StringBuilder]::new()
-[void]$Svg.AppendLine('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 610" width="900" height="610" role="img" aria-label="레거시와 Replication Graph가 한 연결에 대해 자원 노드를 다루는 법. 레거시는 150m 밖의 자원 노드가 모두 활성 목록에 남아 매 프레임 돈다. 그래프는 시점이 있는 100m 칸의 목록만 모으고, 그 목록에는 150m 밖이지만 칸 범위 안의 자원 노드가 섞여 있다.">')
+[void]$Svg.AppendLine('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 610" width="900" height="610" role="img" aria-label="서버가 1번 클라이언트에게 보낼지 확인하는 자원 노드. 레거시는 150m 밖의 자원 노드가 모두 활성 목록에 남아 매 프레임 돈다. 그래프는 시점이 있는 100m 칸의 목록만 모으고, 그 목록에는 150m 밖이지만 칸 범위 안의 자원 노드가 섞여 있다.">')
 [void]$Svg.AppendLine(@'
 <style>
 text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;fill:#e6edf3}
@@ -72,7 +72,7 @@ text{font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif
 </style>
 '@)
 [void]$Svg.AppendLine('<rect width="900" height="610" rx="10" fill="#0f141b"/>')
-[void]$Svg.AppendLine('<text class="title" x="40" y="34">한 연결이 따지는 자원 노드</text>')
+[void]$Svg.AppendLine('<text class="title" x="40" y="34">서버가 1번 클라이언트에게 보낼지 확인하는 자원 노드</text>')
 [void]$Svg.AppendLine('<text class="sub" x="40" y="56">1번 클라이언트 주변 700m. 칸, 150m 원, 칸 목록의 범위는 실제 값이고 자원 노드의 위치는 같은 밀도의 예시다.</text>')
 
 foreach ($P in $Panels) {
@@ -111,7 +111,7 @@ $Legend = @(
 	@('work', '왼쪽: 활성 목록에 남아 매 프레임 돈다(맵 전체 약 4,800개)'),
 	@('work', '오른쪽: 시점 칸(파란 칸)의 목록에 섞여 매 프레임 거리 검사에서 걸러진다'),
 	@('work', '         trickle은 이 점을 한 프레임에 하나씩 보내 Dormant 상태로 만들고 목록에서 지운다'),
-	@('far', '오른쪽: 시점 칸의 목록에 없어 이 연결은 보지 않는다(점선은 그 목록의 범위 400m)')
+	@('far', '오른쪽: 파란 칸의 목록에 없어 1번 클라이언트에게는 확인하지 않는다(점선은 그 목록의 범위 400m)')
 )
 for ($i = 0; $i -lt $Legend.Count; $i++) {
 	$y = $Ly + 22 * $i
