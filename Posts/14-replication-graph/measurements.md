@@ -51,7 +51,8 @@
 | 결과 표: 서버 프레임 시간 평균 17.8, 8.94, 7.81, 7.71ms | Timing Insights 17.788(`act2-rg-base-nodedef1-r1`), 8.944(`act2-rg-base1-r3`), 7.809(`act2-rg-nodedef1-r3`), 7.710(`act2-rg1-r1`) | 관찰 자료 9.2절 |
 | 결과 표: 리플리케이션 시간 12.7, 3.96, 2.95, 2.92ms | `GameNetDriver` 프레임당 Incl 12.681, 3.958, 2.946, 2.923(같은 실행) | 관찰 자료 9.2절 |
 | 차트의 값 | 17.788, 8.944, 7.809, 7.710 | 관찰 자료 9.2절 |
-| 빈도를 낮추는 방법 -49.7%, 그래프 -56.1% | 8.944 ÷ 17.788 − 1 = -49.7%, 7.809 ÷ 17.788 − 1 = -56.1% | 계산 |
+| 빈도를 2로 낮추면 8.94ms, 그래프로 바꾸면 7.81ms, 그래프가 1.14ms 더 짧다 | 8.944(`act2-rg-base1-r3`), 7.809(`act2-rg-nodedef1-r3`), 8.944 − 7.809 = 1.135. 출발점 17.788에서 각각 -49.7%, -56.1% | 관찰 자료 9.2절, 계산 |
+| 칸의 크기는 엔진의 예제 그래프와 같은 100m | `UBasicReplicationGraph`의 `CellSize = 10000.f`(`BasicReplicationGraph.cpp:68-72`), 이 글의 `LabReplicationGraph.cpp`도 10000 | 엔진 소스, 프로젝트 소스 |
 | 그래프에서 빈도 2의 차이는 구별되지 않았다 | CSV `work_avg_ms` 중앙값 7.537 → 7.437, 차이 0.100이 변동 폭 0.332(빈도 기본값), 0.071(빈도 2)의 큰 쪽보다 작다 | 관찰 자료 9.1절 |
 | 보낼지 따지는 일 2.45 → 1.14ms | 레거시: `GameNetDriver` 프레임당 Excl 2.448(`act2-rg-base1-r3`). 그래프: `GameNetDriver` Excl 0.362 + `UReplicationGraph_ServerReplicateActors` Excl 0.774 = 1.136(`act2-rg1-r1`). 두 값 모두 클래스 타이머 밖의 시간이다 | 관찰 자료 9.2절 |
 | 실제로 보내는 일 1.51 → 1.79ms | 클래스 타이머와 RPC 타이머의 합. 레거시: `GameNetDriver` 바로 아래 줄의 합 1.511. 그래프: `UReplicationGraph_ServerReplicateActors` Incl 2.561 − Excl 0.774 = 1.787(바로 아래 줄의 합 1.786과 같다) | 관찰 자료 9.2절, `Saved/InsightsExport/act2-rg1-r1/summary.txt` |
