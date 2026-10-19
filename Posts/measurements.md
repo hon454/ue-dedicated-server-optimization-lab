@@ -128,7 +128,7 @@ README의 "결과 한눈에 보기"가 2026-10-07 오후부터 쓰는 수치다.
 | 지도: 자리, 경로, 150m 원, 건축물이 놓이는 반지름 | `Scripts/make-relevancy-map.ps1 -Act2` | [1막의 세 최적화를 2막에 다시 적용의 측정 기록](06-three-techniques-again/measurements.md) 2절 |
 | 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, ①\~③ 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
 | 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
-| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [STATUS.md](../Docs/STATUS.md) "확정할 값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
 | UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
 
 ### 4. 단계별 변화
@@ -278,7 +278,7 @@ README의 "결과 한눈에 보기"가 2026-10-07 오전부터 오후까지 쓰�
 | 지도: 자리, 경로, 150m 원, 건축물이 놓이는 반지름 | `Scripts/make-relevancy-map.ps1 -Act2` | [1막의 세 최적화를 2막에 다시 적용의 측정 기록](06-three-techniques-again/measurements.md) 2절 |
 | 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, ①\~③ 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
 | 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
-| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [STATUS.md](../Docs/STATUS.md) "확정할 값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
 | UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
 
 ### 4. 단계별 변화
@@ -412,7 +412,7 @@ README의 "결과 한눈에 보기"가 2026-10-06부터 2026-10-07까지 쓰던 
 | 지도: 자리, 경로, 150m 원, 건축물이 놓이는 반지름 | `Scripts/make-relevancy-map.ps1 -Act2` | [1막의 세 최적화를 2막에 다시 적용의 측정 기록](06-three-techniques-again/measurements.md) 2절 |
 | 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, ①\~③ 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
 | 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
-| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [STATUS.md](../Docs/STATUS.md) "확정할 값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
 | UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
 
 ### 4. 단계별 변화
@@ -493,7 +493,7 @@ README의 "결과 한눈에 보기"가 2026-10-05부터 2026-10-06까지 쓰던 
 | 1막: 198ms → 13.2ms | 198.43ms → 13.16ms | 아래 1막 1절 |
 | 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, 세 단계 모두 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
 | 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
-| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [STATUS.md](../Docs/STATUS.md) "확정할 값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
 | 1막의 플레이어는 반지름 500m 원 위 | `PlayerRingRadius` 50,000cm | `Source/DSOptLab/LabScenarioConfig.h` |
 | UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
 
