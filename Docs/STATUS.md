@@ -17,11 +17,13 @@
 - **태스크 28(포스팅 11, `post-11-npc-interpolation`)이 끝났다(2026-10-07).** 클라이언트가 NPC를 서버 프레임 번호 기준으로 150ms 늦게 보간하자(`-NpcInterpDelay 150`) 표시 속도 오차 평균이 439.9 → 15.0cm/s, 표시 지연이 74 → 155ms, 표시 위치 오차 평균이 22.25 → 46.38cm였다(`act2-interp-base2`, `act2-interp2`). NPC 갱신 한 번은 101 → 117비트(Networking Insights), `out_bytes_per_sec_per_conn`은 11,820 → 12,682(+7.3%)이고 `work_avg_ms`는 구별되지 않았다. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)이고 포스팅 12, 13도 쓴다. 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 28"에 있다.
 - **태스크 29(포스팅 12, `post-12-npc-move-netserialize`)가 끝났다(2026-10-07).** NPC 이동을 `ReplicatedMovement`와 `ServerFrame` 대신 평면 이동 구조체 `FLabNpcMove`로 보내자(`-NpcCompactMove`) NPC 갱신 한 번이 117.24 → 69.04비트(Networking Insights `Connection 0`), `out_bytes_per_sec_per_conn` 중앙값이 12,672 → 10,088(-20.4%)이었고 품질 지표는 구별되지 않았다(`act2-npcmove-base1`, `act2-npcmove1`). `work_avg_ms`는 8.681 → 8.484로 변화 0.197이 변동 폭 0.190을 겨우 넘었다. 경위는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "태스크 29"에 있다. 값과 근거는 [측정 기록](../Posts/12-npc-move-netserialize/measurements.md)에 있다.
 - **태스크 30(포스팅 13, `post-13-lag-and-packet-loss`, 진단)이 끝났다(2026-10-07).** 루프백 → 지연만(`LabLagOnly`)에서 표시 지연 154 → 286ms, 표시 속도 오차 평균 15.1 → 112cm/s였다(`act2-net-base1`, `act2-net-lag1`). 경위는 [Worklog/13-lag-and-packet-loss.md](Worklog/13-lag-and-packet-loss.md)의 "태스크 30"에 있다.
+- **태스크 31(포스팅 14, Replication Graph)을 시작했다(2026-10-19).** [관찰 자료](../Posts/14-replication-graph/candidates.md)를 지난 실행(`act2-net-base1-r3`, `act2-nodeuf-split1-r3`)과 엔진 소스로 썼다. 남은 것은 활성 목록을 따지는 두 단계(`Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845ms, ④에서 잼)다. 그래프는 이 두 단계를 돌지 않고 연결마다 시점이 있는 격자 칸에서만 모은다(`NetDriver.cpp:6295-6298`). `UBasicReplicationGraph`는 동적 액터를 버킷 3개로 나눠 3프레임에 한 번 모으므로(소스대로), 추천안은 버킷을 하나로 둔 하위 클래스(B)와 묶음 셋(⑧, ⑧ + 그래프, 그래프에 자원 노드 빈도 기본값)이다. 그래프 묶음에서는 Consider List 길이 지표가 남지 않는다.
 - 다음 시각 자료 라벨은 `visual24`이다(`visual22`, `visual23`은 포스팅 13의 시연용 NPC 루프백과 `Bad`, 2026-10-07. `visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후).
 
 ## 다음 할 일
 
-1. 태스크 31(포스팅 14, Replication Graph)을 [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기"대로 진행한다. 비교 대상은 [포스팅 8](../Posts/08-node-update-frequency/README.md)의 자원 노드 Net Update Frequency다.
+1. **[사람] 포스팅 14의 "관찰"과 "선택".** [관찰 자료](../Posts/14-replication-graph/candidates.md) 3절의 후보(A, B, C)와 비교할 묶음(X0, X1, Y1, 또는 2 × 2)을 고른다. 에이전트 의견은 6절이다.
+2. 고른 그래프를 `-ReplicationGraph`(기본값 끔)로 구현하고, 작은 규모로 동작을 확인한 뒤 확정 규모의 묶음을 연달아 잰다([2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기" 4\~5).
 
 ## 포스팅 진행
 
@@ -127,4 +129,4 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 사용자에게 요청한 일
 
-- 없음.
+- **포스팅 14의 "관찰"과 "선택".** 위 "다음 할 일" 1번.
