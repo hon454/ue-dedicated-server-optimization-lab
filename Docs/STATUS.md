@@ -6,13 +6,13 @@
 
 **1막(포스팅 0\~4)과 2막의 포스팅 5\~15가 끝났다.** 끝낸 태스크의 경위는 아래 "포스팅 진행" 표의 작업 기록에 있다. 여기에는 다음 작업을 제약하는 것만 둔다.
 
-- **루트 README의 결과는 2막 아홉 구성(기준선과 ①\~⑧)을 연달아 잰 `act2-all-*3`이다(2026-10-07).** 포스팅 12를 ⑧ NPC 이동 구조체로 더하면서 모든 구성을 다시 쟀다(13:04\~14:15, 본체 화면, 사용자가 무거운 프로그램을 닫은 뒤). 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 여덟 단계"에 있다. ⑦ → ⑧은 `out_bytes_per_sec_per_conn` 중앙값 12,681 → 10,094(-20.4%), `work_avg_ms` 8.690 → 8.493(구별되지 않음)이다. 이 묶음에서는 ⑤ → ⑥의 `work_avg_ms`가 +0.183으로 변동 폭 0.182를 겨우 넘었다(포스팅 10과 `act2-all-*2`에서는 구별되지 않음). 기준선 `r1`은 다른 두 실행보다 17% 느렸고 원인은 확인하지 않았다. ①을 빼면 각 글의 묶음과 -3.3\~+9.2% 다르다. 틱 예산을 조금 넘는 ① 거리 판정은 잰 날마다 크게 다르므로 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 지난 묶음 `act2-all-*2`의 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "README와 시각화 페이지 갱신"에 있다.
+- **루트 README의 결과는 2막 열한 구성(기준선, ①\~⑨, Iris)을 연달아 잰 `act2-all-*4`다(2026-10-20).** 포스팅 14를 ⑨ Replication Graph 단계로, 포스팅 15를 리플리케이션 시스템 갈래 표(레거시 ⑧, ⑨, Iris)로 더하면서 모든 구성을 다시 쟀다(01:09\~02:38, 본체 화면, 사용자가 무거운 프로그램을 닫은 뒤, `-MotionLog` 없음, 33회 모두 종료 코드 0). 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 아홉 단계와 리플리케이션 시스템 갈래"에 있다. Insights 서버 프레임 시간 평균은 ⑧ 8.672, ⑨ 7.546(-13.0%), Iris 7.019(⑧보다 -19.1%, ⑨보다 -7.0%)ms이고, `out_bytes_per_sec_per_conn` 중앙값은 10,072, 10,947, 10,442다. 지난 묶음에서 변동 폭을 겨우 넘었던 ⑥의 `work_avg_ms` 증가는 이번에 구별되지 않았다. 기준선 `r1`이 또 다른 두 실행보다 7% 느렸다. 이 묶음은 포스팅 15의 묶음(10-19 밤)보다 7.7\~13.7% 느렸고, Iris와 ⑨의 차이가 11.2%에서 7.0%로 줄었다. 각 글의 값과 섞지 않는다. 지난 묶음 `act2-all-*3`의 경위는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "README와 시각화 페이지 갱신"에 있다.
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 아홉 단계(포스팅 12까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 시뮬레이션의 한계는 [Site/README.md](../Site/README.md)에 있다. 단계를 더하는 기준은 [AGENTS.md](../AGENTS.md) "규칙"에 있다.
 - 다음 시각 자료 라벨은 `visual26`이다(`visual24`, `visual25`는 포스팅 15의 Iris 기본 우선순위기와 우선순위 1.0, 2026-10-20).
 
 ## 다음 할 일
 
-1. README의 ⑨ 단계와 리플리케이션 시스템 갈래 표(레거시, Replication Graph, Iris)를 위해 기준선, ①\~⑨, Iris를 한 번에 연달아 잰다([ADR-0021](Decisions/0021-replication-system-comparison-table.md)). ⑨는 ⑧에 `-ReplicationGraph`, Iris는 ⑧에 `-Iris -IrisFlatPriority`(포스팅 15가 레거시와 비교한 설정)를 더한다. 라벨은 `act2-all-*4`이고 `-MotionLog`를 켜지 않는다(2026-10-20 사용자 승인). 웹 페이지에 ⑨와 갈래를 어떻게 보일지는 사용자에게 묻는다(⑨는 포스팅 14의 두 묶음으로 더할 수 있다).
+1. 시리즈 웹 페이지에 ⑨와 리플리케이션 시스템 갈래를 더한다. 어떻게 보일지는 사용자의 답을 기다린다(아래 "사용자에게 요청한 일"). 웹 페이지는 단계마다 그 글이 비교한 두 묶음을 쓴다: ⑨는 `act2-rg-base1` → `act2-rg1`, 갈래는 `act2-iris-base2`, `act2-iris-rg2`, `act2-iris2`([ADR-0021](Decisions/0021-replication-system-comparison-table.md)).
 2. 그 뒤 다음 작업을 사용자에게 묻는다(2막에서 계획한 포스팅은 끝났다).
 
 ## 포스팅 진행
@@ -59,4 +59,4 @@
 
 ## 사용자에게 요청한 일
 
-- 없음.
+- **[사람] 웹 페이지에 ⑨와 리플리케이션 시스템 갈래를 보이는 방법.** 에이전트가 2026-10-20 채팅에 추천안과 함께 물었다.
