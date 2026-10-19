@@ -2,7 +2,7 @@
 
 [index.html](index.html)은 의존성이 없는 한 파일이다. main에 푸시하면 [배포 워크플로](../.github/workflows/pages.yml)가 이 폴더를 GitHub Pages에 올린다. 주소는 `https://hon454.github.io/ue-dedicated-server-optimization-lab/`다.
 
-페이지는 테스트베드 두 개를 고를 수 있다. 1막은 네 단계(0단계 기준선, 1단계 Relevancy, 2단계 Dormancy, 3단계 Net Update Frequency)이고, 2막은 아홉 단계(0단계 기준선부터 8단계 NPC 이동 구조체까지)다(2026-10-06에 더했고, 7단계와 8단계는 2026-10-07에 더했다). 단계를 고르면 브라우저에서 도는 시뮬레이션이 서버 프레임 하나의 횟수를 세어 보여 준다. 측정한 조합만 고를 수 있게 했다.
+페이지는 테스트베드 두 개를 고를 수 있다. 1막은 네 단계(0단계 기준선, 1단계 Relevancy, 2단계 Dormancy, 3단계 Net Update Frequency)이고, 2막은 열 단계(0단계 기준선부터 9단계 Replication Graph까지)다(2026-10-06에 더했고, 7단계와 8단계는 2026-10-07에, 9단계는 2026-10-20에 더했다). 단계를 고르면 브라우저에서 도는 시뮬레이션이 서버 프레임 하나의 횟수를 세어 보여 준다. 측정한 조합만 고를 수 있게 했다. 2막에는 리플리케이션 시스템만 바꾼 갈래 카드(레거시, Replication Graph, Iris)가 있다. Iris는 Replication Graph와 함께 쓸 수 없어서 9단계 위에 쌓지 않고 나란히 놓는다([ADR-0021](../Docs/Decisions/0021-replication-system-comparison-table.md)). Iris는 시뮬레이션하지 않고 측정값만 보인다. Iris의 일(상태를 한 번 변환해 두고 클라이언트마다 쓰기)은 쌍을 세는 이 페이지의 모형으로 셀 수 없기 때문이다.
 
 ## 수치의 출처: 1막
 
@@ -43,7 +43,14 @@
 | 6단계 | 측정값 | [포스팅 10 측정 기록](../Posts/10-inventory-fastarray/measurements.md) 2절과 [관찰 자료](../Posts/10-inventory-fastarray/candidates.md) 13절(`act2-fastarr-base1`, `act2-fastarr1`). 서버 프레임 시간 평균은 구별되지 않았다. 인벤토리 한 번의 최대 크기 18,190 → 345비트 |
 | 7단계 | 측정값 | [포스팅 11 측정 기록](../Posts/11-npc-interpolation/measurements.md) 3절, 4절, 5절의 `r1`끼리(`act2-interp-base2`, `act2-interp2`). 두 묶음 모두 모션 기록(`-MotionLog`)을 켰다. 서버 프레임 시간 평균 8.880 → 8.893ms와 리플리케이션 시간 3.907 → 3.934ms는 구별되지 않았다. 연결당 송신 대역폭은 CSV 중앙값 11,820 → 12,682다. 표시 속도 오차 평균 439.9 → 15.0cm/s와 표시 지연 74 → 155ms는 세 실행의 중앙값이다([ADR-0020](../Docs/Decisions/0020-npc-motion-quality-metrics.md)). Consider List 415는 `act2-interp2-r1`의 서버 로그 414.8이다. NPC 갱신 한 번의 크기 101.23 → 117.20비트는 Networking Insights `Connection 0`의 `LabNpc` Incl ÷ Count다(5.1절) |
 | 8단계 | 측정값 | [포스팅 12 측정 기록](../Posts/12-npc-move-netserialize/measurements.md) 2절, 3절, 4절, 5절, 5.1절의 `r2`끼리(`act2-npcmove-base1`, `act2-npcmove1`). 두 묶음 모두 모션 기록을 켰다. 서버 프레임 시간 평균 8.957 → 8.760ms, 리플리케이션 시간 3.993 → 3.824ms는 Timing Insights다. CSV `work_avg_ms`의 변화 -0.197은 변동 폭 0.190을 겨우 넘었다. 연결당 송신 대역폭은 CSV 중앙값 12,672 → 10,088이다. NPC 갱신 한 번의 크기 117.24 → 69.04비트는 Networking Insights `Connection 0`의 `LabNpc` Incl ÷ Count다. 표시 속도 오차 평균 14.9 → 15.0cm/s와 표시 지연 155 → 154ms는 세 실행의 중앙값이고 구별되지 않았다. Consider List 415, 활성 목록 5,272는 `act2-npcmove1-r2`의 서버 로그 414.8, 5,272다 |
-| 인벤토리 카드의 "인벤토리 송신량"(4\~8단계) | 측정값 | 4단계는 5단계의 적용 전 값 4,545다(같은 구성). 7단계와 8단계는 6단계의 적용 후 값 14.8이다(인벤토리 구성이 같다). 0\~3단계는 측정하지 않았다 |
+| 9단계 | 측정값 | [포스팅 14 측정 기록](../Posts/14-replication-graph/measurements.md) 2절, 3절의 `act2-rg-base1`(`r3`)과 `act2-rg1`(`r1`). 두 묶음 모두 모션 기록을 켰다. 서버 프레임 시간 평균 8.944 → 7.710ms, 리플리케이션 시간 3.958 → 2.923ms는 Timing Insights다. 연결당 송신 대역폭은 CSV 중앙값 10,073 → 10,962, 열린 액터 채널 77은 CSV다. 1번 클라이언트의 자원 노드 176 → 380개는 `r2`의 t=75s 화면 글자다. "칸에서 가져온 쌍"의 약 75개는 측정이 아니라 그 측정 기록의 계산이다(클라이언트마다 NPC 약 63, 캐릭터 8, 소유자 액터) |
+| 9단계의 칸 100m, 칸 경계 28.48m + 100m × n, 액터는 자기 위치 ± 150m 사각형이 걸치는 칸에 듦 | 소스의 값, 엔진 소스 | `LabReplicationGraph.cpp`의 `CellSize`, `SpatialBias`(-`UE_OLD_WORLD_MAX`), `ReplicationGraph.cpp`의 `GetCellInfoForActor`. 경계 계산은 `Scripts/make-repgraph-cell.ps1`의 머리 주석 |
+| 9단계의 순서: 이 연결에서 Dormant 상태면 건너뜀, 간격, 거리 검사 | 엔진 소스 | `ReplicationGraph.cpp:1523-1571`(`ReplicateActorListsForConnections_Default`) |
+| 9단계의 간격: NPC 4프레임, 자원 노드 16프레임, 건축물 1프레임 | 소스의 값 | `ULabReplicationGraph::GetLegacyPeriodFrame`(레거시의 평균 간격 (30 ÷ 빈도) + 1프레임에 가장 가까운 정수) |
+| 9단계의 trickle: 프레임마다 연결마다 하나, 150m 밖에 남은 액터의 컬 거리를 0으로 | 엔진 소스 | `ReplicationGraph.cpp:4717-4721`, `Net.RepGraph.TrickleDistCullOnDormancyNodes` 기본값 1(`ReplicationGraph.cpp:165`) |
+| 9단계: 보내지 않은 채 간격 + 4프레임이 지나면 채널을 닫음 | 엔진 소스 | `ReplicationGraphTypes.h:893`의 `ActorChannelFrameTimeout` 4, `ReplicationGraph.cpp:2286-2288` |
+| 갈래 카드의 세 구성 | 측정값 | [포스팅 15 측정 기록](../Posts/15-iris/measurements.md) 2절, 3절, 4절의 `act2-iris-base2`(`r1`), `act2-iris-rg2`(`r1`), `act2-iris2`(`r2`). 세 묶음 모두 모션 기록을 켰다. 서버 프레임 시간 평균 7.636, 7.017, 6.228ms와 리플리케이션 시간 3.346, 2.654, 1.888ms는 Timing Insights다. 연결당 송신 대역폭 9,791, 10,452, 10,109는 CSV 중앙값이다. 1번 클라이언트의 자원 노드 176, 380, 112개는 `r2`의 t=75s 화면 글자다(`act2-iris-rg2-r2-topdown-04`는 2026-10-20에 열어 확인). 레거시와 Replication Graph의 값은 8단계, 9단계의 값과 다른 묶음이다 |
+| 인벤토리 카드의 "인벤토리 송신량"(4\~9단계) | 측정값 | 4단계는 5단계의 적용 전 값 4,545다(같은 구성). 7\~9단계는 6단계의 적용 후 값 14.8이다(인벤토리 구성이 같다). 0\~3단계는 측정하지 않았다 |
 | 8단계의 구조체: 집에서 잰 X, Y 13비트씩, 방향과 서버 프레임 번호 8비트씩, 한 번 쓴 비트를 모든 연결이 함께 씀 | 소스의 값 | `LabNpc.h`의 `FLabNpcMove`, `LabNpc.cpp`의 `FLabNpcMove::NetSerialize`, `WithNetSharedSerialization`(`RepLayout.cpp:5555-5557`) |
 | 7단계의 보간 지연 150ms, 받은 위치 두 개 사이를 이음 | 소스의 값 | `-LabNpcInterpDelay=150`, `LabNpc.cpp`의 `TickInterpolation` |
 | "측정: 활성 목록, Consider List" | 측정값 | 서버 로그 `lab_network_objects active=`, `lab_consider_list avg_per_frame=`. 3단계는 `act2-nodeuf-base1-r3`(같은 구성을 포스팅 8에서 잰 값), 4\~6단계는 각 글의 적용 후 실행이다. 활성 목록에는 플레이어 캐릭터와 컨트롤러 같은 다른 액터가 들어 있다 |
@@ -69,6 +76,13 @@
 | 7단계 왕복 NPC의 갱신 간격 | 133ms | 수신 간격 평균 133.4ms(`act2-interp2` 중앙값) |
 | 7단계 그린 위치가 서버보다 뒤처진 거리 | 45cm(150ms × 300cm/s) | 표시 지연 155ms. 시뮬레이션에는 전달 시간이 없다 |
 
+| 9단계 걸어 다니는 클라이언트의 자원 노드 | 348 | 380(`act2-rg1-r2`의 화면 글자 `nodes=380`). 8단계에서는 178(측정 176) |
+| 9단계 걸어 다니는 클라이언트의 NPC | 54 | 55(같은 화면 글자 `npcs=55`) |
+| 9단계 칸에서 가져온 쌍 | 약 497(클라이언트마다 약 62) | 측정하지 않음. 포스팅 14의 계산은 클라이언트마다 약 75개이고, 시뮬레이션에 없는 캐릭터 8과 소유자 액터가 들어 있다 |
+| 9단계 프로퍼티를 비교한 쌍 | 약 108 | 측정하지 않음. 8단계의 시뮬레이션은 약 110 |
+
+9단계는 2026-10-20에 확인했다(로컬 미리보기, 시뮬레이션을 스크립트로 75초 돌림. 처음부터 9단계로 돌린 것과 8단계로 40초 돌린 뒤 9단계로 60초 돌린 것이 같았다). 레거시의 8단계에서 거리 검사에서 건너뛴 쌍은 약 3,030이고, 9단계에서는 약 65다.
+
 7단계는 2026-10-07에 확인했다(로컬 미리보기, 시뮬레이션을 스크립트로 300프레임 돌림). 받은 위치는 4프레임마다 40cm씩 건너뛰고, 그린 위치는 프레임마다 10cm씩 움직인다.
 
 4단계에서 자원 노드는 16프레임마다 몰려서 고려된다. 단계를 바꾼 프레임에 모든 자원 노드의 다음 고려 시각이 함께 정해지기 때문이다. 흐름의 숫자는 그래서 96프레임(16의 배수)을 평균한다.
@@ -81,6 +95,7 @@
 - 왕복하는 NPC 하나는 흐름의 횟수에 넣지 않는다.
 - 2막 7단계: 보간은 왕복하는 NPC 하나에만 그린다. 서버 시각을 그대로 쓰고, 서버 프레임 번호와 시계 추정, 전달 시간을 다루지 않는다. 클라이언트 지도의 NPC 점은 받은 위치다.
 - 2막 8단계: 시뮬레이션은 비트를 다루지 않아 지도와 흐름, NPC의 움직임이 7단계와 같다. 8단계가 바꾼 것은 "실제 서버에서 측정한 값"에만 보인다.
+- 2막 9단계: 칸 목록을 프레임마다 모든 액터에서 다시 계산한다(엔진은 액터가 칸을 옮길 때만 목록을 고친다). 시점은 클라이언트의 폰 위치다. 동적 액터를 여러 버킷에 나누는 것, 우선순위, trickle을 시작하기 전의 대기 프레임, Dormant 상태의 액터를 지운 프레임에 trickle을 쉬는 것은 다루지 않는다. 8단계와 9단계 사이를 오가면 채널과 Dormant 상태를 그대로 넘긴다.
 - 2막: 인벤토리는 앞 칸 지우기만 다루고 채집으로 수량이 바뀌는 것은 다루지 않는다. FastArray 클라이언트의 칸 순서가 서버와 달라지는 것도 다루지 않는다. 건축물을 허물 때 클라이언트에서 바로 지운다.
 - 1막은 2026-10-06 수정에서 모든 연결에서 Dormant 상태인 액터를 활성 목록에서 빼게 됐다. 1막의 플레이어는 서로 멀어 그런 자원 노드가 거의 없어서 흐름의 숫자는 그대로다(Dormancy 단계의 ④가 약 43 → 약 39).
 
