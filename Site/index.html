@@ -58,6 +58,11 @@ p { margin: 0 0 10px; }
 canvas { display: block; width: 100%; border-radius: 8px; background: #10151c; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-top: 8px; }
 .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+.keys { list-style: none; margin: -4px 0 10px; padding: 0; display: grid; gap: 2px; font-size: 13px; color: var(--muted); }
+.keys li { display: flex; align-items: center; gap: 8px; }
+.keys i { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.keys i.ring { border: 2px solid #fff; }
+.keys i.sq { border-radius: 2px; }
 .flow { display: grid; gap: 10px; }
 .row { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: baseline; }
 .row .label { font-size: 14px; }
@@ -177,7 +182,12 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 
 		<section class="card">
 			<h2>NPC 하나의 움직임</h2>
-			<div class="sub" id="npcSub">10m를 왕복하는 NPC다. 고리는 서버의 위치이고, 빨간 점은 클라이언트가 받은 위치다.</div>
+			<div class="sub">10m를 왕복하는 NPC다.</div>
+			<ul class="keys">
+				<li><i class="ring"></i>흰 고리: 서버의 위치</li>
+				<li><i style="background:var(--red)"></i>빨간 점: 클라이언트가 서버로부터 받은 위치</li>
+				<li data-interp hidden><i style="background:var(--blue)"></i><span>파란 점: 클라이언트가 받은 위치 두 개 사이를 <span id="interpMs">150</span>ms 늦게 이어 그린 위치</span></li>
+			</ul>
 			<canvas id="npcStrip" width="600" height="110" aria-label="서버의 NPC 위치와 클라이언트가 받은 위치"></canvas>
 			<div class="stats">
 				<div class="stat"><span>서버 프레임 간격</span><b id="sTick">0</b></div>
@@ -191,7 +201,11 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 
 		<section class="card wide" data-act="2">
 			<h2>인벤토리 한 번이 가는 길</h2>
-			<div class="sub">플레이어 여덟 명의 인벤토리 200칸이다. 서버는 0.5초마다 한 사람의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다. 흰 칸은 그 변경으로 연결에 보내는 칸이고, 아래 칸은 그것을 받는 연결이다.</div>
+			<div class="sub">플레이어 여덟 명의 인벤토리 200칸이다. 서버는 0.5초마다 한 사람의 맨 앞 칸을 지우고 맨 뒤에 새 칸을 더한다.</div>
+			<ul class="keys">
+				<li><i class="sq" style="background:#fff"></i>흰 칸: 그 변경으로 연결에 보내는 칸</li>
+				<li><i class="sq" style="background:var(--blue)"></i>파란 칸(아래 줄): 그 변경을 받는 연결</li>
+			</ul>
 			<canvas id="invCanvas" width="1000" height="340" aria-label="플레이어 여덟 명의 인벤토리와 변경을 받는 연결"></canvas>
 			<div class="stats">
 				<div class="stat"><span>바뀐 인벤토리를 받는 연결</span><b id="iConns">0</b></div>
@@ -757,9 +771,9 @@ function renderStep() {
 	$('stepDesc').textContent = s.desc;
 	$('stepCode').textContent = s.code;
 	$('stepPost').href = REPO + s.post;
-	$('npcSub').textContent = s.interp
-		? `10m를 왕복하는 NPC다. 고리는 서버의 위치, 빨간 점은 클라이언트가 받은 위치, 파란 점은 클라이언트가 ${Math.round(s.interp * 1000)}ms 늦게 이어 그린 위치다.`
-		: '10m를 왕복하는 NPC다. 고리는 서버의 위치이고, 빨간 점은 클라이언트가 받은 위치다.';
+	// 파란 점(보간한 위치)은 보간하는 단계에서만 그리므로 그 항목도 그때만 보인다.
+	for (const el of document.querySelectorAll('[data-interp]')) el.hidden = !s.interp;
+	if (s.interp) $('interpMs').textContent = Math.round(s.interp * 1000);
 	for (const r of FLOW) $('m-' + r.key).textContent = s.flowMeasured && s.flowMeasured[r.key] ? FLOW_MEASURED[r.key](s.flowMeasured[r.key]) : '';
 	const delta = key => !prev ? '출발점' : s.m[key] === prev[key] ? '적용 전과 같음' : `적용 전보다 ${s.m[key] < prev[key] ? '-' : '+'}${Math.abs((s.m[key] - prev[key]) / prev[key] * 100).toFixed(1)}%${unclear.includes(key) ? '. 실행 사이의 차이보다 작아 구별되지 않는다' : ''}`;
 	// 단계의 결과: 서버 프레임 시간 평균을 앞 단계와 나란히 보이고, 틱 예산과 견준다.
