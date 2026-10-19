@@ -17,12 +17,13 @@
 - **태스크 28(포스팅 11, `post-11-npc-interpolation`)이 끝났다(2026-10-07).** 클라이언트가 NPC를 서버 프레임 번호 기준으로 150ms 늦게 보간하자(`-NpcInterpDelay 150`) 표시 속도 오차 평균이 439.9 → 15.0cm/s, 표시 지연이 74 → 155ms, 표시 위치 오차 평균이 22.25 → 46.38cm였다(`act2-interp-base2`, `act2-interp2`). NPC 갱신 한 번은 101 → 117비트(Networking Insights), `out_bytes_per_sec_per_conn`은 11,820 → 12,682(+7.3%)이고 `work_avg_ms`는 구별되지 않았다. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)이고 포스팅 12, 13도 쓴다. 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 28"에 있다.
 - **태스크 29(포스팅 12, `post-12-npc-move-netserialize`)가 끝났다(2026-10-07).** NPC 이동을 `ReplicatedMovement`와 `ServerFrame` 대신 평면 이동 구조체 `FLabNpcMove`로 보내자(`-NpcCompactMove`) NPC 갱신 한 번이 117.24 → 69.04비트(Networking Insights `Connection 0`), `out_bytes_per_sec_per_conn` 중앙값이 12,672 → 10,088(-20.4%)이었고 품질 지표는 구별되지 않았다(`act2-npcmove-base1`, `act2-npcmove1`). `work_avg_ms`는 8.681 → 8.484로 변화 0.197이 변동 폭 0.190을 겨우 넘었다. 경위는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "태스크 29"에 있다. 값과 근거는 [측정 기록](../Posts/12-npc-move-netserialize/measurements.md)에 있다.
 - **태스크 30(포스팅 13, `post-13-lag-and-packet-loss`, 진단)이 끝났다(2026-10-07).** 루프백 → 지연만(`LabLagOnly`)에서 표시 지연 154 → 286ms, 표시 속도 오차 평균 15.1 → 112cm/s였다(`act2-net-base1`, `act2-net-lag1`). 경위는 [Worklog/13-lag-and-packet-loss.md](Worklog/13-lag-and-packet-loss.md)의 "태스크 30"에 있다.
-- **태스크 31(포스팅 14, Replication Graph)을 시작했다(2026-10-19).** [관찰 자료](../Posts/14-replication-graph/candidates.md)를 지난 실행(`act2-net-base1-r3`, `act2-nodeuf-split1-r3`)과 엔진 소스로 썼다. 남은 것은 활성 목록을 따지는 두 단계(`Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845ms, ④에서 잼)다. 그래프는 이 두 단계를 돌지 않고 연결마다 시점이 있는 격자 칸에서만 모은다(`NetDriver.cpp:6295-6298`). 그래프 묶음에서는 Consider List 길이 지표가 남지 않는다. 사용자가 B(동적 액터 버킷을 하나로 둔 그래프)와 2 × 2(레거시/그래프 × 자원 노드 빈도 기본값/2)를 골랐다(관찰 자료 7절). `ULabReplicationGraph`를 `-ReplicationGraph`로 구현했다. 클래스마다 보내는 간격을 레거시의 평균 고려 간격((30 ÷ 빈도) + 1프레임)에 맞췄고 디버그 액터를 끄며, 작은 규모에서 채널 수 58과 NPC 수신 간격 133.5 → 133.7ms가 레거시와 같았다(`tsmall-rg-base2-r1`, `tsmall-rg2-r1`). 송신량은 3.2% 많았고 원인은 확인하지 않았다(캐릭터 간격 1.3 → 1프레임으로 봄).
+- **태스크 31(포스팅 14, Replication Graph)을 시작했다(2026-10-19).** [관찰 자료](../Posts/14-replication-graph/candidates.md)를 지난 실행(`act2-net-base1-r3`, `act2-nodeuf-split1-r3`)과 엔진 소스로 썼다. 남은 것은 활성 목록을 따지는 두 단계(`Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845ms, ④에서 잼)다. 그래프는 이 두 단계를 돌지 않고 연결마다 시점이 있는 격자 칸에서만 모은다(`NetDriver.cpp:6295-6298`). 그래프 묶음에서는 Consider List 길이 지표가 남지 않는다. 사용자가 B(동적 액터 버킷을 하나로 둔 그래프)와 2 × 2(레거시/그래프 × 자원 노드 빈도 기본값/2)를 골랐다(관찰 자료 7절). `ULabReplicationGraph`를 `-ReplicationGraph`로 구현했다. 클래스마다 보내는 간격을 레거시의 평균 고려 간격((30 ÷ 빈도) + 1프레임)에 맞췄고 디버그 액터를 끄며, 작은 규모에서 채널 수 58과 NPC 수신 간격 133.5 → 133.7ms가 레거시와 같았다(`tsmall-rg-base2-r1`, `tsmall-rg2-r1`). 확정 규모 2 × 2(아래 "측정 결과")에서 그래프는 `work_avg_ms`를 ⑧보다 1.225 줄였고, 자원 노드 빈도를 기본값으로 둬도 차이가 변동 폭 안이었다. 품질 지표는 네 묶음이 구별되지 않았다. 대신 송신량이 8.8% 늘었고 클라이언트가 가진 자원 노드가 176 → 380개였다(`act2-rg-base1-r2`, `act2-rg1-r2`의 `slot=1` 자동 스크린샷, t=75s). 그래프의 Dormancy 노드가 거리에서 걸러진 액터를 한 프레임에 하나씩 거리 무시로 보내기 때문으로 본다(`Net.RepGraph.TrickleDistCullOnDormancyNodes` 기본값 1, `ReplicationGraph.cpp:165, 4717-4721`). 서버 로그에서 모든 연결에서 Dormant 상태인 자원 노드가 114 → 241개였다(`act2-rg-base1-r3`, `act2-rg1-r1`).
 - 다음 시각 자료 라벨은 `visual24`이다(`visual22`, `visual23`은 포스팅 13의 시연용 NPC 루프백과 `Bad`, 2026-10-07. `visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후).
 
 ## 다음 할 일
 
-1. **[사람] 확정 규모 2 × 2 측정 승인.** 네 묶음(`act2-rg-base-nodedef1`, `act2-rg-base1`, `act2-rg-nodedef1`, `act2-rg1`)을 연달아 3회씩 잰다(약 33분, 본체 화면). 승인되면 재고, Insights 값과 시각 자료를 모은다([2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기" 5).
+1. **[사람] 그래프의 trickle을 그대로 둘지 정한다.** 그대로 두면 지금 묶음으로 글을 쓴다. 끄면(`Net.RepGraph.TrickleDistCullOnDormancyNodes 0`) 150m 판정이 레거시와 같아지고, 네 묶음을 다시 연달아 잰다(약 33분). [관찰 자료](../Posts/14-replication-graph/candidates.md) 9절.
+2. 그다음 Networking Insights의 클래스별 비트, 그래프 묶음의 클래스 타이머(`export-insights.ps1`이 `UReplicationGraph_ServerReplicateActors` 아래를 내보내지 않는다), 시각 자료를 모은다([2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기" 5).
 
 ## 포스팅 진행
 
@@ -122,10 +123,19 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다. 포스팅 11의 두 묶음(`act2-interp-base2`, `act2-interp2`)의 행과 품질 지표는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 29 준비"로 옮겼다. 포스팅 12의 두 묶음(`act2-npcmove-base1`, `act2-npcmove1`)의 행과 품질 지표는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "태스크 30 준비"로 옮겼다. 포스팅 13의 다섯 묶음(`act2-net-base1`, `act2-net-avg1`, `act2-net-bad1`, `act2-net-lag1`, `act2-net-loss1`)의 행은 [Worklog/13-lag-and-packet-loss.md](Worklog/13-lag-and-packet-loss.md)의 "태스크 31 준비"로 옮겼다.
 
+포스팅 14의 네 묶음(2026-10-19 16:22\~16:54, 본체 화면, 연달아 잼, 12회 모두 종료 코드 0)은 중앙값(변동 폭)만 적는다. 모두 ⑧의 인자에 `-MotionLog`를 더했다. 실행별 행과 품질 지표는 [관찰 자료](../Posts/14-replication-graph/candidates.md) 9절에 있다.
+
+| 묶음 | 리플리케이션, 자원 노드 빈도 | work_avg_ms | work_p99_ms | netflush_avg_ms | out_bytes_per_sec_per_conn | `GameNetDriver` 프레임당(중앙값 실행) |
+| --- | --- | --- | --- | --- | --- | --- |
+| `act2-rg-base-nodedef1` | 레거시, 100 | 17.506(2.748) | 25.237 | 12.963 | 10097(43) | 12.681ms(`r1`) |
+| `act2-rg-base1` | 레거시, 2(⑧) | 8.662(0.082) | 12.811 | 4.209 | 10073(14) | 3.958ms(`r3`) |
+| `act2-rg-nodedef1` | 그래프, 100 | 7.537(0.332) | 10.945 | 3.195 | 10954(16) | 2.946ms(`r3`) |
+| `act2-rg1` | 그래프, 2 | 7.437(0.071) | 10.370 | 3.168 | 10962(47) | 2.923ms(`r1`) |
+
 ## 막힌 것
 
 - 없음.
 
 ## 사용자에게 요청한 일
 
-- **포스팅 14의 확정 규모 측정 승인.** 위 "다음 할 일" 1번.
+- **포스팅 14의 trickle 결정.** 위 "다음 할 일" 1번.
