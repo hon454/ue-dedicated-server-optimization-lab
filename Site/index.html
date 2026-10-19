@@ -97,6 +97,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 .branch .sys { background: #10151c; border: 1px solid transparent; border-radius: 10px; padding: 12px; min-width: 0; }
 .branch .sys.on { border-color: var(--amber); }
 .branch .sys h3 { font-size: 15px; margin: 0 0 4px; }
+.branch .sys h3 .now { font-size: 12px; font-weight: normal; color: var(--amber); margin-left: 6px; }
 .branch .sys p { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
 .branch .sys .metric { margin-bottom: 6px; }
 .branch .sys .metric .v { font-size: 17px; }
@@ -185,7 +186,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 			<div class="sub">10m를 왕복하는 NPC다.</div>
 			<ul class="keys">
 				<li><i class="ring"></i>흰 고리: 서버의 위치</li>
-				<li><i style="background:var(--red)"></i>빨간 점: 클라이언트가 서버로부터 받은 위치</li>
+				<li><i style="background:var(--red)"></i>빨간 점: 클라이언트가 서버에서 받은 위치</li>
 				<li data-interp hidden><i style="background:var(--blue)"></i><span>파란 점: 클라이언트가 받은 위치 두 개 사이를 <span id="interpMs">150</span>ms 늦게 이어 그린 위치</span></li>
 			</ul>
 			<canvas id="npcStrip" width="600" height="110" aria-label="서버의 NPC 위치와 클라이언트가 받은 위치"></canvas>
@@ -217,7 +218,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 
 		<section class="card wide" data-act="2">
 			<h2>리플리케이션 시스템만 바꾸면</h2>
-			<div class="sub">8단계의 설정을 그대로 두고 리플리케이션 시스템만 바꾼 세 구성이다. 같은 날 연달아 세 번씩 실행한 중앙값이다. Iris는 Replication Graph와 함께 쓸 수 없어서 9단계 위에 쌓지 않고 나란히 놓는다. Iris는 이 페이지에서 시뮬레이션하지 않고 측정값만 보인다.</div>
+			<div class="sub">8단계의 설정을 그대로 두고 리플리케이션 시스템만 바꾼 세 구성이다. Iris는 Replication Graph와 함께 쓸 수 없어서 9단계 위에 쌓지 않고 나란히 놓는다. 세 구성은 Iris 글이 같은 날 연달아 잰 묶음이라, 위 8단계와 9단계의 값(각 글이 잰 묶음)과 조금 다르다. 그래서 이 카드 안에서만 견준다. 지금 고른 단계와 같은 구성에는 테두리와 "지금 단계"를 표시한다. Iris는 쌍마다 세는 이 페이지의 시뮬레이션으로 그릴 수 없어서 측정값만 보인다.</div>
 			<div class="branch" id="branch"></div>
 			<p class="source" style="margin-top:10px"><a id="branchPost" href="#">이 비교의 글 읽기</a></p>
 		</section>
@@ -227,7 +228,7 @@ footer ul { margin: 6px 0 0; padding-left: 18px; }
 		<strong>이 페이지의 숫자를 읽는 법</strong>
 		<ul>
 			<li>"측정"이라고 적힌 값만 실제 서버에서 측정했다. 근거는 각 글의 측정 기록에 있다.</li>
-			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 한 단계의 적용 후 값과 다음 단계의 적용 전 값이 조금 다르다. 리플리케이션 시스템의 갈래는 Iris 글이 연달아 잰 세 묶음의 값이다. 2막의 루트 README는 열한 구성을 하루에 연달아 잰 다른 묶음이라 값이 다르다.</li>
+			<li>측정값은 단계마다 그 글이 비교한 두 묶음의 값이다. 그래서 한 단계의 적용 후 값과 다음 단계의 적용 전 값이 조금 다르다. "리플리케이션 시스템만 바꾸면" 카드는 Iris 글이 연달아 잰 세 묶음의 값이다. 2막의 루트 README는 열한 구성을 하루에 연달아 잰 다른 묶음이라 값이 다르다.</li>
 			<li>지도와 흐름의 숫자는 이 브라우저에서 도는 시뮬레이션이 센 값이다. 시뮬레이션은 0~8단계에서 엔진의 기본 리플리케이션 순서를, 9단계에서 Replication Graph의 순서를 따른다. Iris는 시뮬레이션하지 않는다.</li>
 			<li>맵 크기, 액터 수, 플레이어의 자리와 경로, 150m는 실제 값이다. 자원 노드와 NPC, 건축물의 위치는 예시다.</li>
 			<li>시뮬레이션은 서버 프레임 간격을 측정값에서 가져온다. 틱 예산을 넘는 단계의 서버는 30Hz를 지키지 못해서 지도가 느리게 움직인다.</li>
@@ -330,7 +331,7 @@ const STEPS2 = [
 		m: { frame: 8.760, repl: 3.824, bw: 10088, chan: 77, npcBits: 69.04, speedErr: 15.0, delay: 154 }, flowMeasured: { active: '5,272', considered: '415' },
 		invRate: 14.8 },
 	{ name: '⑨ Replication Graph', short: 'Replication Graph', hint: '클라이언트가 있는 칸만 본다', post: 'Posts/14-replication-graph/README.md',
-		desc: '서버가 맵을 100m 칸으로 나누고, 액터를 150m 안에 걸치는 칸의 목록에 넣는다. 프레임마다 클라이언트가 서 있는 칸의 목록만 가져와 확인한다. 활성 목록은 순회하지 않는다. Dormant 상태가 된 자원 노드는 그 클라이언트의 목록에서 지우고, 150m 밖에 남은 자원 노드는 프레임마다 하나씩 거리와 상관없이 보낸다(trickle).',
+		desc: '서버가 맵을 100m 칸으로 나누고, 액터를 150m 안에 걸치는 칸의 목록에 넣는다. 프레임마다 클라이언트가 서 있는 칸의 목록만 가져와 확인한다. 활성 목록은 순회하지 않는다. Dormant 상태가 된 자원 노드는 그 클라이언트의 목록에서 지운다. 150m 밖에 남은 자원 노드는 프레임마다 하나씩 거리와 상관없이 보낸다(trickle). 그래서 클라이언트에 있는 자원 노드가 는다.',
 		code: 'GridNode->CellSize = 10000.f;',
 		alwaysRelevant: false, dormancy: true, npcFreq: 10, nodeFreq: 2, inv: 'fast', interp: 0.15, graph: true, tick: 1 / 30,
 		before: { frame: 8.944, repl: 3.958, bw: 10073, chan: 77, nodes: 176 }, indistinct: [], remeasured: true,
@@ -346,7 +347,7 @@ const BRANCH = [
 		desc: '클라이언트가 서 있는 100m 칸의 목록만 확인한다. 보내는 방법은 레거시와 같다.',
 		m: { frame: 7.017, repl: 2.654, bw: 10452, nodes: 380 } },
 	{ name: 'Iris', label: 'act2-iris2',
-		desc: '액터의 상태를 프레임에 한 번 변환해 두고, 클라이언트마다 패킷에 쓰기만 한다. 액터 채널이 없다. 확인하는 간격과 우선순위는 레거시에 맞췄다.',
+		desc: '액터의 상태를 프레임에 한 번 변환해 두고, 클라이언트마다 패킷에 쓰기만 한다. 액터 채널이 없다. 확인하는 간격은 레거시에 맞췄고, 우선순위는 거리와 상관없이 모두 1.0으로 두었다.',
 		m: { frame: 6.228, repl: 1.888, bw: 10109, nodes: 112 } },
 ];
 const BRANCH_POST = 'Posts/15-iris/README.md';
@@ -382,8 +383,9 @@ const SPACING_STEP = 3 / Math.SQRT2, ROUTE_SIDE = 70, CLUSTER_X = 35, CLUSTER_Y 
 const BUILD_RADIUS = 80, BUILD_ROUTE_CLEARANCE = 6, NPC_NEAR_RADIUS = 40, NPC_WANDER = 30;
 const INV_ITEMS = 200, INV_CHURN = 4 / N_CONN, BUILD_INTERVAL = 1;
 // Replication Graph(LabReplicationGraph.cpp). 칸 100m, 칸 경계는 SpatialBias -UE_OLD_WORLD_MAX 때문에 28.48m + 100m × n에 있다.
-// 보내지 않은 채 간격 + 4프레임이 지나면 채널을 닫는다(ReplicationGraphTypes.h의 ActorChannelFrameTimeout 기본값 4).
-const CELL = 100, CELL_OFFSET = 28.48, GRAPH_CHANNEL_TIMEOUT = 4;
+// 보내지 않은 채 간격 + 6프레임이 지나면 채널을 닫는다(ReplicationGraph.cpp:2288). 6은 ReplicationGraphTypes.h의 ActorChannelFrameTimeout 기본값 4와
+// ReplicationGraph.cpp:306의 GlobalActorChannelFrameNumTimeout 2를 더한 값이다.
+const CELL = 100, CELL_OFFSET = 28.48, GRAPH_CHANNEL_TIMEOUT = 4 + 2;
 const cellOf = v => Math.floor((v - CELL_OFFSET) / CELL);
 // 그래프의 간격은 레거시의 평균 간격((30 ÷ 빈도) + 1프레임)에 가장 가까운 정수 프레임이다(ULabReplicationGraph::GetLegacyPeriodFrame).
 const periodFrames = freq => Math.max(1, Math.round(30 / freq + 1));
@@ -644,7 +646,7 @@ function replicateGraph(cfg) {
 			replicate(cfg, p, c, a, count);                              // ④ 프로퍼티 비교와 직렬화
 			if (p.dormant[a]) p.trickle[a] = 0;                          // Dormant 상태가 되면 목록에서 지운다.
 		}
-		// 간격 + 4프레임 동안 보내지 않은 채널을 닫고 클라이언트에서 지운다.
+		// 간격 + 6프레임 동안 보내지 않은 채널을 닫고 클라이언트에서 지운다.
 		for (let a = 0; a < N; a++) if (p.chan[a] && p.closeFrame[a] && p.closeFrame[a] <= frameNum) closeChannel(p, a, false);
 	}
 	return count;
@@ -690,7 +692,7 @@ function setStep(next) {
 	const wasDormant = STEPS[step].dormancy, wasGraph = !!STEPS[step].graph;
 	step = next;
 	if (STEPS[step].graph && !wasGraph) {
-		// 레거시에서 연 채널은 그래프가 보내지 않으면 간격 + 4프레임 뒤에 닫히게 한다.
+		// 레거시에서 연 채널은 그래프가 보내지 않으면 6프레임 뒤에 닫히게 한다.
 		for (const p of conn) for (let a = 0; a < N; a++) if (p.chan[a]) p.closeFrame[a] = frameNum + GRAPH_CHANNEL_TIMEOUT;
 	}
 	if (wasDormant && !STEPS[step].dormancy) {
@@ -741,7 +743,7 @@ const FLOW_GRAPH = [
 const FLOW_SUB = '서버 프레임 하나에 일어나는 횟수다. 쌍은 클라이언트 하나와 액터 하나의 조합이다.';
 // gathered는 측정값이 아니라 포스팅 14 측정 기록의 계산이다.
 const FLOW_MEASURED = { active: v => `측정: ${v}개(플레이어 같은 다른 액터 포함)`, considered: v => `측정: Consider List 프레임당 ${v}개`, work: v => `측정: 프레임당 ${v}쌍`,
-	gathered: v => `계산: 클라이언트마다 약 ${v}개(Dormant 상태로 빠지기 전의 자원 노드는 빼고, 캐릭터 같은 다른 액터는 포함)` };
+	gathered: v => `계산: 클라이언트마다 약 ${v}개, 8개 합 약 ${(v * N_CONN).toLocaleString('ko-KR')}쌍(자원 노드가 Dormant 상태로 빠진 뒤의 값. 캐릭터 같은 다른 액터 포함)` };
 let FLOW = null;
 function renderFlowRows(rows) {
 	if (FLOW === rows) return;
@@ -811,9 +813,19 @@ const BRANCH_SHOW = [
 ];
 function renderBranch() {
 	if (!act.cluster) return;
+	// 카드는 한 번만 만들고 단계가 바뀌면 표시만 바꾼다. 다시 만들면 누른 버튼의 키보드 포커스가 사라진다.
+	if (!$('branch').children.length) buildBranch();
+	for (const el of $('branch').children) {
+		const on = el.dataset.step !== '' && +el.dataset.step === step;
+		el.classList.toggle('on', on);
+		if (on) el.setAttribute('aria-current', 'true'); else el.removeAttribute('aria-current');
+		el.querySelector('.now').hidden = !on;
+	}
+}
+function buildBranch() {
 	const base = BRANCH[0].m;
 	$('branchPost').href = REPO + BRANCH_POST;
-	$('branch').innerHTML = BRANCH.map(b => `<div class="sys${b.step === step ? ' on' : ''}"><h3>${b.name}</h3><p>${b.desc}</p>${
+	$('branch').innerHTML = BRANCH.map(b => `<div class="sys" data-step="${b.step ?? ''}"><h3>${b.name}<small class="now" hidden>지금 단계</small></h3><p>${b.desc}</p>${
 		BRANCH_SHOW.map(([key, label, show]) => {
 			const d = b === BRANCH[0] ? '기준' : key === 'nodes' ? `레거시보다 ${b.m[key] - base[key] > 0 ? '+' : ''}${b.m[key] - base[key]}개`
 				: `레거시보다 ${b.m[key] < base[key] ? '-' : '+'}${Math.abs((b.m[key] - base[key]) / base[key] * 100).toFixed(1)}%`;
