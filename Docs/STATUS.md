@@ -36,7 +36,7 @@
 | 12. NPC 이동을 필요한 비트만 담은 구조체로 보내기 | 완료 | `post-12-npc-move-netserialize` | [12-npc-move-netserialize](Worklog/12-npc-move-netserialize.md) |
 | 13. 지연과 패킷 손실에서의 동기화 품질(진단) | 완료 | `post-13-lag-and-packet-loss` | [13-lag-and-packet-loss](Worklog/13-lag-and-packet-loss.md) |
 | 14. 레거시 리플리케이션을 Replication Graph로 바꾸기 | 완료 | `post-14-replication-graph` | [14-replication-graph](Worklog/14-replication-graph.md) |
-| 15. Iris 전환과 실측 비교 | 관찰 자료 | | |
+| 15. 레거시 리플리케이션을 Iris로 바꾸기 | 초안 | | |
 
 ## 명령
 
@@ -68,4 +68,4 @@
 
 ## 사용자에게 요청한 일
 
-- **[사람] 측정 결과 확인과 다음 단계.** 둘째 네 묶음의 결과([관찰 자료](../Posts/15-iris/candidates.md) 13절)를 보고, 시각 자료 후보와 본문 초안으로 넘어갈지 정한다.
+- **[사람] 포스팅 15 초안의 "문제"와 "원리" 승인, 영상 촬영 허가.** [본문](../Posts/15-iris/README.md) 초안(2,950자)과 [측정 기록](../Posts/15-iris/measurements.md)을 썼다. 영상 계획(`visual24`, `visual25`, 두 클라이언트 창 영역 10초씩)은 [관찰 자료](../Posts/15-iris/candidates.md) 14절에 있다. Insights 캡처는 창 조작 권한이 거절되어 찍지 않았다.
