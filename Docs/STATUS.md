@@ -17,13 +17,13 @@
 - **태스크 28(포스팅 11, `post-11-npc-interpolation`)이 끝났다(2026-10-07).** 클라이언트가 NPC를 서버 프레임 번호 기준으로 150ms 늦게 보간하자(`-NpcInterpDelay 150`) 표시 속도 오차 평균이 439.9 → 15.0cm/s, 표시 지연이 74 → 155ms, 표시 위치 오차 평균이 22.25 → 46.38cm였다(`act2-interp-base2`, `act2-interp2`). NPC 갱신 한 번은 101 → 117비트(Networking Insights), `out_bytes_per_sec_per_conn`은 11,820 → 12,682(+7.3%)이고 `work_avg_ms`는 구별되지 않았다. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)이고 포스팅 12, 13도 쓴다. 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 28"에 있다.
 - **태스크 29(포스팅 12, `post-12-npc-move-netserialize`)가 끝났다(2026-10-07).** NPC 이동을 `ReplicatedMovement`와 `ServerFrame` 대신 평면 이동 구조체 `FLabNpcMove`로 보내자(`-NpcCompactMove`) NPC 갱신 한 번이 117.24 → 69.04비트(Networking Insights `Connection 0`), `out_bytes_per_sec_per_conn` 중앙값이 12,672 → 10,088(-20.4%)이었고 품질 지표는 구별되지 않았다(`act2-npcmove-base1`, `act2-npcmove1`). `work_avg_ms`는 8.681 → 8.484로 변화 0.197이 변동 폭 0.190을 겨우 넘었다. 경위는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "태스크 29"에 있다. 값과 근거는 [측정 기록](../Posts/12-npc-move-netserialize/measurements.md)에 있다.
 - **태스크 30(포스팅 13, `post-13-lag-and-packet-loss`, 진단)이 끝났다(2026-10-07).** 루프백 → 지연만(`LabLagOnly`)에서 표시 지연 154 → 286ms, 표시 속도 오차 평균 15.1 → 112cm/s였다(`act2-net-base1`, `act2-net-lag1`). 경위는 [Worklog/13-lag-and-packet-loss.md](Worklog/13-lag-and-packet-loss.md)의 "태스크 30"에 있다.
-- **태스크 31(포스팅 14, Replication Graph)을 시작했다(2026-10-19).** [관찰 자료](../Posts/14-replication-graph/candidates.md)를 지난 실행(`act2-net-base1-r3`, `act2-nodeuf-split1-r3`)과 엔진 소스로 썼다. 남은 것은 활성 목록을 따지는 두 단계(`Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845ms, ④에서 잼)다. 그래프는 이 두 단계를 돌지 않고 연결마다 시점이 있는 격자 칸에서만 모은다(`NetDriver.cpp:6295-6298`). 그래프 묶음에서는 Consider List 길이 지표가 남지 않는다. 사용자가 B(동적 액터 버킷을 하나로 둔 그래프)와 2 × 2(레거시/그래프 × 자원 노드 빈도 기본값/2)를 골랐다(관찰 자료 7절). `ULabReplicationGraph`를 `-ReplicationGraph`로 구현했다. 클래스마다 보내는 간격을 레거시의 평균 고려 간격((30 ÷ 빈도) + 1프레임)에 맞췄고 디버그 액터를 끄며, 작은 규모에서 채널 수 58과 NPC 수신 간격 133.5 → 133.7ms가 레거시와 같았다(`tsmall-rg-base2-r1`, `tsmall-rg2-r1`). 확정 규모 2 × 2(아래 "측정 결과")에서 그래프는 `work_avg_ms`를 ⑧보다 1.225 줄였고, 자원 노드 빈도를 기본값으로 둬도 차이가 변동 폭 안이었다. 품질 지표는 네 묶음이 구별되지 않았다. 대신 송신량이 8.8% 늘었다. 그래프는 캐릭터를 매 프레임 보내서(레거시 평균 1.3프레임) 캐릭터 송신이 29% 늘었고, 포스팅 12의 캐릭터 송신량으로 셈한 증가 약 894바이트/초가 CSV의 889와 맞는다(관찰 자료 9.5절). 또 클라이언트가 가진 자원 노드가 176 → 380개였다(`slot=1` 자동 스크린샷, t=75s). 그래프의 Dormancy 노드가 거리에서 걸러진 액터를 한 프레임에 하나씩 거리 무시로 보내는 trickle 때문이다(`Net.RepGraph.TrickleDistCullOnDormancyNodes` 기본값 1, `ReplicationGraph.cpp:165, 4717-4721`). 사용자가 [블로그 글](https://hon454.github.io/posts/unreal-engine-replication-graph/)을 보고 trickle을 끈 묶음을 더 재고, 본문에서 trickle을 인용구로 설명하기로 했다(관찰 자료 7절). `-RepGraphNoTrickle`을 구현했다(`tsmall-rg-notrickle1-r1`에서 `trickle=0` 확인).
+- **태스크 31(포스팅 14, Replication Graph)을 시작했다(2026-10-19).** [관찰 자료](../Posts/14-replication-graph/candidates.md)를 지난 실행(`act2-net-base1-r3`, `act2-nodeuf-split1-r3`)과 엔진 소스로 썼다. 남은 것은 활성 목록을 따지는 두 단계(`Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845ms, ④에서 잼)다. 그래프는 이 두 단계를 돌지 않고 연결마다 시점이 있는 격자 칸에서만 모은다(`NetDriver.cpp:6295-6298`). 그래프 묶음에서는 Consider List 길이 지표가 남지 않는다. 사용자가 B(동적 액터 버킷을 하나로 둔 그래프)와 2 × 2(레거시/그래프 × 자원 노드 빈도 기본값/2)를 골랐다(관찰 자료 7절). `ULabReplicationGraph`를 `-ReplicationGraph`로 구현했다. 클래스마다 보내는 간격을 레거시의 평균 고려 간격((30 ÷ 빈도) + 1프레임)에 맞췄고 디버그 액터를 끄며, 작은 규모에서 채널 수 58과 NPC 수신 간격 133.5 → 133.7ms가 레거시와 같았다(`tsmall-rg-base2-r1`, `tsmall-rg2-r1`). 확정 규모 2 × 2(아래 "측정 결과")에서 그래프는 `work_avg_ms`를 ⑧보다 1.225 줄였고, 자원 노드 빈도를 기본값으로 둬도 차이가 변동 폭 안이었다. 품질 지표는 네 묶음이 구별되지 않았다. 대신 송신량이 8.8% 늘었다. 그래프는 캐릭터를 매 프레임 보내서(레거시 평균 1.3프레임) 캐릭터 송신이 29% 늘었고, 포스팅 12의 캐릭터 송신량으로 셈한 증가 약 894바이트/초가 CSV의 889와 맞는다(관찰 자료 9.5절). 또 클라이언트가 가진 자원 노드가 176 → 380개였다(`slot=1` 자동 스크린샷, t=75s). 그래프의 Dormancy 노드가 거리에서 걸러진 액터를 한 프레임에 하나씩 거리 무시로 보내는 trickle 때문이다(`Net.RepGraph.TrickleDistCullOnDormancyNodes` 기본값 1, `ReplicationGraph.cpp:165, 4717-4721`). 사용자가 [블로그 글](https://hon454.github.io/posts/unreal-engine-replication-graph/)을 보고 trickle을 끈 묶음을 더 재고, 본문에서 trickle을 인용구로 설명하기로 했다(관찰 자료 7절). `-RepGraphNoTrickle`을 구현해 둘째 묶음(아래 "측정 결과")을 쟀다. trickle을 끄면 클라이언트의 자원 노드가 레거시와 같은 176개이고 송신량은 그대로이며, 그래프 자체 시간이 0.41ms 늘어 `work_avg_ms`가 7.362 → 7.763이다(레거시 8.555).
 - 다음 시각 자료 라벨은 `visual24`이다(`visual22`, `visual23`은 포스팅 13의 시연용 NPC 루프백과 `Bad`, 2026-10-07. `visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후).
 
 ## 다음 할 일
 
-1. **[사람] 세 묶음 측정 승인.** `act2-rg-trk-base1`(⑧), `act2-rg-trk1`(그래프), `act2-rg-notrk1`(그래프 trickle 끔)을 연달아 3회씩 잰다(약 25분, 본체 화면).
-2. 그다음 Networking Insights로 늘어난 바이트가 캐릭터 몫인지 확인하고, 시각 자료를 모은다([2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기" 5).
+1. Networking Insights(`act2-rg-trk-base1-r2`, `act2-rg-trk1-r2`)로 늘어난 바이트가 캐릭터 몫인지 확인하고, 시각 자료 후보(도식, 차트, 캡처)를 모은다([2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기" 5).
+2. 본문 초안(문제, 원리는 사용자 승인), 측정 기록을 쓴다. trickle은 인용구로 설명한다. 이어서 README의 ⑨ 단계와 웹 페이지(모든 구성을 다시 재는 묶음은 [AGENTS.md](../AGENTS.md) "규칙").
 
 ## 포스팅 진행
 
@@ -132,10 +132,18 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | `act2-rg-nodedef1` | 그래프, 100 | 7.537(0.332) | 10.945 | 3.195 | 10954(16) | 2.946ms(`r3`) |
 | `act2-rg1` | 그래프, 2 | 7.437(0.071) | 10.370 | 3.168 | 10962(47) | 2.923ms(`r1`) |
 
+둘째 묶음(2026-10-19 17:30\~17:53, 같은 조건, 9회 모두 종료 코드 0. 모두 ⑧에 `-MotionLog`, 자원 노드 빈도 2). 첫 묶음과는 비교하지 않는다. 실행별 행은 관찰 자료 10절.
+
+| 묶음 | 리플리케이션 | work_avg_ms | work_p99_ms | netflush_avg_ms | out_bytes_per_sec_per_conn | `GameNetDriver` 프레임당(`r3`) |
+| --- | --- | --- | --- | --- | --- | --- |
+| `act2-rg-trk-base1` | 레거시 | 8.555(0.169) | 12.978 | 4.148 | 10080(32) | 3.889ms |
+| `act2-rg-trk1` | 그래프 | 7.362(0.076) | 10.626 | 3.126 | 10969(21) | 2.880ms |
+| `act2-rg-notrk1` | 그래프, trickle 끔 | 7.763(0.341) | 11.492 | 3.536 | 10964(30) | 3.292ms |
+
 ## 막힌 것
 
 - 없음.
 
 ## 사용자에게 요청한 일
 
-- **포스팅 14의 세 묶음 측정 승인.** 위 "다음 할 일" 1번.
+- 없음.
