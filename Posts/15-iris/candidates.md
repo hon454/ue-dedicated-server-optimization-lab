@@ -323,7 +323,7 @@ Z3은 이제 레거시, 그래프와 구별되지 않는다. Z3d는 먼 NPC를 �
 | 1번 클라이언트의 내려다보기, 레거시와 Iris(`act2-iris-base2-r2-topdown-04`, `act2-iris2-r2-topdown-04`, t=75s, 자원 노드 176, 112개) | `images/topdown-legacy.png`, `images/topdown-iris.png`로 복사함 | 본문 요약 |
 | 원리의 흐름도(레거시는 클라이언트마다 액터 채널로, Iris는 액터마다 한 번 변환하고 클라이언트마다 씀) | Mermaid로 그림. GitHub 미리보기는 확인하지 않음 | 본문 원리 |
 | 서버 프레임 시간 평균 차트(레거시, 그래프, Iris) | Mermaid로 그림 | 본문 결과 |
-| Timing Insights 캡처: 세 시스템의 `GameNetDriver` 아래 트리(중앙값 실행) | 찍지 않음. 2026-10-19에 Insights 창 조작 권한을 요청했고 사용자가 거절했다. 같은 값은 `export-insights.ps1`로 창 없이 읽었다(13.2절) | 측정 기록(찍는다면) |
+| Timing Insights 캡처: 세 시스템의 `GameNetDriver` 아래 트리(중앙값 실행) | 찍음. 처음 요청은 거절되었고 사용자가 권한을 다시 열어 주었다(2026-10-19). `images/insights-callees-legacy.png`, `-graph.png`, `-iris.png`(번호 상자 포함) | 측정 기록 5절 |
 | 영상: Iris 기본 우선순위기에서 먼 NPC가 끊기는 장면과, 우선순위 1.0의 같은 장면 | 찍지 않음. 아래 계획으로 허가를 요청한다 | 본문 결과의 우선순위 인용구(달라진 쪽 하나) |
 
 영상 계획(허가 전, 에이전트 안):

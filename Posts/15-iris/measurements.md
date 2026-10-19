@@ -54,6 +54,7 @@
 | 결과 표: 확인하는 일 2.00, 1.05, 1.48ms, 보내는 일 1.35, 1.61, 0.404ms | Iris: `GameNetDriver` Excl 0.370 + `ReplicationSystem_NetUpdate` Incl 1.114 = 1.484, 보내는 일 0.404. 합 1.888 = `GameNetDriver` Incl. 레거시와 그래프는 위 | 관찰 자료 13.2절, 계산 |
 | 차트의 값 | 7.636, 7.017, 6.228 | 관찰 자료 13.2절 |
 | 보내는 일은 레거시의 30.0%로 줄었다 | 0.404 ÷ 1.345 = 30.04% | 계산 |
+| 가장 큰 것은 클라이언트마다 격자로 확인하는 일, 프레임당 0.377ms | Timing Insights Callees의 `UNetObjectGridFilter_Filter` Incl 676.87ms ÷ `GameNetDriver` Count 1,795 = 0.377ms, Count 14,360 = 1,795 × 8(클라이언트마다 한 번). 아래 5절의 캡처 ② 아래 줄 | Insights 캡처 `act2-iris2-r2` |
 | 클라이언트 8개에 프레임마다 한 번씩 쓴다 | `UDataStreamChannel_Tick` 프레임당 Count 8.0 | 관찰 자료 13.2절 |
 | Iris의 확인하는 일에 폴링, 상태 변환, 격자로 확인하기, 우선순위가 든다 | `ReplicationSystem_NetUpdate`(`RS.cpp:1035-1142`) 안의 순서: `UpdateFiltering`, `CallPreSendUpdate`(폴링), `ExecuteQuantizeDirtyStateData`, `UpdateObjectScopes`, `UpdatePrioritization`(`RS.cpp:1085-1135`) | 엔진 소스 |
 | 대역폭이 예상보다 덜 늘어난 이유는 확인하지 않았다 | Iris 묶음의 Networking Insights를 읽지 않았다(8절) | |
@@ -96,11 +97,20 @@
 
 - 요약의 두 이미지는 1번 클라이언트의 자동 스크린샷(t=75초) `act2-iris-base2-r2-topdown-04.png`, `act2-iris2-r2-topdown-04.png`를 복사했다(`images/topdown-legacy.png`, `images/topdown-iris.png`).
 - 원리의 흐름도는 Mermaid로 그렸다. GitHub의 미리보기로는 아직 확인하지 않았다.
-- Insights 캡처는 찍지 않았다. 4절의 값은 `Scripts/export-insights.ps1`로 창 없이 읽었다. 영상은 허가를 받은 뒤에 찍는다(관찰 자료 14절).
+- Insights 캡처: 세 시스템의 중앙값 실행을 Timing Insights로 열고, Log View에서 `Lab_MeasureStart`와 `Lab_MeasureEnd`를 클릭과 Shift-클릭으로 골라 측정 구간(1분 0초)을 선택했다. Timers에서 `GameNetDriver`를 고르고 Callees로 아래 트리를 펼쳤다. 창을 최대화하고 `Scripts/capture-insights.ps1`로 찍었다(3862×2110). 번호 상자는 `Scripts/annotate-image.ps1`로 그렸고, 원본은 `Saved/Screenshots/Lab/post15-insights-callees-<이름>-raw.png`에 있다.
+
+| 캡처 | 실행 | 번호 상자 |
+| --- | --- | --- |
+| ![레거시의 GameNetDriver 아래 트리](images/insights-callees-legacy.png) | `act2-iris-base2-r1` | ① `GameNetDriver` Incl 6.01초, Excl 3.59초(프레임당 3.35, 2.00ms), ② 클래스 타이머(보내는 일, `LabNpc` Count 205,560 = 114.5 × 1,795) |
+| ![Replication Graph의 GameNetDriver 아래 트리](images/insights-callees-graph.png) | `act2-iris-rg2-r1` | ① `GameNetDriver` Incl 4.76초, Excl 615.78ms, ② `UReplicationGraph_ServerReplicateActors` Incl 4.15초, Excl 1.26초 |
+| ![Iris의 GameNetDriver 아래 트리](images/insights-callees-iris.png) | `act2-iris2-r2` | ① `GameNetDriver` Incl 3.39초, Excl 664.19ms, ② `ReplicationSystem_NetUpdate` Incl 2초, ③ `UDataStreamChannel_Tick` Incl 707.81ms(Count 14,360 = 8 × 1,795) |
+
+- 캡처의 값은 `export-insights.ps1`의 값(4절)과 같다. 예: Iris의 `GameNetDriver` 3.39초 ÷ 1,795 = 1.889ms(내보내기 1.888).
+- Iris의 `ReplicationSystem_NetUpdate` 아래(프레임당, ÷ 1,795): `ReplicationSystem_UpdateFiltering` 0.518ms(그 가운데 `UNetObjectGridFilter_Filter` 0.377ms), `ReplicationBridge_PollAndCopy` 0.231ms, `ReplicationSystem_UpdateConnectionsScope` 0.0698ms, `ReplicationSystem_UpdatePrioritization` 0.0650ms, `ReplicationBridge_PreUpdate` 0.0617ms, `ReplicationSystem_QuantizeDirtyStateData` 0.0363ms, `ReplicationSystem_UpdateWorldLocations` 0.0352ms.
+- 영상은 허가를 받은 뒤에 찍는다(관찰 자료 14절).
 
 ## 6. 확인하지 않은 것
 
 - Iris가 Replication Graph보다 대역폭을 덜 늘린 이유. 캐릭터 간격은 같으므로 Iris의 패킷 머리 정보가 작다고 추정하지만, Iris 묶음의 Networking Insights를 읽지 않았다.
-- `ReplicationSystem_NetUpdate` 안의 단계별 시간(필터, 폴링, 양자화, 우선순위).
 - 보간 수정(`67cceff`)이 레거시와 그래프의 품질 지표를 바꿨는지. 첫 묶음과 둘째 묶음은 시각이 달라 비교하지 않았다. 둘째 묶음의 레거시와 그래프 지표는 포스팅 14의 값과 같은 범위다(표시 속도 오차 15.0\~15.4cm/s).
 - 범위에 새로 든 NPC가 오래된 위치로 한 번 나타나는 것이 화면에서 보이는지.

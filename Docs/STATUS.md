@@ -68,4 +68,4 @@
 
 ## 사용자에게 요청한 일
 
-- **[사람] 포스팅 15 초안의 "문제"와 "원리" 승인, 영상 촬영 허가.** [본문](../Posts/15-iris/README.md) 초안(2,950자)과 [측정 기록](../Posts/15-iris/measurements.md)을 썼다. 영상 계획(`visual24`, `visual25`, 두 클라이언트 창 영역 10초씩)은 [관찰 자료](../Posts/15-iris/candidates.md) 14절에 있다. Insights 캡처는 창 조작 권한이 거절되어 찍지 않았다.
+- **[사람] 포스팅 15 초안의 "문제"와 "원리" 승인, 영상 촬영 허가.** [본문](../Posts/15-iris/README.md) 초안(2,950자)과 [측정 기록](../Posts/15-iris/measurements.md)을 썼다. 영상 계획(`visual24`, `visual25`, 두 클라이언트 창 영역 10초씩)은 [관찰 자료](../Posts/15-iris/candidates.md) 14절에 있다. Insights 캡처 세 장은 측정 기록 5절에 넣었다.
