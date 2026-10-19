@@ -32,10 +32,12 @@
 | 1번 클라이언트에 존재하는 자원 노드 176 → 380개 | 화면 글자 `nodes=176`(`act2-rg-base1-r2-topdown-04`), `nodes=380`(`act2-rg1-r2-topdown-04`), t=75초 | 자동 스크린샷 |
 | 개념도의 칸 100m, 150m, 칸 경계, 400m | `CellSize` 10000(`Source/DSOptLab/LabReplicationGraph.cpp`), `NetCullDistanceSquared` 225,000,000(`Engine/Source/Runtime/Engine/Private/Actor.cpp:312`). 칸 번호 = (위치 − `SpatialBias`) ÷ `CellSize`(`RG.cpp:5737-5741, 6268-6275`), `SpatialBias` = −`UE_OLD_WORLD_MAX` = −2,097,152cm(`Engine/Source/Runtime/Engine/Public/EngineDefines.h:37`). 2,097,152 = 209 × 10,000 + 7,152이므로 경계는 x, y = 28.48m + 100m × n. 시점 칸의 목록에는 칸을 150m 넓힌 100 + 2 × 150 = 400m 사각형 안의 액터가 든다(`RG.cpp:5688-5743`) | 엔진 소스, 계산, `Scripts/make-repgraph-cell.ps1` |
 | 개념도의 시점, 점의 밀도 | 시점 (−5m, 60m)(`act2-rg-trk1-r2-topdown-04`의 화면 글자 `pos`), 밀도 5,001 ÷ 1,900² = 0.00139개/m²(`LabScenarioConfig.h`의 `WorldHalfExtent` 95,000cm). 점의 위치는 스크립트의 고정 시드로 뿌린 예시다 | 자동 스크린샷, 계산 |
-| 모든 연결에서 Dormant 상태가 되어야 활성 목록에서 빠진다 | `FNetworkObjectList::MarkDormant`가 모든 연결에서 Dormant일 때만 옮긴다(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`) | 엔진 소스, [포스팅 7](../07-net-driver-breakdown/measurements.md) |
+| 모든 클라이언트에서 Dormant 상태가 되어야 활성 목록에서 빠진다 | `FNetworkObjectList::MarkDormant`가 모든 연결에서 Dormant일 때만 옮긴다(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`) | 엔진 소스, [포스팅 7](../07-net-driver-breakdown/measurements.md) |
 | 16프레임에 한 번 | 빈도 2: 500\~533ms 뒤 | [포스팅 8 측정 기록](../08-node-update-frequency/measurements.md) 2절 |
 | 문제의 표: ① 0.959ms, ② 0.845ms, ③ 1.87ms | `Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845, `Process Prioritized Actors Time` 1.868(`act2-nodeuf-split1-r3`, 포스팅 8의 적용 후. ⑤\~⑧ 전의 구성이고 이 글의 묶음에서는 재지 않았다) | 포스팅 8 측정 기록 2절 |
-| ①의 약 3분의 2는 건너뛰는 자원 노드 | 4,857.2 × 0.128µs = 0.622ms, 0.622 ÷ 0.959 = 64.8% | 포스팅 8 측정 기록 2절 |
+| ①의 약 3분의 2는 차례가 아닌 자원 노드를 순회하는 시간 | 4,857.2 × 0.128µs = 0.622ms, 0.622 ÷ 0.959 = 64.8% | 포스팅 8 측정 기록 2절 |
+| 레거시는 엔진의 기본 리플리케이션 방식 | Iris를 쓰지 않고(`net.Iris.UseIrisReplication` 기본값 0, `Engine/Source/Runtime/Net/Iris/Private/Iris/IrisConfig.cpp:15-16`) `ReplicationDriverClassName`이 비어 있으면 드라이버 없이 넷 드라이버가 직접 보낸다(`ND.cpp:1820-1831`). 서버 로그의 모델 이름은 `Generic`이다 | 엔진 소스, [engine-notes.md](../../Docs/Reference/engine-notes.md) 2절 |
+| Dormant 상태는 서버가 깨우기 전까지 확인하지 않는 상태 | 레거시: 모든 연결에서 Dormant면 활성 목록에서 빠지고(`NetworkObjectList.cpp:348-376`), 일부 연결에서 Dormant면 그 연결의 확인을 건너뛴다. 그래프: `bDormantOnConnection`인 액터는 확인 루프의 처음에 건너뛴다(`RG.cpp:1522-1531`). 깨우는 것은 `FlushNetDormancy`와 Dormant 설정 변경이다 | 엔진 소스 |
 | 레거시와 같은 함수가 보낸다 | 그래프의 `ReplicateSingleActor`가 `UActorChannel::ReplicateActor`를 부른다(`RG.cpp:2151, 2157`). 레거시도 같은 함수다(`ND.cpp:5830`) | 엔진 소스 |
 | 레거시가 만드는 목록을 대신한다 | 드라이버가 있으면 `ServerReplicateActors`가 바로 넘기고 Consider List를 만들지 않는다(`ND.cpp:6295-6298`) | 엔진 소스 |
 | 액터는 150m가 걸치는 모든 칸에 미리 들어간다, 시점이 있는 칸 하나의 목록만 모은다 | `GetCellInfoForActor`(`RG.cpp:5688-5743`), `GatherActorListsForConnection`(`RG.cpp:6238-6293`) | 엔진 소스 |
@@ -45,7 +47,7 @@
 | 레거시는 다음 고려 시각에 0\~1프레임의 난수를 더한다 | `NextUpdateTime = TimeSeconds + RandDelay + NextUpdateDelta`, `RandDelay = FRand() * ServerTickTime`(`ND.cpp:5421-5425`). 그 시각을 넘긴 첫 프레임에 고려한다(`ND.cpp:5318-5319`) | 엔진 소스 |
 | NPC 4프레임, 자원 노드 16프레임, 캐릭터 평균 1.3프레임 | 평균 간격 = (30 ÷ 빈도) + 1프레임. 빈도 10 → 4, 2 → 16, 100 → 1.3. 그래프는 `RoundToInt(30 ÷ 빈도 + 1)` → 4, 16, 1(서버 로그 `lab_repgraph_class`). 빈도 10이 4프레임인 것은 1막에서 실행으로 확인했다 | 계산, [engine-notes.md](../../Docs/Reference/engine-notes.md) 2절, 관찰 자료 7절 |
 | 예상: 활성 목록 5,272개 | 서버 로그 `lab_network_objects active=5272`(`act2-rg-base1-r3`) | 서버 로그 |
-| 예상: 한 연결이 모으는 액터 약 75개 | 칸 목록의 자원 노드 약 222개(400m × 400m × 0.00139)는 자리를 잡으면 Dormant 상태로 빠진다. NPC 약 63개(무리 주변 50 + 맵 300 × 160,000 ÷ 3,610,000), 캐릭터 8, 소유자 액터와 모든 연결의 액터 몇 개 | 관찰 자료 4절, 계산 |
+| 예상: 그래프는 클라이언트마다 약 75개를 확인한다 | 칸 목록의 자원 노드 약 222개(400m × 400m × 0.00139)는 자리를 잡으면 Dormant 상태로 빠진다. NPC 약 63개(무리 주변 50 + 맵 300 × 160,000 ÷ 3,610,000), 캐릭터 8, 소유자 액터와 모든 연결의 액터 몇 개 | 관찰 자료 4절, 계산 |
 | 예상: ①과 ②의 1.80ms | 0.959 + 0.845 = 1.804 | 계산 |
 | 예상: 캐릭터를 보내는 횟수 약 1.3배 | 1.3프레임 → 1프레임, 1.3 ÷ 1 | 계산 |
 | 결과 표: 서버 프레임 시간 평균 17.8, 8.94, 7.81, 7.71ms | Timing Insights 17.788(`act2-rg-base-nodedef1-r1`), 8.944(`act2-rg-base1-r3`), 7.809(`act2-rg-nodedef1-r3`), 7.710(`act2-rg1-r1`) | 관찰 자료 9.2절 |
@@ -54,12 +56,12 @@
 | 빈도를 2로 낮추면 8.94ms, 그래프로 바꾸면 7.81ms, 그래프가 1.14ms 더 짧다 | 8.944(`act2-rg-base1-r3`), 7.809(`act2-rg-nodedef1-r3`), 8.944 − 7.809 = 1.135. 출발점 17.788에서 각각 -49.7%, -56.1% | 관찰 자료 9.2절, 계산 |
 | 칸의 크기는 엔진의 예제 그래프와 같은 100m | `UBasicReplicationGraph`의 `CellSize = 10000.f`(`BasicReplicationGraph.cpp:68-72`), 이 글의 `LabReplicationGraph.cpp`도 10000 | 엔진 소스, 프로젝트 소스 |
 | 그래프에서 빈도 2의 차이는 구별되지 않았다 | CSV `work_avg_ms` 중앙값 7.537 → 7.437, 차이 0.100이 변동 폭 0.332(빈도 기본값), 0.071(빈도 2)의 큰 쪽보다 작다 | 관찰 자료 9.1절 |
-| 보낼지 따지는 일 2.45 → 1.14ms | 레거시: `GameNetDriver` 프레임당 Excl 2.448(`act2-rg-base1-r3`). 그래프: `GameNetDriver` Excl 0.362 + `UReplicationGraph_ServerReplicateActors` Excl 0.774 = 1.136(`act2-rg1-r1`). 두 값 모두 클래스 타이머 밖의 시간이다 | 관찰 자료 9.2절 |
-| 실제로 보내는 일 1.51 → 1.79ms | 클래스 타이머와 RPC 타이머의 합. 레거시: `GameNetDriver` 바로 아래 줄의 합 1.511. 그래프: `UReplicationGraph_ServerReplicateActors` Incl 2.561 − Excl 0.774 = 1.787(바로 아래 줄의 합 1.786과 같다) | 관찰 자료 9.2절, `Saved/InsightsExport/act2-rg1-r1/summary.txt` |
+| 확인하는 일 2.45 → 1.14ms, 절반 넘게 줄였다(-53.6%) | 레거시: `GameNetDriver` 프레임당 Excl 2.448(`act2-rg-base1-r3`). 그래프: `GameNetDriver` Excl 0.362 + `UReplicationGraph_ServerReplicateActors` Excl 0.774 = 1.136(`act2-rg1-r1`). 두 값 모두 클래스 타이머 밖의 시간이다 | 관찰 자료 9.2절 |
+| 보내는 일 1.51 → 1.79ms | 클래스 타이머와 RPC 타이머의 합. 레거시: `GameNetDriver` 바로 아래 줄의 합 1.511. 그래프: `UReplicationGraph_ServerReplicateActors` Incl 2.561 − Excl 0.774 = 1.787(바로 아래 줄의 합 1.786과 같다) | 관찰 자료 9.2절, `Saved/InsightsExport/act2-rg1-r1/summary.txt` |
 | 캐릭터를 더 자주 보낸 몫 | `LabCharacter` 호출 프레임당 49.6 → 64.0(`act2-rg-trk-base1-r3` → `act2-rg-trk1-r3`는 49.4 → 64.0) | 관찰 자료 9.5절, 10.2절 |
-| 한 연결이 보낸 캐릭터 데이터 3,080 → 3,880바이트/초 | Networking Insights `Connection 0`, `Outgoing`의 `BP_LabCharacter_C` 1,435,500비트 ÷ 58.339초 ÷ 8 = 3,075.8, 1,819,718비트 ÷ 58.584초 ÷ 8 = 3,882.7(`act2-rg-trk-base1-r3`, `act2-rg-trk1-r3`) | 관찰 자료 11절 |
+| 한 클라이언트에 보낸 캐릭터 데이터 3,080 → 3,880바이트/초 | Networking Insights `Connection 0`, `Outgoing`의 `BP_LabCharacter_C` 1,435,500비트 ÷ 58.339초 ÷ 8 = 3,075.8, 1,819,718비트 ÷ 58.584초 ÷ 8 = 3,882.7(`act2-rg-trk-base1-r3`, `act2-rg-trk1-r3`) | 관찰 자료 11절 |
 | 늘어난 액터 데이터의 77% | `Actor` 9,224.0 → 10,266.4바이트/초(+1,042.4), 캐릭터 +806.9, 806.9 ÷ 1,042.4 = 77.4% | 관찰 자료 11절 |
-| 나머지는 늘어난 캐릭터 Bunch의 헤더 | `BunchHeader` 2,219.3 → 2,486.9바이트/초(+267.6), Bunch 수 34,949 → 37,301. 캐릭터 Count 9,502 → 11,986 | 관찰 자료 11절 |
+| 나머지는 캐릭터 데이터마다 붙는 머리 정보 | `BunchHeader` 2,219.3 → 2,486.9바이트/초(+267.6), Bunch 수 34,949 → 37,301. 캐릭터 Count 9,502 → 11,986 | 관찰 자료 11절 |
 | 자원 노드가 보낸 데이터는 초당 2바이트로 같았다 | `LabResourceNode` 866비트 ÷ 58.339초 ÷ 8 = 1.86, 907 ÷ 58.584 ÷ 8 = 1.94바이트/초 | 관찰 자료 11절 |
 | trickle: 176 → 380개, 끄면 176개 | 화면 글자 `nodes=`(`act2-rg-trk-base1-r2-topdown-04` 176, `act2-rg-trk1-r2-topdown-04` 380, `act2-rg-notrk1-r2-topdown-04` 176), t=75초. 서버 로그의 모든 연결에서 Dormant 상태인 자원 노드 114, 241, 114 | 자동 스크린샷, 관찰 자료 10.3절 |
 | 한 프레임에 하나씩 거리와 상관없이 보낸다, 받은 액터는 목록에서 빠진다 | gather에서 지울 Dormant 액터가 없으면 남은 액터 하나에 `bForceCullDistanceToZero`를 켠다(`RG.cpp:4717-4721`). 컬 거리 0은 거리 검사를 하지 않는다(`RG.cpp:1571`). Dormant 상태가 되면 그 플래그를 끄고 목록에서 지운다(`RG.cpp:4702-4708`) | 엔진 소스 |
