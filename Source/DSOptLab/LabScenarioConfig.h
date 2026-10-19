@@ -73,6 +73,8 @@ struct FLabServerConfig
 	bool bInventoryOwnerOnly = false;  // -LabInventoryOwnerOnly
 	// 인벤토리의 칸을 일반 TArray 대신 FastArray(ULabInventoryFastArrayComponent)로 보낸다. 포스팅 10.
 	bool bInventoryFastArray = false;  // -LabInventoryFastArray
+	// 레거시 리플리케이션 대신 Replication Graph(ULabReplicationGraph)로 보낸다. 모듈이 뜰 때 읽어 넷 드라이버가 쓸 드라이버를 정한다. 포스팅 14.
+	bool bReplicationGraph = false;    // -LabReplicationGraph
 
 	// 기록 전용(포스팅 13). 클라이언트에 준 엔진의 패킷 시뮬레이션 프로필 이름(-PktEmulationProfile=)을 config 열에 남긴다.
 	// 서버의 동작은 바꾸지 않는다. 시뮬레이션은 클라이언트의 넷 드라이버가 명령줄에서 읽어 자기 연결에 건다(NetDriver.cpp의

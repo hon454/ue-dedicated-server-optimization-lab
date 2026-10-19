@@ -46,6 +46,7 @@ const FLabServerConfig& FLabServerConfig::Get()
 		C.bInventoryOwnerOnly = FParse::Param(Cmd, TEXT("LabInventoryOwnerOnly"));
 		C.bInventoryFastArray = FParse::Param(Cmd, TEXT("LabInventoryFastArray"));
 		FParse::Value(Cmd, TEXT("LabNetEmulationProfile="), C.NetEmulationProfile);
+		C.bReplicationGraph = FParse::Param(Cmd, TEXT("LabReplicationGraph"));
 		return C;
 	}();
 	return Config;
@@ -107,6 +108,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (bInventoryFastArray != Defaults.bInventoryFastArray)
 	{
 		Parts.Add(TEXT("InventoryFastArray"));
+	}
+	if (bReplicationGraph != Defaults.bReplicationGraph)
+	{
+		Parts.Add(TEXT("ReplicationGraph"));
 	}
 	if (!NetEmulationProfile.IsEmpty())
 	{

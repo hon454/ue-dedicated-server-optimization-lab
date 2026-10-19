@@ -183,6 +183,7 @@ xychart-beta horizontal
 | [LabInventoryComponent](Source/DSOptLab/LabInventoryComponent.cpp) | 플레이어 인벤토리(일반 배열)와 두 인벤토리의 공통 부모. 실행 인자를 줄 때만 붙는다 |
 | [LabInventoryFastArrayComponent](Source/DSOptLab/LabInventoryFastArrayComponent.cpp) | FastArray로 칸을 보내는 플레이어 인벤토리. 실행 인자를 줄 때만 붙는다 |
 | [LabBuilding](Source/DSOptLab/LabBuilding.cpp) | 플레이어 주변에 모아 놓는 건축물. 실행 인자를 줄 때만 놓는다 |
+| [LabReplicationGraph](Source/DSOptLab/LabReplicationGraph.cpp) | 레거시 리플리케이션 대신 쓰는 Replication Graph(공간 격자). 실행 인자를 줄 때만 서버가 쓴다 |
 | [LabHUD](Source/DSOptLab/LabHUD.cpp) | 화면 글자, 내려다보기 화면의 점과 카메라, 자동 스크린샷 |
 | [LabMetricsSubsystem](Source/DSOptLab/LabMetricsSubsystem.cpp) | 서버 측정과 CSV 기록 |
 | [LabMotionLogSubsystem](Source/DSOptLab/LabMotionLogSubsystem.cpp) | NPC 움직임의 품질을 재려고 서버와 클라이언트의 NPC 위치를 기록한다. 실행 인자를 줄 때만 켜진다 |

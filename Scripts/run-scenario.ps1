@@ -44,6 +44,8 @@
     [switch]$InventoryOwnerOnly,
     # 2막의 기법. 인벤토리의 칸을 일반 TArray 대신 FastArray로 보낸다(ULabInventoryFastArrayComponent). 포스팅 10.
     [switch]$InventoryFastArray,
+    # 2막의 기법. 레거시 리플리케이션 대신 Replication Graph(ULabReplicationGraph)로 보낸다. 포스팅 14.
+    [switch]$ReplicationGraph,
     # 이 번호의 클라이언트 화면에 인벤토리 패널(-LabInventoryPanel)을 그린다. -1이면 그리지 않는다.
     # 측정 실행의 화면과 자동 스크린샷을 바꾸지 않도록 시각 자료 라벨(visualN)과 작은 규모 확인(tsmall-*)에서만 받는다.
     [int]$InventoryPanelSlot = -1,
@@ -269,6 +271,9 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($InventoryFastArray) {
         $ServerArgs += "-LabInventoryFastArray"
+    }
+    if ($ReplicationGraph) {
+        $ServerArgs += "-LabReplicationGraph"
     }
     if ($MotionLog) {
         $ServerArgs += "-LabMotionLog"

@@ -103,9 +103,44 @@
 
 **B를 추천하고, 묶음은 X0, X1, Y1 셋을 추천한다.** B는 A보다 약 100줄 많지만 캐릭터 갱신 빈도가 3분의 1로 바뀌는 효과를 빼서 "포스팅 하나에 기법 하나"를 지킨다. X1은 README에 ⑨로 더할 값이고, Y1은 포스팅 13이 약속한 "두 방법의 비교"다. 세 묶음은 연달아 약 25분이다(포스팅 13의 15회가 41분). 2 × 2로 레거시 빈도 기본값까지 재면 비교가 완전해지지만, 그 묶음은 포스팅 8에서 이미 쟀고 본문에 구성 넷을 설명하면 분량이 늘어난다.
 
-## 7. 확인하지 않은 것
+2026-10-19에 묶음의 추천을 2 × 2로 바꿨다. 포스팅 8의 묶음은 다른 날의 묶음이라 이번 묶음과 비교할 수 없다(STATUS.md "명령"). 두 방법이 같은 출발점에서 얼마나 줄였는지는 X−를 같은 묶음 안에서 재야 나온다. 측정은 약 33분이다.
+
+## 7. 선택
+
+사용자가 B와 2 × 2를 골랐다(2026-10-19). 묶음은 아래 넷이고 모두 ⑧의 인자에 `-MotionLog`를 더한다.
+
+| 묶음 | 리플리케이션 | 자원 노드 빈도 |
+| --- | --- | --- |
+| X− | 레거시 | 기본값(100) |
+| X0 | 레거시 | 2 |
+| Y1 | Replication Graph | 기본값(100) |
+| X1 | Replication Graph | 2 |
+
+구현에서 정한 것(에이전트):
+
+- `UBasicReplicationGraph`는 플러그인 밖으로 내보내지 않은 클래스라(`BasicReplicationGraph.h`의 `UCLASS(transient, config=Engine)`, 모듈 API 표시 없음) 상속하지 못한다. 그래서 `UReplicationGraph`를 상속한 `ULabReplicationGraph`(`Source/DSOptLab/LabReplicationGraph.cpp`)에 같은 경로를 옮겼다. 칸 100m, 기준점, 액터를 나누는 규칙이 같다.
+- 동적 액터 버킷을 1개로 두었다(`UReplicationGraphNode_ActorListFrequencyBuckets::DefaultSettings.NumBuckets`).
+- 클래스마다 보내는 간격을 레거시가 실제로 고려하는 간격의 평균에 맞췄다. 레거시는 다음 고려 시각을 1/빈도 + 0\~1프레임의 난수 뒤로 잡고(`NetDriver.cpp:5421-5425`), 그 시각이 지난 첫 프레임에 다시 고려한다(`5318-5319`). 그래서 평균 간격은 (30 ÷ 빈도) + 1프레임이다. 엔진의 변환(`RG.h:1083-1093`, 30 ÷ 빈도를 반올림)을 쓰면 NPC가 4프레임에서 3프레임 간격이 되어 NPC 갱신이 3분의 1 늘어난다. 결과: 자원 노드 16프레임(빈도 2), NPC 4프레임, 캐릭터와 건축물 1프레임(서버 로그 `lab_repgraph_class`). 캐릭터는 레거시의 평균 1.3프레임보다 짧다(정수 간격이라 맞출 수 없다).
+- 그래프가 연결마다 만드는 디버그 액터(`AReplicationGraphDebugActor`, Shipping이 아닌 빌드, `RG.h:64-66`)를 만들지 않는다. 레거시에는 없는 액터다.
+- 클래스별 CSV(`FReplicationGraphCSVTracker`)는 켜지 않았다. CSV 프로파일러를 쓰지 않고, 클래스별 시간은 Insights의 클래스 타이머로 본다.
+- 실행 인자는 `-ReplicationGraph`(서버 `-LabReplicationGraph`)다. 게임 모듈이 뜰 때 `CreateReplicationDriverDelegate`를 묶고, 인자가 없으면 묶지 않는다(`Source/DSOptLab/DSOptLab.cpp`).
+
+작은 규모 확인(클라이언트 2, 자원 노드 100, NPC 10과 플레이어 주변 50, ⑧의 인자, `-NoTrace`. 수치는 비교에 쓰지 않는다):
+
+| 값 | `tsmall-rg-base2-r1`(레거시) | `tsmall-rg2-r1`(그래프) |
+| --- | --- | --- |
+| 서버 로그의 리플리케이션 모델 | `Generic` | `LabReplicationGraph` |
+| `open_actor_channels_per_conn` | 58 | 58 |
+| `out_bytes_per_sec_per_conn` | 6,530 | 6,740 |
+| NPC 수신 간격 평균 / P99(ms) | 133.5 / 166.6 | 133.7 / 166.7 |
+| 표시 위치 오차 평균(cm) / 표시 지연(ms) | 46.61 / 155 | 47.17 / 158 |
+
+- 디버그 액터를 끄기 전의 `tsmall-rg1-r1`은 채널이 60이었다(레거시 `tsmall-rg-base1-r1` 58).
+- 그래프에서도 활성 목록(`NetworkObjectList`)은 채워지고, 서버 로그 `lab_network_objects`에 레거시에는 없던 리플리케이트하지 않는 액터(`PlayerCameraManager`, `GameSession` 등)가 보인다. 그래프는 리플리케이트하지 않는 액터를 받지 않으므로(`ReplicationGraphTypes.h:339-350`) 보내는 데에는 영향이 없다.
+
+## 8. 확인하지 않은 것
 
 - ⑧에서의 ①, ②의 크기(④의 `-StatNamedEvents` 실행에서 읽었다).
-- 클래스 기본 객체가 명령줄 설정을 반영하는지, 버킷이 실제로 3프레임마다 동적 액터를 돌려주는지.
+- 작은 규모에서 그래프가 3.2% 더 보낸 이유. 캐릭터의 간격(레거시 평균 1.3프레임, 그래프 1프레임)으로 보지만 확인하지 않았다. 확정 규모에서 Networking Insights의 클래스별 비트로 확인한다.
 - 그래프에서 클라이언트에 남는 Dormant 자원 노드: 그래프도 기본값에서는 지우지 않는다(`Net.RepGraph.DormantDynamicActorsDestruction` 기본값 0, `RG.cpp:125-127`). 이 문제는 포스팅 14의 범위 밖으로 둔다.
 - 그래프의 gather, 연결별 우선순위, 동적 액터 위치 갱신의 비용.

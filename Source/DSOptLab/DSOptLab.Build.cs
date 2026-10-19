@@ -12,7 +12,8 @@ public class DSOptLab : ModuleRules
 			"Engine",
 			"NetCore", // FFastArraySerializer(인벤토리 FastArray, 포스팅 10)
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"ReplicationGraph" // ULabReplicationGraph(포스팅 14)
 		});
 
 		PublicIncludePaths.AddRange(new string[] {

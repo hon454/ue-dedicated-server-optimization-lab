@@ -28,6 +28,10 @@
 		{
 			"Name": "AllToolsets",
 			"Enabled": true
+		},
+		{
+			"Name": "ReplicationGraph",
+			"Enabled": true
 		}
 	]
 }
