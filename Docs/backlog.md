@@ -18,7 +18,7 @@
 8. **포스팅 12: NPC 이동의 `NetSerialize`**: NPC 갱신 한 번 111비트 가운데 92비트가 `ReplicatedMovement`이고, NPC는 1막의 최종 구성에서 액터 비트의 59.5%다(`update-frequency3-r1`, 포스팅 4). `FRepMovement::NetSerialize`는 플래그, 위치, 회전 세 축, 선속도를 보낸다(`ReplicatedState.cpp:67-117`). 평면 이동에 맞춘 구조체로 바꾸고, 낮춘 정밀도는 보간 포스팅의 품질 지표로 잰다. 92비트의 내역과 Iris가 구조체의 `NetSerialize`를 그대로 쓰는지는 확인하지 않았다(2026-10-03 사용자 제안). 정밀도를 낮춘 결과를 포스팅 11의 품질 지표로 재므로 그 뒤에 둔다. 측정 대상은 이동 하나로 둔다(2026-10-05 사용자 결정). 실무 맥락은 본문에서 설명한다: 엔진의 정밀도 설정이 기본값부터 가장 거친 단계라 더 줄이려면 `NetSerialize`가 필요하다는 것(`LocationQuantizationLevel`, `VelocityQuantizationLevel`이 `RoundWholeNumber`, `RotationQuantizationLevel`이 `ByteComponents`, `ReplicatedState.cpp:34-36`), 범위 안에서 정밀도 낮추기, 필요 없는 값 빼기, 있을 때만 보내는 필드, 비트 묶기, 구조체가 통째로 보내지는 트레이드오프, 엔진의 예(`FHitResult::NetSerialize`, `HitResult.h:233`, GAS의 `GameplayAbilityTargetTypes.h`, `GameplayPrediction.h`). 상태 값을 한 구조체로 묶는 예와 새 요소(전투 판정)는 넣지 않는다.
 9. **포스팅 13: 지연과 패킷 손실에서의 동기화 품질**(진단). 포스팅 11, 12의 품질 지표를 다시 쓴다.
 10. **포스팅 14: Replication Graph**: 같은 문제를 그래프 노드로 푸는 방식. 포스팅 8과 같은 문제를 다른 구조로 풀어 비교한다.
-11. **포스팅 15: Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
+11. **포스팅 15: Iris 전환과 실측 비교**: 튜닝된 레거시와 같은 시나리오로 비교. 루트 README에서는 이어 쌓기 표에 잇지 않고 레거시(⑧), Replication Graph(⑨), Iris를 나란히 둔 갈래 표로 비교한다([ADR-0021](Decisions/0021-replication-system-comparison-table.md)). 포스팅 1\~4에서 뺀 "Iris에서는" 섹션의 내용([ADR-0011](Decisions/0011-no-iris-preview-section.md))은 아래 "Iris 전환 때 볼 소스 위치"에 있다.
 
 ## 2막 밖
 
