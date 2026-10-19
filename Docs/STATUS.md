@@ -1,10 +1,10 @@
 # 현재 상태
 
-마지막 갱신: 2026-10-07
+마지막 갱신: 2026-10-19
 
 ## 단계
 
-**단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 사용자의 14.5(전체 읽기)에서 나온 문제로 포스팅 0\~4와 루트 README를 새 틀로 다시 썼고, main을 `87c83f9`까지 푸시했다(2026-10-03). 태그 시점의 글은 옛 틀이다. 세 기법을 모두 적용했다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있고, 태스크 9.4\~9.5와 14는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 9.4\~9.5, 14"에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
+**단기 완료.** 태스크 1\~14 가운데 에이전트 몫을 모두 끝냈고(2026-10-02) 포스팅 0\~4가 완료다. 태그 `post-00-testbed`\~`post-04-update-frequency`가 원격에 있다(2026-10-02). 사용자의 14.5(전체 읽기)에서 나온 문제로 포스팅 0\~4와 루트 README를 새 틀로 다시 썼고, main을 `87c83f9`까지 푸시했다(2026-10-03). 다시 쓴 네 편을 사용자가 읽고 마쳤다(2026-10-19). 태그 시점의 글은 옛 틀이다. 세 기법을 모두 적용했다. 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)(태스크 1\~9, 보정 실행 표), [Worklog/01-baseline.md](Worklog/01-baseline.md)(태스크 10), [Worklog/02-relevancy.md](Worklog/02-relevancy.md)(태스크 11), [Worklog/03-dormancy.md](Worklog/03-dormancy.md)(태스크 12), [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)(태스크 13)에 있고, 태스크 9.4\~9.5와 14는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 9.4\~9.5, 14"에 있다. 다음 작업에 영향을 주는 것만 여기에 남긴다.
 
 - **2막 단계 1\~3(태스크 15\~21)이 끝났다(2026-10-04).** 기법 전환 인자, 확장 요소, 규모 확정, 포스팅 5(`post-05-expanded-testbed`)까지다. 확정값은 아래 "확정할 값"의 2막 줄, 인자는 "명령"에 있고, 경위는 [Worklog/05-expanded-testbed.md](Worklog/05-expanded-testbed.md)의 "태스크 15"부터 "태스크 15\~21: STATUS.md에서 옮긴 경위"까지에 있다.
 - **태스크 22(포스팅 6, `post-06-three-techniques-again`)가 끝났다(2026-10-05).** 구성별 `work_avg_ms` 중앙값은 213.555 → 35.674 → 19.536 → 16.732다([포스팅 6 측정 기록](../Posts/06-three-techniques-again/measurements.md) 3절). 경위는 [Worklog/06-three-techniques-again.md](Worklog/06-three-techniques-again.md)의 "태스크 22"에 있다.
@@ -16,13 +16,12 @@
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 아홉 단계(포스팅 12까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 시뮬레이션의 한계는 [Site/README.md](../Site/README.md)에 있다. 단계를 더하는 기준은 [AGENTS.md](../AGENTS.md) "규칙"에 있다.
 - **태스크 28(포스팅 11, `post-11-npc-interpolation`)이 끝났다(2026-10-07).** 클라이언트가 NPC를 서버 프레임 번호 기준으로 150ms 늦게 보간하자(`-NpcInterpDelay 150`) 표시 속도 오차 평균이 439.9 → 15.0cm/s, 표시 지연이 74 → 155ms, 표시 위치 오차 평균이 22.25 → 46.38cm였다(`act2-interp-base2`, `act2-interp2`). NPC 갱신 한 번은 101 → 117비트(Networking Insights), `out_bytes_per_sec_per_conn`은 11,820 → 12,682(+7.3%)이고 `work_avg_ms`는 구별되지 않았다. 품질 지표는 [ADR-0020](Decisions/0020-npc-motion-quality-metrics.md)이고 포스팅 12, 13도 쓴다. 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 28"에 있다.
 - **태스크 29(포스팅 12, `post-12-npc-move-netserialize`)가 끝났다(2026-10-07).** NPC 이동을 `ReplicatedMovement`와 `ServerFrame` 대신 평면 이동 구조체 `FLabNpcMove`로 보내자(`-NpcCompactMove`) NPC 갱신 한 번이 117.24 → 69.04비트(Networking Insights `Connection 0`), `out_bytes_per_sec_per_conn` 중앙값이 12,672 → 10,088(-20.4%)이었고 품질 지표는 구별되지 않았다(`act2-npcmove-base1`, `act2-npcmove1`). `work_avg_ms`는 8.681 → 8.484로 변화 0.197이 변동 폭 0.190을 겨우 넘었다. 경위는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "태스크 29"에 있다. 값과 근거는 [측정 기록](../Posts/12-npc-move-netserialize/measurements.md)에 있다.
-- **태스크 30(포스팅 13, `post-13-lag-and-packet-loss`, 진단)이 끝났다(2026-10-07).** 사용자 결정: 시뮬레이션은 클라이언트에 건다, 다섯 묶음(루프백, `Average`, `Bad`, `LabLagOnly`, `LabLossOnly`)을 잰다, 재는 것은 NPC뿐이다, 표시 지연의 탐색 범위를 600ms로 넓힌다(ADR 없이 measurement.md에 적음). 구현은 `run-scenario.ps1 -NetEmulationProfile`, `Config/DefaultEngine.ini`의 두 프로필, 서버의 기록용 `-LabNetEmulationProfile=`이다("명령"). 작은 규모 확인(`tsmall-net1`\~`net4`)에서 손실만은 예상대로 수신 간격 P99가 267ms가 되어 NPC가 118ms씩 멈췄고, 지연만은 예상과 달리 갱신마다 한 프레임 멈추고 두 걸음을 갔다(표시 속도 오차 12.7 → 70.2cm/s). 보간 버퍼 150ms가 갱신 간격 134ms에 16ms 여유뿐이라서다. 값과 확인 과정은 [관찰 자료](../Posts/13-lag-and-packet-loss/candidates.md) 3\~4절, 엔진 소스는 [engine-notes.md](Reference/engine-notes.md) 14절에 있다. 확정 규모의 다섯 묶음(`act2-net-base1`, `act2-net-avg1`, `act2-net-bad1`, `act2-net-lag1`, `act2-net-loss1`)을 2026-10-07 17:49\~18:30에 연달아 쟀고 15회 모두 종료 코드 0이었다(아래 "측정 결과"). 표시 지연은 루프백 154 → 지연만 286ms, 표시 속도 오차 평균은 15.1 → 지연만 112, 손실만 38.4, 나쁨 134cm/s였다. 지연을 건 묶음에서 송신 대역폭이 9% 줄고 `work_avg_ms`가 0.4 줄었는데 리플리케이션 시간은 거의 같았다(원인 미확인, [측정 기록](../Posts/13-lag-and-packet-loss/measurements.md) 7절). [본문](../Posts/13-lag-and-packet-loss/README.md) 초안(3,695자)과 측정 기록을 썼고, 위치 그래프 세 장은 `Scripts/make-net-trace.ps1`로 그렸다. 사용자가 "문제"와 "원리"를 승인하고 영상을 찍기로 해, 시연용 NPC를 루프백(`visual22`)과 `Bad`(`visual23`)에서 찍어 요약의 GIF(862KB)로 붙이고 태그를 붙였다. 다음 태스크를 시작할 때 이 줄의 경위를 `Docs/Worklog/13-lag-and-packet-loss.md`로 옮긴다.
+- **태스크 30(포스팅 13, `post-13-lag-and-packet-loss`, 진단)이 끝났다(2026-10-07).** 루프백 → 지연만(`LabLagOnly`)에서 표시 지연 154 → 286ms, 표시 속도 오차 평균 15.1 → 112cm/s였다(`act2-net-base1`, `act2-net-lag1`). 경위는 [Worklog/13-lag-and-packet-loss.md](Worklog/13-lag-and-packet-loss.md)의 "태스크 30"에 있다.
 - 다음 시각 자료 라벨은 `visual24`이다(`visual22`, `visual23`은 포스팅 13의 시연용 NPC 루프백과 `Bad`, 2026-10-07. `visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후).
 
 ## 다음 할 일
 
-1. **[사람] 다시 쓴 포스팅 네 편을 읽는다.** 테스트베드, 기준선, Dormancy, Net Update Frequency 글의 "문제", "원리"와 기준선 글의 "선택"은 에이전트 초안이다(Relevancy 글과 루트 README의 틀은 승인됨). 고칠 곳이 나오면 에이전트가 고친다. 틀과 문장 규칙은 [posting.md](Guides/posting.md), 결정은 [ADR-0015](Decisions/0015-post-body-and-measurement-record.md), 경위는 [Worklog/00-testbed.md](Worklog/00-testbed.md)의 "태스크 14.5: 포스팅 다시 쓰기"에 있다. 이미 붙인 태그는 옮기지 않는다.
-2. 다음 주제를 [backlog.md](backlog.md)의 "우선순위 순"에서 사용자에게 묻는다(다음은 Replication Graph).
+1. 태스크 31(포스팅 14, Replication Graph)을 [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기"대로 진행한다. 비교 대상은 [포스팅 8](../Posts/08-node-update-frequency/README.md)의 자원 노드 Net Update Frequency다.
 
 ## 포스팅 진행
 
@@ -120,17 +119,7 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 | **중앙값** | 278 | 215.801 | 270.781 | 278 | 206.944 | 36994 | 5871 | 0.000 |
 | **변동 폭** | 7 | 5.283 | 69.892 | 7 | 4.807 | 741 | 0 | 0.000 |
 
-1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다. 포스팅 11의 두 묶음(`act2-interp-base2`, `act2-interp2`)의 행과 품질 지표는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 29 준비"로 옮겼다. 포스팅 12의 두 묶음(`act2-npcmove-base1`, `act2-npcmove1`)의 행과 품질 지표는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "태스크 30 준비"로 옮겼다.
-
-포스팅 13의 다섯 묶음(2026-10-07 17:49\~18:30, 본체 화면, 연달아 잼)은 중앙값(변동 폭)만 적는다. 실행별 행과 품질 지표는 [포스팅 13 측정 기록](../Posts/13-lag-and-packet-loss/measurements.md) 3절, 4절에 있다. 서버는 다섯 묶음이 같고 클라이언트의 패킷 시뮬레이션 프로필만 다르다.
-
-| 묶음 | 프로필 | work_avg_ms | out_bytes_per_sec_per_conn | 표시 지연(ms) | 표시 속도 오차 평균(cm/s) | 수신 간격 P99(ms) |
-| --- | --- | --- | --- | --- | --- | --- |
-| `act2-net-base1` | 없음 | 8.759(0.058) | 10084(22) | 154(2) | 15.1(0.2) | 166.8(0.2) |
-| `act2-net-avg1` | `Average` | 8.803(0.578) | 9760(62) | 196(4) | 41.1(5.8) | 233.3(13.5) |
-| `act2-net-bad1` | `Bad` | 8.285(0.024) | 9179(17) | 287(1) | 134.1(4.4) | 304.8(5.9) |
-| `act2-net-lag1` | `LabLagOnly` | 8.358(0.057) | 9183(10) | 286(0) | 112.1(3.2) | 220.9(2.9) |
-| `act2-net-loss1` | `LabLossOnly` | 8.659(0.123) | 10003(7) | 154(0) | 38.4(1.3) | 282.1(3.6) |
+1막 네 묶음(`baseline3`\~`update-frequency3`)의 행과 경위는 [Worklog/04-update-frequency.md](Worklog/04-update-frequency.md)의 "태스크 25 준비"로 옮겼다. `act2-baseline1`의 실행 경위는 [포스팅 5 측정 기록](../Posts/05-expanded-testbed/measurements.md) 1절에 있다. 포스팅 8의 두 묶음(`act2-nodeuf-base1`, `act2-nodeuf1`)의 행은 [Worklog/08-node-update-frequency.md](Worklog/08-node-update-frequency.md)의 "태스크 26 준비"로 옮겼다. 포스팅 9의 두 묶음(`act2-invown-base1`, `act2-invown1`)의 행은 [Worklog/09-inventory-owner-only.md](Worklog/09-inventory-owner-only.md)의 "태스크 27 준비"로 옮겼다. 포스팅 10의 두 묶음(`act2-fastarr-base1`, `act2-fastarr1`)의 행은 [Worklog/10-inventory-fastarray.md](Worklog/10-inventory-fastarray.md)의 "태스크 28 준비"로 옮겼다. 포스팅 11의 두 묶음(`act2-interp-base2`, `act2-interp2`)의 행과 품질 지표는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "태스크 29 준비"로 옮겼다. 포스팅 12의 두 묶음(`act2-npcmove-base1`, `act2-npcmove1`)의 행과 품질 지표는 [Worklog/12-npc-move-netserialize.md](Worklog/12-npc-move-netserialize.md)의 "태스크 30 준비"로 옮겼다. 포스팅 13의 다섯 묶음(`act2-net-base1`, `act2-net-avg1`, `act2-net-bad1`, `act2-net-lag1`, `act2-net-loss1`)의 행은 [Worklog/13-lag-and-packet-loss.md](Worklog/13-lag-and-packet-loss.md)의 "태스크 31 준비"로 옮겼다.
 
 ## 막힌 것
 
@@ -138,4 +127,4 @@ CSV 값을 CSV 열 이름 그대로 적는다. 구성마다 세 실행의 값을
 
 ## 사용자에게 요청한 일
 
-- **다시 쓴 포스팅 네 편 확인.** 위 "다음 할 일" 1번.
+- 없음.
