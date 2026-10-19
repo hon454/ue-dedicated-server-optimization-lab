@@ -32,6 +32,10 @@
 		{
 			"Name": "ReplicationGraph",
 			"Enabled": true
+		},
+		{
+			"Name": "Iris",
+			"Enabled": true
 		}
 	]
 }

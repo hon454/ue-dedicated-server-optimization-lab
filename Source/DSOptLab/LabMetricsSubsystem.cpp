@@ -158,6 +158,10 @@ ULabMetricsSubsystem::FConnectionSample ULabMetricsSubsystem::SampleConnections(
 		const FNetConnectionSaturationAnalytics& Saturation = Connection->GetSaturationAnalytics();
 		Sample.Replications += Saturation.GetNumberOfReplications();
 		Sample.SaturatedReplications += Saturation.GetNumberOfSaturatedReplications();
+		// Iris는 ServerReplicateActors를 돌지 않아 위 두 값이 늘지 않는다(포스팅 15). 연결의 Tick이 프레임마다 남기는
+		// 포화 프레임 수(NetConnection.cpp의 SaturationAnalytics.TrackFrame(!IsNetReady()))는 두 시스템에서 모두 남으므로 로그로 함께 본다.
+		Sample.TrackedFrames += Saturation.GetNumberOfTrackedFrames();
+		Sample.SaturatedFrames += Saturation.GetNumberOfSaturatedFrames();
 
 		const ALabPlayerController* Player = Cast<ALabPlayerController>(Connection->PlayerController);
 		if (Player && Player->IsReady())
@@ -217,6 +221,8 @@ void ULabMetricsSubsystem::HandleEndFrame()
 			BytesAtMeasureStart = Sample.TotalBytes;
 			ReplicationsAtMeasureStart = Sample.Replications;
 			SaturatedReplicationsAtMeasureStart = Sample.SaturatedReplications;
+			TrackedFramesAtMeasureStart = Sample.TrackedFrames;
+			SaturatedFramesAtMeasureStart = Sample.SaturatedFrames;
 			OpenChannelsPerConnectionSum = 0.0;
 			ConsideredActorsSum = 0;
 			WorkMs.Reset();
@@ -260,6 +266,10 @@ void ULabMetricsSubsystem::HandleEndFrame()
 				return;
 			}
 			LogNetworkObjects();
+
+			// 측정 구간에 모든 연결에서 송신 한도에 걸린 프레임 수 / 기록된 프레임 수. CSV의 saturated_ratio가 Iris에서 늘 0이라서 남긴다.
+			UE_LOG(LogLabMetrics, Display, TEXT("lab_saturated_frames measured=%lld/%lld"),
+				Sample.SaturatedFrames - SaturatedFramesAtMeasureStart, Sample.TrackedFrames - TrackedFramesAtMeasureStart);
 
 			// 측정 구간의 프레임마다 Consider List에 든 액터 수의 평균. 연결과 상관없이 프레임에 한 번 만드는 목록이다.
 			UE_LOG(LogLabMetrics, Display, TEXT("lab_consider_list avg_per_frame=%.1f frames=%d"),

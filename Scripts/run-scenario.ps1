@@ -49,6 +49,14 @@
     # -ReplicationGraph와 함께만 쓴다. Dormancy 노드가 거리에서 걸러진 액터를 한 프레임에 하나씩 거리 무시로 보내는
     # 엔진 기본 동작(Net.RepGraph.TrickleDistCullOnDormancyNodes 1)을 끈다. 포스팅 14.
     [switch]$RepGraphNoTrickle,
+    # 2막. 레거시 리플리케이션 대신 Iris로 보낸다. 포스팅 15. 서버와 클라이언트에 엔진 인자 -UseIrisReplication=1과 기록용 -LabIris를 주고,
+    # Iris가 요구하는 서브오브젝트 등록 목록(net.SubObjects.DefaultUseSubObjectReplicationList=1, EngineReplicationBridge.cpp)을
+    # 이 실행에만 명령줄로 켠다. 서버는 액터의 폴링 간격을 레거시의 평균 고려 간격에 맞춘다(ALabGameMode::AlignIrisPollInterval).
+    [switch]$Iris,
+    # -Iris와 함께만 쓴다. Iris의 기본 우선순위기(SphereNetObjectPrioritizer)는 시점에서 20m 밖의 객체에 1.0보다 낮은 우선순위를 주고,
+    # Iris는 쌓인 우선순위가 1.0 이상인 객체만 보낸다(ReplicationWriter.h의 SchedulingThresholdPriority). 그래서 먼 객체가 폴링 간격보다 늦게 간다.
+    # 이 인자는 서버의 우선순위를 거리와 상관없이 1.0으로 두어 레거시처럼 고려한 액터를 모두 보내게 한다. 포스팅 15.
+    [switch]$IrisFlatPriority,
     # 이 번호의 클라이언트 화면에 인벤토리 패널(-LabInventoryPanel)을 그린다. -1이면 그리지 않는다.
     # 측정 실행의 화면과 자동 스크린샷을 바꾸지 않도록 시각 자료 라벨(visualN)과 작은 규모 확인(tsmall-*)에서만 받는다.
     [int]$InventoryPanelSlot = -1,
@@ -92,10 +100,22 @@ if ($ServerTickRate -gt 0 -and $Label -notmatch '^tsmall-.+$') {
     exit 1
 }
 
+if ($Iris -and $ReplicationGraph) {
+    Write-Host "FAIL: Iris and the replication graph cannot run together. The net driver does not create a replication driver when it uses Iris (NetDriver.cpp InitBase)."
+    exit 1
+}
+
+if ($IrisFlatPriority -and -not $Iris) {
+    Write-Host "FAIL: -IrisFlatPriority only changes the Iris prioritizer, so it needs -Iris."
+    exit 1
+}
+
 if ($RepGraphNoTrickle -and -not $ReplicationGraph) {
     Write-Host "FAIL: -RepGraphNoTrickle only changes the replication graph, so it needs -ReplicationGraph."
     exit 1
 }
+
+$IrisArgs = @("-UseIrisReplication=1", "-LabIris", "-ini:Engine:[SystemSettings]:net.SubObjects.DefaultUseSubObjectReplicationList=1")
 
 $TraceDir = "$ProjectDir\Saved\Traces"
 $LogDir = "$ProjectDir\Saved\Logs"
@@ -204,6 +224,14 @@ function Start-LabClient([int]$Index, [string]$RunLabel) {
     if ($NetEmulationProfile) {
         $ClientArgs += "-PktEmulationProfile=$NetEmulationProfile"
     }
+    # Iris는 조건에 따라 프로퍼티를 다른 상태로 묶고 클라이언트가 받은 프로토콜을 자기 것과 비교하므로, 인벤토리 조건을 양쪽에 같게 준다.
+    # 레거시에서 조건은 보내는 쪽만 쓴다(LabInventoryComponent.cpp의 GetItemsCondition).
+    if ($InventoryOwnerOnly) {
+        $ClientArgs += "-LabInventoryOwnerOnly"
+    }
+    if ($Iris) {
+        $ClientArgs += $IrisArgs
+    }
     $Client = Start-Process -FilePath $Editor -ArgumentList $ClientArgs -PassThru
     Set-LabJobAffinity $Client $ClientMask
     $null = Set-Affinity $Client $ClientMask
@@ -285,6 +313,12 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
     }
     if ($RepGraphNoTrickle) {
         $ServerArgs += "-LabRepGraphNoTrickle"
+    }
+    if ($Iris) {
+        $ServerArgs += $IrisArgs
+    }
+    if ($IrisFlatPriority) {
+        $ServerArgs += @("-LabIrisFlatPriority", "-ini:Engine:[/Script/IrisCore.SphereNetObjectPrioritizerConfig]:OuterPriority=1.0,[/Script/IrisCore.SphereNetObjectPrioritizerConfig]:OutsidePriority=1.0")
     }
     if ($MotionLog) {
         $ServerArgs += "-LabMotionLog"
@@ -400,8 +434,22 @@ for ($Run = 1; $Run -le $Runs; $Run++) {
             }
         }
 
+        # 넷 드라이버가 뜰 때 쓰는 리플리케이션 모델을 로그에 남긴다(NetDriver.cpp InitBase의 "using replication model"). Iris 실행은 서버와
+        # 모든 클라이언트가 Iris여야 한다. IrisCore가 로드되지 않으면 엔진이 레거시로 돈다(UnrealEngine.cpp의 WillNetDriverUseIris).
+        $NotIris = @()
+        if ($Iris -and $DeadIndex -lt 0 -and $Server.HasExited) {
+            $Logs = @("server-$RunLabel.log") + @(0..($Clients - 1) | ForEach-Object { "client$_-$RunLabel.log" })
+            foreach ($Name in $Logs) {
+                $Found = @(Get-Content "$LogDir\$Name" -ErrorAction SilentlyContinue | Where-Object { $_.Contains("GameNetDriver") -and $_.Contains("using replication model Iris") }).Count -gt 0
+                if (-not $Found) { $NotIris += $Name }
+            }
+        }
+
         if ($DeadIndex -ge 0) {
             Write-Host "FAIL: client$DeadIndex exited before the server finished. See Saved\Logs\client$DeadIndex-$RunLabel.log"
+        }
+        elseif ($NotIris.Count -gt 0) {
+            Write-Host "FAIL: -Iris was given but these logs do not show 'using replication model Iris' for GameNetDriver: $($NotIris -join ', ')"
         }
         elseif ($EmulationMissing.Count -gt 0) {
             Write-Host "FAIL: the packet simulation profile '$NetEmulationProfile' was not applied on $($EmulationMissing -join ', '). See Saved\Logs\client*-$RunLabel.log"

@@ -6,7 +6,10 @@
 #include "EngineUtils.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformTime.h"
+#include "Iris/ReplicationSystem/NetRefHandle.h"
 #include "Misc/FileHelper.h"
+#include "Net/Iris/ReplicationSystem/EngineReplicationBridge.h"
+#include "Net/Iris/ReplicationSystem/ReplicationSystemUtil.h"
 #include "Misc/Paths.h"
 #include "Serialization/MemoryWriter.h"
 #include "DSOptLab.h"
@@ -143,7 +146,18 @@ void ULabMotionLogSubsystem::HandlePostActorTick(UWorld* World, ELevelTick TickT
 uint64 ULabMotionLogSubsystem::GetGuid(const AActor& Actor) const
 {
 	const UNetDriver* NetDriver = GetWorld()->GetNetDriver();
-	if (!NetDriver || !NetDriver->GetNetGuidCache().IsValid())
+	if (!NetDriver)
+	{
+		return 0;
+	}
+	// Iris(포스팅 15)는 NetGUID를 정하지 않는다. 대신 서버가 정해 클라이언트에 보내는 NetRefHandle로 서버와 클라이언트의 NPC를 짝짓는다.
+	// 레거시와 Replication Graph는 지금까지처럼 NetGUID를 쓴다.
+	if (NetDriver->IsUsingIrisReplication())
+	{
+		const UEngineReplicationBridge* Bridge = UE::Net::FReplicationSystemUtil::GetActorReplicationBridge(&Actor);
+		return Bridge ? Bridge->GetReplicatedRefHandle(&Actor).GetId() : 0;
+	}
+	if (!NetDriver->GetNetGuidCache().IsValid())
 	{
 		return 0;
 	}

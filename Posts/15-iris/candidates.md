@@ -130,4 +130,51 @@
 
 ## 10. 관찰과 선택
 
-사용자가 7절의 정해야 할 것 넷을 정한다. 정한 것을 여기에 옮긴다.
+사용자가 8절의 추천대로 정했다(2026-10-19).
+
+1. 간격: 레거시 평균에 맞춘다(Z3).
+2. ⑧ 구조체: LastResort 직렬화기로 등록한다.
+3. 서브오브젝트 목록 설정: Iris 묶음에만 준다.
+4. 묶음: Z0(레거시 ⑧), Z1(Replication Graph ⑨, trickle 기본), Z3(Iris, 간격 맞춤). 모두 ⑧의 인자에 `-MotionLog`를 더한다.
+
+구현에서 정한 것(에이전트):
+
+- 실행 인자는 `-Iris`다. 서버와 클라이언트에 `-UseIrisReplication=1`, 기록용 `-LabIris`(`config` 열에 `Iris`), `-ini:Engine:[SystemSettings]:net.SubObjects.DefaultUseSubObjectReplicationList=1`을 준다. `-ReplicationGraph`와 함께 주면 스크립트가 거부한다. 서버와 모든 클라이언트의 로그에 `GameNetDriver`의 `using replication model Iris`가 없으면 실패로 본다.
+- `.uproject`에 `Iris` 플러그인을, `DSOptLab.Build.cs`에 `SetupIrisSupport(Target)`를 더했다. 모든 묶음의 빌드가 바뀌므로 Z0과 Z1도 포스팅 14의 묶음과 비교하지 않는다(어차피 연달아 다시 잰다).
+- 간격은 액터의 Net Update Frequency를 Iris가 레거시 평균 간격 P프레임마다 폴링하는 값 틱 ÷ (P + 0.5)로 바꿔 맞춘다. P는 포스팅 14와 같이 반올림((30 ÷ 빈도) + 1)이다. Iris로 도는 서버에서만, 게임 모드가 이미 있는 액터와 새로 스폰되는 액터에 적용한다(`ALabGameMode::AlignIrisPollInterval`). 결과는 서버 로그 `lab_iris_class`다. `PollConfigs`를 쓰지 않은 것은 자원 노드 빈도처럼 인자로 바뀌는 값을 ini에 고정하지 않으려고다.
+- `FLabNpcMove`는 `LabNpc.cpp`에서 `UE_NET_IMPLEMENT_NAMED_STRUCT_LASTRESORT_NETSERIALIZER_AND_REGISTRY_DELEGATES(LabNpcMove)`로 등록했다.
+- 인벤토리 조건 인자 `-LabInventoryOwnerOnly`를 클라이언트에도 준다(모든 묶음). 레거시는 조건을 보내는 쪽만 쓰므로 레거시와 그래프의 송신은 바뀌지 않는다.
+- `saturated_ratio`가 Iris에서 늘 0이므로, 측정 구간의 포화 프레임 수를 서버 로그 `lab_saturated_frames measured=<포화>/<기록>`으로 모든 묶음에 남긴다. CSV 열은 바꾸지 않았다.
+
+## 11. 작은 규모 확인
+
+클라이언트 2, 자원 노드 100, NPC 10과 플레이어 주변 50, ⑧의 인자, `-MotionLog`, `-InventoryPanelSlot 0`, `-NoTrace`로 돌렸다(2026-10-19 20:56\~21:05). 수치는 비교에 쓰지 않는다.
+
+| 값 | `tsmall-iris-base1-r1`(레거시) | `tsmall-iris2-r1`(Iris, 간격 맞춤) | `tsmall-iris3-r1`(Iris, 간격 맞춤, 우선순위 1.0) |
+| --- | ---: | ---: | ---: |
+| `out_bytes_per_sec_per_conn` | 6,517 | 7,044 | 7,372 |
+| `open_actor_channels_per_conn` | 58 | 0 | 0 |
+| NPC 수신 간격 평균 / P99(ms) | 133.5 / 166.7 | 138.4 / 400.0 | 133.4 / 133.9 |
+| 표시 속도 오차 평균(cm/s) | 12.9 | 88.8 | 13.1 |
+| 표시 위치 오차 평균(cm) / 표시 지연(ms) | 46.69 / 155 | 47.56 / 153 | 48.83 / 165 |
+| 1번 클라이언트의 자원 노드(t=45s, 자동 스크린샷) | 7 | 4(`tsmall-iris1-r1`) | 3 |
+
+- 세 실행 모두 서버와 클라이언트 로그에 `Protocol mismatch`, FastArray 미등록 오류, 서브오브젝트 목록 경고, `has custom serialization` 경고가 없다. 서버 로그의 모델은 `Iris`이고, 클라이언트 로그에는 `PendingNetDriver (NetDriverDefinition GameNetDriver) using replication model Iris`가 남는다. 서브오브젝트 목록을 명령줄(`-ini:Engine:[SystemSettings]:...`)로 준 설정이 적용되었다.
+- 인벤토리 패널: 자기 인벤토리 200칸이 오고, 다른 플레이어의 칸은 오지 않는다(`COND_OwnerOnly`). 맨 앞 칸 번호가 바뀌므로 FastArray 갱신이 온다(`tsmall-iris1-r1-tpp-02.png`).
+- `lab_iris_class`: `LabNpc` 10 → 6.67(4프레임), `LabResourceNode` 2 → 1.82(16프레임), `BP_LabCharacter_C`와 `LabBuilding` 100 → 20(1프레임), `PlayerState` 1 → 0.95(31프레임), `GameStateBase`와 `WorldSettings` 10 → 6.67(4프레임). `LabPlayerController`는 기록되지 않았다. 빈도가 100이라 맞춰도 1프레임으로 같다.
+- 첫 실행(`tsmall-iris1-r1`)에서는 모션 기록이 비었다. 모션 기록은 NetGUID로 서버와 클라이언트의 NPC를 짝짓는데, Iris는 NetGUID를 정하지 않는다. 그래서 Iris에서는 `NetRefHandle`의 ID로 짝짓게 고쳤다(`LabMotionLogSubsystem.cpp`의 `GetGuid`).
+- Iris 클라이언트의 자원 노드가 레거시보다 적다. 3절 ②의 추론대로 Iris는 필터 범위를 벗어난 Dormant 자원 노드를 클라이언트에서 지운다.
+
+### 11.1 Iris의 거리 우선순위가 먼 NPC를 늦춘다
+
+간격을 맞춘 `tsmall-iris2-r1`에서 NPC 수신 간격 P99가 400ms(12프레임), 표시 속도 오차 평균이 88.8cm/s였다(레거시는 166.7ms, 12.9cm/s). 엔진 소스:
+
+| 사실 | 소스 위치 |
+| --- | --- |
+| 액터의 기본 우선순위기는 `SphereNetObjectPrioritizer`다 | `BaseEngine.ini:1494` |
+| 시점에서 20m 안은 우선순위 1.0이다. 20\~100m에서는 1.0에서 0.2로 줄고, 100m 밖은 0.1이다 | `Engine/Source/Runtime/Net/Iris/Public/Iris/ReplicationSystem/Prioritization/SphereNetObjectPrioritizer.h:18-35`(`InnerRadius` 2,000, `OuterRadius` 10,000, `InnerPriority` 1.0, `OuterPriority` 0.2, `OutsidePriority` 0.1) |
+| 바뀐 객체는 프레임마다 우선순위를 쌓고, 쌓인 값이 1.0 이상인 객체만 보낸다 | `Engine/Source/Runtime/Net/Iris/Private/Iris/ReplicationSystem/ReplicationWriter.cpp:1202-1235`, `ReplicationWriter.h:69`(`SchedulingThresholdPriority` 1.0) |
+
+그래서 100m 밖의 NPC는 우선순위를 쌓는 데 10프레임이 걸리고, 폴링 간격(4프레임)보다 늦게 간다. 레거시는 고려한 액터를 송신 한도가 허락하는 한 모두 보낸다. 우선순위를 거리와 상관없이 1.0으로 둔 `tsmall-iris3-r1`(`-IrisFlatPriority`, 서버 로그 `lab_iris_prioritizer ... outer=1 outside=1`)에서는 NPC 수신 간격이 정확히 4프레임이었다(평균 133.4ms, P99 133.9ms). 표시 속도 오차도 레거시와 같았다. 송신량은 7,044에서 7,372로 늘었다.
+
+에이전트 의견: Z3의 목적은 레거시와 같은 송신 일정에서 시스템만 바꾸는 것이고, 그 목적에는 우선순위 1.0이 맞다. Iris의 기본 우선순위기는 먼 객체의 갱신을 줄여 송신량을 낮추는 Iris의 기능이고, 그 대가는 화면 품질이다. 이 효과는 확정 규모에서 한 묶음을 따로 재면 수치로 보일 수 있다.

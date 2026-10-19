@@ -6,6 +6,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
+#include "Iris/ReplicationState/PropertyNetSerializerInfoRegistry.h"
 #include "LabMotionLogSubsystem.h"
 #include "LabScenarioConfig.h"
 #include "LabVisual.h"
@@ -213,6 +214,12 @@ bool FLabNpcMove::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess
 	bOutSuccess = !Ar.IsError();
 	return true;
 }
+
+// Iris(포스팅 15)는 구조체의 NetSerialize를 부르지 않고 UPROPERTY 멤버를 각자의 기본 직렬화기로 보낸다
+// (PropertyNetSerializerInfoRegistry.cpp의 FDefaultStructPropertyNetSerializerInfo, ReplicationStateDescriptorBuilder.cpp의
+// "has custom serialization" 경고). 그러면 위의 1cm 반올림과 Yaw 1바이트가 빠진다. LastResort 직렬화기로 등록하면
+// Iris가 NetSerialize가 쓴 비트를 그대로 보낸다(LastResortPropertyNetSerializer.cpp). 레거시와 Replication Graph에는 영향이 없다.
+UE_NET_IMPLEMENT_NAMED_STRUCT_LASTRESORT_NETSERIALIZER_AND_REGISTRY_DELEGATES(LabNpcMove);
 
 ALabNpc::ALabNpc()
 {
