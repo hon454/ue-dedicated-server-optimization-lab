@@ -28,6 +28,10 @@ struct FLabScenarioConfig
 	// 집 기준 상대 좌표(1cm), Yaw 1바이트, 서버 프레임 번호를 직접 직렬화한다. 서버 프레임 번호는 이 구조체에 들어간다.
 	bool bNpcCompactMove = false;      // -LabNpcCompactMove
 
+	// 켜면 레거시 리플리케이션 대신 Iris로 보낸다(포스팅 15). Iris를 켜는 것은 엔진 인자 -UseIrisReplication=1이고(IrisConfig.cpp),
+	// 이 값은 서버가 Iris에서만 하는 일(액터의 간격 맞춤)과 config 열의 기록에 쓴다. 서버와 클라이언트에 모두 준다.
+	bool bIris = false;                // -LabIris
+
 	static const FLabScenarioConfig& Get();
 };
 
@@ -78,6 +82,9 @@ struct FLabServerConfig
 	// 그래프의 Dormancy 노드가 거리에서 걸러진 액터를 한 프레임에 하나씩 거리 무시로 보내는 동작을 끈다
 	// (Net.RepGraph.TrickleDistCullOnDormancyNodes, 엔진 기본값 1). -LabReplicationGraph일 때만 뜻이 있다. 포스팅 14.
 	bool bRepGraphNoTrickle = false;   // -LabRepGraphNoTrickle
+	// 기록 전용(포스팅 15). Iris의 기본 우선순위기가 거리에 따라 낮추는 우선순위를 1.0으로 둔 실행이다. 우선순위 설정 자체는
+	// run-scenario.ps1이 엔진 설정(SphereNetObjectPrioritizerConfig)을 명령줄로 덮어써서 바꾼다. 이 값은 config 열에만 쓴다.
+	bool bIrisFlatPriority = false;    // -LabIrisFlatPriority
 
 	// 기록 전용(포스팅 13). 클라이언트에 준 엔진의 패킷 시뮬레이션 프로필 이름(-PktEmulationProfile=)을 config 열에 남긴다.
 	// 서버의 동작은 바꾸지 않는다. 시뮬레이션은 클라이언트의 넷 드라이버가 명령줄에서 읽어 자기 연결에 건다(NetDriver.cpp의

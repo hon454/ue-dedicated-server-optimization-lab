@@ -124,6 +124,8 @@ private:
 
 	// 클라이언트에서 쓰는 상태(보간). 서버 시각 순서로 쌓인다.
 	TArray<FSnapshot> Snapshots;
+	/** 처음 받은 위치 다음의 위치를 받았는지. 처음 받은 상태는 오래되었을 수 있어서(Iris, 포스팅 15) 그 전까지는 서버 시계에 넣지 않는다. */
+	bool bFirstSnapshotConfirmed = false;
 };
 
 /**

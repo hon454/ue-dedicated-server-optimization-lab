@@ -1,10 +1,212 @@
 # 누적 수치의 측정 기록
 
-[루트 README](../README.md)가 쓰는 수치의 근거다. README는 유효 숫자 세 자리로 줄여 쓰고, 정밀한 값과 실행 라벨은 여기에 둔다. 구성마다의 실행별 값과 계산식은 각 포스팅의 측정 기록에 있다. README의 "결과 한눈에 보기"는 2막 여덟 단계의 수치다(2026-10-07 오후부터). 그 전에 쓰던 2막 일곱 단계의 수치는 "2막: 일곱 단계"에, 2막 여섯 단계의 수치는 "2막: 여섯 단계"에, 2막 세 단계의 수치는 "2막: 1막의 세 단계"에, 1막의 수치는 "1막"에 남긴다.
+[루트 README](../README.md)가 쓰는 수치의 근거다. README는 유효 숫자 세 자리로 줄여 쓰고, 정밀한 값과 실행 라벨은 여기에 둔다. 구성마다의 실행별 값과 계산식은 각 포스팅의 측정 기록에 있다. README의 "결과 한눈에 보기"는 2막 아홉 단계와 리플리케이션 시스템 갈래의 수치다(2026-10-20부터). 그 전에 쓰던 2막 여덟 단계의 수치는 "2막: 여덟 단계"에, 2막 일곱 단계의 수치는 "2막: 일곱 단계"에, 2막 여섯 단계의 수치는 "2막: 여섯 단계"에, 2막 세 단계의 수치는 "2막: 1막의 세 단계"에, 1막의 수치는 "1막"에 남긴다.
+
+## 2막: 아홉 단계와 리플리케이션 시스템 갈래
+
+README의 "결과 한눈에 보기"가 2026-10-20부터 쓰는 수치다. 포스팅 14(⑨ Replication Graph)를 단계로 더하고, 포스팅 15(Iris)를 리플리케이션 시스템 갈래 표로 더하면서 열한 구성을 다시 쟀다([AGENTS.md](../AGENTS.md) "규칙", [ADR-0021](../Docs/Decisions/0021-replication-system-comparison-table.md)). 갈래 표는 ⑧의 설정에서 리플리케이션 시스템만 바꾼 세 구성(레거시 ⑧, Replication Graph ⑨, Iris)이고, ⑧과 ⑨는 이어 쌓기 표와 같은 실행이다.
+
+| 구성(README의 단계 이름) | 실행 라벨 | 2막 요소 인자에 더한 인자 | 그 단계를 다룬 글 |
+| --- | --- | --- | --- |
+| 기준선 | `act2-all-baseline4` | `-AlwaysRelevant -NoNodeDormancy -NpcUpdateFrequency 100` | [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) |
+| ① 거리 판정 | `act2-all-relevancy4` | `-NoNodeDormancy -NpcUpdateFrequency 100` | [1막의 세 최적화를 2막에 다시 적용](06-three-techniques-again/README.md) |
+| ② Dormant 상태 | `act2-all-dormancy4` | `-NpcUpdateFrequency 100` | 같은 글 |
+| ③ NPC 업데이트 빈도 | `act2-all-npcuf4` | 없음 | 같은 글 |
+| ④ 자원 노드 업데이트 빈도 | `act2-all-nodeuf4` | `-NodeUpdateFrequency 2` | [자원 노드의 Net Update Frequency 낮추기](08-node-update-frequency/README.md) |
+| ⑤ 인벤토리를 소유자에게만 | `act2-all-invown4` | ④에 `-InventoryOwnerOnly` | [인벤토리를 소유자에게만 보내기](09-inventory-owner-only/README.md) |
+| ⑥ 인벤토리 FastArray | `act2-all-fastarr4` | ⑤에 `-InventoryFastArray` | [인벤토리를 FastArray로 보내기](10-inventory-fastarray/README.md) |
+| ⑦ NPC 보간 | `act2-all-interp4` | ⑥에 `-NpcInterpDelay 150` | [클라이언트에서 NPC 위치를 보간하기](11-npc-interpolation/README.md) |
+| ⑧ NPC 이동 구조체(갈래 표의 레거시) | `act2-all-npcmove4` | ⑦에 `-NpcCompactMove` | [NPC 이동을 필요한 비트만 담은 구조체로 보내기](12-npc-move-netserialize/README.md) |
+| ⑨ Replication Graph | `act2-all-repgraph4` | ⑧에 `-ReplicationGraph` | [레거시 리플리케이션을 Replication Graph로 바꾸기](14-replication-graph/README.md) |
+| Iris(갈래 표) | `act2-all-iris4` | ⑧에 `-Iris -IrisFlatPriority` | [레거시 리플리케이션을 Iris로 바꾸기](15-iris/README.md) |
+
+- 열한 구성을 2026-10-20 01:09\~02:38에 구성마다 세 번씩, 표의 순서대로 연달아 쟀다. 본체 화면이었고(원격 데스크톱의 `rdpclip` 프로세스 없음), 사용자가 무거운 프로그램을 닫은 뒤 실행 중에 PC를 조작하지 않았다. 백그라운드 프로세스의 CPU 사용은 이번에는 재지 않았다. 소스는 `67cceff`와 같고(그 뒤로 `Source/`, `Config/`, `Scripts/`가 바뀌지 않았다), 빌드는 이미 최신이었다(`Target is up to date`).
+- 공통 인자는 STATUS.md "명령"의 확정 명령에 `-Runs 3`과 2막 요소 인자 `-PlayerSpacing 3 -NpcsNearPlayers 50 -StateInterval 5 -InventoryItems 200 -InventoryChurn 4 -Buildings 500 -BuildInterval 1`이다. 모션 기록(`-MotionLog`)은 켜지 않았다(지난 묶음 `act2-all-*3`과 같다). ⑨는 trickle을 끄지 않았다(포스팅 14의 `act2-rg1`과 같다). Iris는 포스팅 15가 레거시와 비교한 설정이다(`act2-iris2`와 같다).
+- 33개 실행이 모두 종료 코드 0으로 끝났다. 모든 서버 로그에 `lab_config`, `lab_buildings clusters=1 per_cluster=500`, `lab_npcs_near_players clusters=1 per_cluster=50`, `lab_nodes_moved_from_harvest_spot=1`이 있다. 리플리케이션 모델은 ⑨가 `LabReplicationGraph`(`lab_repgraph_class` 네 줄), Iris가 `Iris`(`lab_iris_class` 여덟 줄, `lab_iris_prioritizer ... inner=1 outer=1 outside=1`), 나머지가 `Generic`이다. ⑧, ⑨, Iris의 서버 로그에 `lab_npc_move_clamped`가 없고, 클라이언트 명령줄에 `-LabNpcCompactMove`가 있다(⑦에는 없다). Iris의 클라이언트 명령줄에 `-UseIrisReplication=1`이 있다. 33개 실행의 서버와 클라이언트 로그에 `Protocol mismatch`, `not registered and won't be replicated`, `does not replicate subobjects using the registered`, `has custom serialization`이 없다. 포화는 모든 실행에서 `lab_saturated_frames measured=0/…`이다.
+- 1번 클라이언트의 자동 스크린샷(`slot=1 move topdown`, t=75s)에서 자원 노드는 ⑧ 176개, ⑨ 380개, Iris 112개다(`act2-all-npcmove4-r2`, `act2-all-repgraph4-r2`, `act2-all-iris4-r2`의 `topdown-04`). 포스팅 14, 15의 묶음과 같다.
+- 기준선의 `r1`(묶음의 첫 실행)은 `work_avg_ms`가 246.615로 `r2`, `r3`(230.007, 227.467)보다 7% 길었다. 지난 묶음에서도 첫 실행이 17% 길었다. 원인은 확인하지 않았다. 중앙값 실행은 `r2`다.
+- 각 글의 값과 섞지 않는다. 이 묶음은 각 글의 묶음과 -9.1\~+13.7% 다르다(6절).
+- ⑦, ⑧, Iris의 화면 품질과 ⑧의 NPC 갱신 한 번의 크기는 이 묶음에서 재지 않았다. 이 값들은 [포스팅 11 측정 기록](11-npc-interpolation/measurements.md), [포스팅 12 측정 기록](12-npc-move-netserialize/measurements.md), [포스팅 15 측정 기록](15-iris/measurements.md)의 값이다.
+
+### 1. 구성별 값
+
+서버 프레임 시간과 리플리케이션 시간은 구성마다 `work_avg_ms` 중앙값 실행의 Timing Insights 값이다(`export-insights.ps1`). 실행은 기준선 `r2`, ① `r3`, ② `r3`, ③ `r3`, ④ `r2`, ⑤ `r2`, ⑥ `r1`, ⑦ `r1`, ⑧ `r2`, ⑨ `r2`, Iris `r2`이고, 열한 실행 모두 선택 구간의 `WorldTick` Count가 CSV `frames`와 같았다. 리플리케이션 시간은 `GameNetDriver`의 프레임당 Incl이다. 이 타이머는 ⑨에서 `UReplicationGraph_ServerReplicateActors`를, Iris에서 `ReplicationSystem_NetUpdate`와 `UDataStreamChannel_Tick`을 감싼다. 연결당 송신 대역폭과 연결당 열린 액터 채널 수는 서버 CSV의 세 실행 중앙값이다(CSV `out_bytes_per_sec_per_conn`, 8개 연결의 평균).
+
+| 지표 | 기준선 | ① 거리 판정 | ② Dormant 상태 | ③ NPC 업데이트 빈도 | ④ 자원 노드 업데이트 빈도 | ⑤ 인벤토리를 소유자에게만 | ⑥ 인벤토리 FastArray | ⑦ NPC 보간 | ⑧ NPC 이동 구조체 | ⑨ Replication Graph | Iris |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 서버 프레임 시간 평균(ms) | 230.621 | 39.022 | 20.125 | 16.689 | 8.772 | 8.587 | 8.546 | 8.744 | 8.672 | 7.546 | 7.019 |
+| 서버 프레임 시간 P99(ms) | 281.873 | 59.900 | 30.622 | 25.342 | 13.573 | 12.751 | 13.277 | 13.696 | 12.434 | 10.858 | 9.710 |
+| 리플리케이션 시간(ms/프레임) | 220.761 | 34.115 | 15.158 | 11.836 | 3.932 | 3.804 | 3.802 | 3.913 | 3.826 | 2.865 | 2.080 |
+| 그중 `LabNpc`(ms/프레임) | 28.543 | 3.320 | 2.739 | 0.950 | 0.849 | 0.832 | 0.840 | 0.868 | 0.836 | 1.028 | 없음 |
+| 연결당 송신 대역폭(바이트/초, CSV) | 35,095 | 30,660 | 31,236 | 16,575 | 16,580 | 12,381 | 11,803 | 12,671 | 10,072 | 10,947 | 10,442 |
+| 연결당 열린 액터 채널 수 | 5,871 | 695 | 77 | 77 | 77 | 77 | 77 | 77 | 77 | 77 | 없음 |
+| Consider List 길이(프레임당, 중앙값 실행의 서버 로그) | 5,878.6 | 5,067.3 | 4,072.5 | 3,891.1 | 414.4 | 415.5 | 415.6 | 414.0 | 414.5 | 없음 | 없음 |
+
+"없음"인 칸: Iris는 클래스별 타이머(`LabNpc`)를 남기지 않고 액터 채널을 쓰지 않는다(CSV `open_actor_channels_per_conn` 0). ⑨와 Iris는 Consider List를 만들지 않는다(서버 로그 `lab_consider_list avg_per_frame=0.0`). ⑨의 `LabNpc`는 `UReplicationGraph_ServerReplicateActors` 아래의 값이다.
+
+### 2. CSV 실행별 값
+
+| 라벨 | `frames` | `work_avg_ms` | `work_p99_ms` | `over_budget_frames` | `netflush_avg_ms` | `out_bytes_per_sec_per_conn` | `open_actor_channels_per_conn` | `saturated_ratio` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `act2-all-baseline4-r1` | 244 | 246.615 | 315.285 | 244 | 236.809 | 33,110 | 5,871 | 0.000 |
+| `act2-all-baseline4-r2` | 261 | 230.007 | 281.665 | 261 | 220.985 | 35,095 | 5,871 | 0.000 |
+| `act2-all-baseline4-r3` | 264 | 227.467 | 269.741 | 264 | 218.567 | 35,418 | 5,871 | 0.000 |
+| 중앙값 | 261 | 230.007 | 281.665 | 261 | 220.985 | 35,095 | 5,871 | 0.000 |
+| 변동 폭 | 20 | 19.148 | 45.544 | 20 | 18.242 | 2,308 | 0 | 0.000 |
+| `act2-all-relevancy4-r1` | 1,503 | 39.568 | 60.108 | 1,308 | 35.141 | 30,660 | 695 | 0.000 |
+| `act2-all-relevancy4-r2` | 1,673 | 33.402 | 61.611 | 562 | 29.447 | 30,744 | 695 | 0.000 |
+| `act2-all-relevancy4-r3` | 1,527 | 38.806 | 59.646 | 1,143 | 34.406 | 30,568 | 695 | 0.000 |
+| 중앙값 | 1,527 | 38.806 | 60.108 | 1,143 | 34.406 | 30,660 | 695 | 0.000 |
+| 변동 폭 | 170 | 6.166 | 1.965 | 746 | 5.694 | 176 | 0 | 0.000 |
+| `act2-all-dormancy4-r1` | 1,785 | 20.494 | 30.555 | 6 | 15.943 | 31,260 | 77 | 0.000 |
+| `act2-all-dormancy4-r2` | 1,785 | 19.500 | 30.451 | 7 | 15.132 | 31,236 | 77 | 0.000 |
+| `act2-all-dormancy4-r3` | 1,787 | 19.832 | 30.232 | 4 | 15.425 | 31,229 | 77 | 0.000 |
+| 중앙값 | 1,785 | 19.832 | 30.451 | 6 | 15.425 | 31,236 | 77 | 0.000 |
+| 변동 폭 | 2 | 0.994 | 0.323 | 3 | 0.811 | 31 | 0 | 0.000 |
+| `act2-all-npcuf4-r1` | 1,797 | 16.207 | 25.442 | 2 | 11.872 | 16,574 | 77 | 0.000 |
+| `act2-all-npcuf4-r2` | 1,788 | 16.655 | 24.940 | 2 | 12.323 | 16,575 | 77 | 0.000 |
+| `act2-all-npcuf4-r3` | 1,786 | 16.422 | 25.024 | 2 | 12.107 | 16,627 | 77 | 0.000 |
+| 중앙값 | 1,788 | 16.422 | 25.024 | 2 | 12.107 | 16,575 | 77 | 0.000 |
+| 변동 폭 | 11 | 0.448 | 0.502 | 0 | 0.451 | 53 | 0 | 0.000 |
+| `act2-all-nodeuf4-r1` | 1,797 | 8.754 | 13.660 | 0 | 4.322 | 16,580 | 77 | 0.000 |
+| `act2-all-nodeuf4-r2` | 1,788 | 8.494 | 13.238 | 0 | 4.174 | 16,528 | 77 | 0.000 |
+| `act2-all-nodeuf4-r3` | 1,787 | 8.171 | 12.973 | 1 | 4.002 | 16,594 | 77 | 0.000 |
+| 중앙값 | 1,788 | 8.494 | 13.238 | 0 | 4.174 | 16,580 | 77 | 0.000 |
+| 변동 폭 | 10 | 0.583 | 0.687 | 1 | 0.320 | 66 | 0 | 0.000 |
+| `act2-all-invown4-r1` | 1,787 | 8.314 | 12.594 | 0 | 4.074 | 12,381 | 77 | 0.000 |
+| `act2-all-invown4-r2` | 1,788 | 8.316 | 12.345 | 1 | 4.061 | 12,363 | 77 | 0.000 |
+| `act2-all-invown4-r3` | 1,786 | 8.469 | 12.608 | 0 | 4.126 | 12,395 | 77 | 0.000 |
+| 중앙값 | 1,787 | 8.316 | 12.594 | 0 | 4.074 | 12,381 | 77 | 0.000 |
+| 변동 폭 | 2 | 0.155 | 0.263 | 1 | 0.065 | 32 | 0 | 0.000 |
+| `act2-all-fastarr4-r1` | 1,788 | 8.267 | 12.815 | 0 | 4.045 | 11,824 | 77 | 0.000 |
+| `act2-all-fastarr4-r2` | 1,785 | 8.504 | 12.725 | 1 | 4.152 | 11,795 | 77 | 0.000 |
+| `act2-all-fastarr4-r3` | 1,786 | 8.002 | 11.936 | 0 | 3.878 | 11,803 | 77 | 0.000 |
+| 중앙값 | 1,786 | 8.267 | 12.725 | 0 | 4.045 | 11,803 | 77 | 0.000 |
+| 변동 폭 | 3 | 0.502 | 0.879 | 1 | 0.274 | 29 | 0 | 0.000 |
+| `act2-all-interp4-r1` | 1,796 | 8.466 | 13.368 | 0 | 4.165 | 12,684 | 77 | 0.000 |
+| `act2-all-interp4-r2` | 1,797 | 8.345 | 12.543 | 0 | 4.088 | 12,671 | 77 | 0.000 |
+| `act2-all-interp4-r3` | 1,787 | 8.473 | 12.316 | 1 | 4.152 | 12,644 | 77 | 0.000 |
+| 중앙값 | 1,796 | 8.466 | 12.543 | 0 | 4.152 | 12,671 | 77 | 0.000 |
+| 변동 폭 | 10 | 0.128 | 1.052 | 1 | 0.077 | 40 | 0 | 0.000 |
+| `act2-all-npcmove4-r1` | 1,785 | 8.428 | 12.592 | 1 | 4.122 | 10,074 | 77 | 0.000 |
+| `act2-all-npcmove4-r2` | 1,788 | 8.398 | 12.130 | 0 | 4.077 | 10,064 | 77 | 0.000 |
+| `act2-all-npcmove4-r3` | 1,798 | 8.375 | 13.112 | 0 | 4.095 | 10,072 | 77 | 0.000 |
+| 중앙값 | 1,788 | 8.398 | 12.592 | 0 | 4.095 | 10,072 | 77 | 0.000 |
+| 변동 폭 | 13 | 0.053 | 0.982 | 1 | 0.045 | 10 | 0 | 0.000 |
+| `act2-all-repgraph4-r1` | 1,787 | 7.444 | 11.162 | 1 | 3.212 | 10,933 | 77 | 0.000 |
+| `act2-all-repgraph4-r2` | 1,787 | 7.274 | 10.447 | 0 | 3.111 | 10,947 | 77 | 0.000 |
+| `act2-all-repgraph4-r3` | 1,788 | 7.133 | 11.041 | 0 | 2.960 | 10,957 | 77 | 0.000 |
+| 중앙값 | 1,787 | 7.274 | 11.041 | 0 | 3.111 | 10,947 | 77 | 0.000 |
+| 변동 폭 | 1 | 0.311 | 0.715 | 1 | 0.252 | 24 | 0 | 0.000 |
+| `act2-all-iris4-r1` | 1,796 | 6.880 | 9.899 | 0 | 2.418 | 10,442 | 0 | 0.000 |
+| `act2-all-iris4-r2` | 1,796 | 6.746 | 9.338 | 1 | 2.355 | 10,452 | 0 | 0.000 |
+| `act2-all-iris4-r3` | 1,788 | 6.671 | 9.405 | 1 | 2.353 | 10,423 | 0 | 0.000 |
+| 중앙값 | 1,796 | 6.746 | 9.405 | 1 | 2.355 | 10,442 | 0 | 0.000 |
+| 변동 폭 | 8 | 0.209 | 0.561 | 1 | 0.065 | 29 | 0 | 0.000 |
+
+Iris의 `open_actor_channels_per_conn`과 `saturated_ratio`는 늘 0이다(액터 채널을 쓰지 않는다). Iris의 포화는 서버 로그 `lab_saturated_frames`로 봤고 세 실행 모두 0이다.
+
+### 3. README의 수치와 출처
+
+| README의 수치 | 정밀한 값 | 출처 |
+| --- | --- | --- |
+| 서버 프레임 시간 평균 231ms → 7.55ms(아홉 단계) | 230.621ms → 7.546ms(⑨), 7.546 ÷ 230.621 − 1 = -96.7% | 1절 |
+| 틱 예산 33.3ms, 6.9배를 쓰다가 4분의 1이 안 되게 | 230.621 ÷ 33.333 = 6.92, 7.546 ÷ 33.333 = 0.226 | 틱 예산은 1000 ÷ `NetServerMaxTickRate` 30(`Engine/Config/BaseEngine.ini:1867`) |
+| ⑧의 설정에서 Iris로 바꾸면 7.02ms로 가장 짧았다 | Iris 7.019ms. ⑧ 8.672ms, ⑨ 7.546ms보다 짧다(Insights) | 1절 |
+| 열한 구성의 수치가 각 글의 수치와 조금 다르다 | 각 글의 묶음과의 `work_avg_ms` 차이 -9.1\~+13.7% | 6절 |
+| 이어 쌓기 표, 갈래 표, 세 차트의 값 | 1절. 표는 유효 숫자 세 자리, 차트는 소수 둘째 자리 | 같음 |
+| ① 150m, ③ 100에서 10으로 | `NetCullDistanceSquared` 225,000,000(`Engine/Source/Runtime/Engine/Private/Actor.cpp:312`), `NetUpdateFrequency` 기본값 100(`Actor.cpp:295-296`), NPC 10(`Source/DSOptLab/LabScenarioConfig.h:40`) | 엔진 소스, 코드 |
+| ④ 100에서 2로, 16프레임에 한 번 | `-LabNodeUpdateFrequency=2`(`Source/DSOptLab/LabResourceNode.cpp`의 `SetNetUpdateFrequency`). 다음 고려 시각이 500\~533ms 뒤라 16프레임마다 | [포스팅 8 측정 기록](08-node-update-frequency/measurements.md) 2절 |
+| ⑤ 조종하는 플레이어에게만(`COND_OwnerOnly`) | `COND_OwnerOnly`(`Engine/Source/Runtime/CoreUObject/Public/UObject/CoreNetTypes.h:20`), 캐릭터의 소유자 연결은 조종하는 플레이어의 연결 | [포스팅 9 측정 기록](09-inventory-owner-only/measurements.md) 2절 |
+| ⑥ 칸에 번호를 붙여 바뀐 칸만(`FFastArraySerializer`) | `FFastArraySerializerItem`의 `ReplicationID`, `BuildChangedAndDeletedBuffers` | [포스팅 10 측정 기록](10-inventory-fastarray/measurements.md) 2절 |
+| ⑦ 받은 위치 두 개 사이를 150ms 늦게, 서버 프레임 번호 | `-LabNpcInterpDelay=150`, `ALabNpc`의 `ServerFrame`(`uint8`, 서버 프레임 번호의 아래 8비트) | [포스팅 11 측정 기록](11-npc-interpolation/measurements.md) 2절, `Source/DSOptLab/LabNpc.h` |
+| ⑧ 평면 위치, 방향, 서버 프레임 번호만 담은 구조체를 직접 직렬화(`NetSerialize`), 엔진의 이동 데이터(`ReplicatedMovement`)는 보내지 않는다 | `-LabNpcCompactMove`. `FLabNpcMove`(집 기준 X, Y 13비트씩, Yaw 8비트, 프레임 번호 8비트)의 `NetSerialize`와 `WithNetSerializer`. `ALabNpc`는 `SetReplicatingMovement(false)`이고 `ServerFrame`을 따로 보내지 않는다 | [포스팅 12 측정 기록](12-npc-move-netserialize/measurements.md) 1절, `Source/DSOptLab/LabNpc.h` |
+| ⑨ 리플리케이션 시스템을 Replication Graph로, 맵을 100m 칸으로 나누고 클라이언트가 서 있는 칸의 목록만 확인한다, 액터를 보내는 방법은 레거시와 같다 | `-LabReplicationGraph`(게임 모듈이 `ULabReplicationGraph`를 만든다), `CellSize` 10000(`Source/DSOptLab/LabReplicationGraph.cpp`) | [포스팅 14 측정 기록](14-replication-graph/measurements.md) 2절 |
+| ①은 같은 구성이 35.9ms였다 | 35.904ms(`act2-relevancy1-r2`, 2026-10-05) | 아래 "2막: 1막의 세 단계" 1절 |
+| ①이 잰 날마다 크게 다르다, 프레임이 길어지면 확인할 차례가 된 액터가 늘어 다시 길어진다 | 5절 | 아래 "2막: 여섯 단계" 5절, engine-notes.md 12절 |
+| ①의 연결당 송신 대역폭이 ②보다 작다 | 30,660 대 31,236. 60초의 `frames` 1,527 대 1,785 | 2절 |
+| ②가 서버 프레임 시간을 다시 절반 가까이 줄였다 | 20.125 ÷ 39.022 − 1 = -48.4% | 1절, 4절 |
+| ④가 서버 프레임 시간을 절반 가까이 줄였다 | 8.772 ÷ 16.689 − 1 = -47.4% | 1절, 4절 |
+| 먼 자원 노드는 Dormant 상태가 되지 못하고 프레임마다 Consider List에 든다 | 포스팅 7, 8의 결과. 이 묶음의 Consider List 3,891.1 → 414.4(③ → ④) | [포스팅 8 측정 기록](08-node-update-frequency/measurements.md), 1절 |
+| ③은 연결당 송신 대역폭을 47% 줄였다 | 16,575 ÷ 31,236 − 1 = -46.9% | 1절, 4절 |
+| ⑤는 4분의 1을, ⑥은 약 5%를 더 줄였다 | 12,381 ÷ 16,580 − 1 = -25.3%, 11,803 ÷ 12,381 − 1 = -4.7% | 1절, 4절 |
+| ⑤와 ⑥의 서버 프레임 시간 변화는 구별되지 않았다 | ⑤ CSV -0.178(변동 폭 0.583), ⑥ CSV -0.049(변동 폭 0.502) | 4절 |
+| ⑥은 클라이언트마다 배열이 바뀌었는지 보느라 CPU를 줄이지 못한다 | 포스팅 10의 결과 | [포스팅 10 측정 기록](10-inventory-fastarray/measurements.md) |
+| ⑦: NPC 하나의 위치가 약 134ms마다 오고, NPC가 약 40cm를 건너뛴다 | 수신 간격 평균 133.6ms(`act2-interp-base2` 중앙값), 300cm/s × 0.1336 = 40.1cm | [포스팅 11 측정 기록](11-npc-interpolation/measurements.md) 2절, 4절 |
+| ⑦: 표시 속도 오차 평균 440cm/s → 15.0cm/s | 중앙값 439.9 → 15.0(`act2-interp-base2`, `act2-interp2`, 모션 기록을 켠 묶음). 표시 속도 오차는 클라이언트 프레임 한 칸 동안 화면 속 NPC의 속도와 서버 NPC의 속도의 차다([ADR-0020](../Docs/Decisions/0020-npc-motion-quality-metrics.md)) | 포스팅 11 측정 기록 4절 |
+| ⑦: NPC가 81ms 더 늦게 보인다 | 표시 지연 중앙값 74 → 155ms. 155 − 74 = 81 | 포스팅 11 측정 기록 4절 |
+| ⑦: 연결당 송신 대역폭 7.4% 증가 | 12,671 ÷ 11,803 − 1 = +7.35%. 포스팅 11의 묶음에서는 11,820 → 12,682(+7.29%)였다 | 1절, 4절, 포스팅 11 측정 기록 3절 |
+| ⑦: 서버 프레임 시간의 변화는 구별되지 않았다 | CSV +0.199, 변동 폭 0.502 | 4절 |
+| ⑧: 엔진의 이동 데이터는 NPC에게 늘 같은 높이와 늘 0인 속도까지 담는다 | 스폰 높이 Z = 50이고 NPC가 Z를 바꾸지 않는다. 이동 컴포넌트가 없어 속도를 채우지 않는다. `FRepMovement::NetSerialize`는 X, Y, Z와 속도를 늘 쓴다 | [포스팅 12 측정 기록](12-npc-move-netserialize/measurements.md) 2절 |
+| ⑧: NPC 갱신 한 번이 117비트에서 69.0비트 | Networking Insights `Connection 0`의 `LabNpc` Incl ÷ Count 117.24 → 69.04(`act2-npcmove-base1-r2`, `act2-npcmove1-r2`) | 포스팅 12 측정 기록 5.1절 |
+| ⑧: 연결당 송신 대역폭 20.5% 감소 | 10,072 ÷ 12,671 − 1 = -20.51%. 포스팅 12의 묶음에서는 12,672 → 10,088(-20.39%)이었다 | 1절, 4절, 포스팅 12 측정 기록 3절 |
+| ⑧: 줄어든 양은 ⑦이 늘린 양의 약 세 배 | ⑧ 12,671 − 10,072 = 2,599, ⑦ 12,671 − 11,803 = 868. 2,599 ÷ 868 = 2.99 | 1절 |
+| ⑧: 서버 프레임 시간과 화면 속 NPC의 품질 변화는 구별되지 않았다 | 서버 프레임 시간은 4절(CSV -0.068, 변동 폭 0.128). 품질 지표는 포스팅 12의 `act2-npcmove-base1`, `act2-npcmove1`(모션 기록을 켠 묶음)에서 모두 구별되지 않았다 | 4절, 포스팅 12 측정 기록 4절 |
+| ⑨: 서버 프레임 시간 13.0%, 리플리케이션 시간 25.1% 감소 | 7.546 ÷ 8.672 − 1 = -12.98%, 2.865 ÷ 3.826 − 1 = -25.1%. 포스팅 14의 묶음에서는 -13.8%, -26.1%였다 | 1절, 4절, 포스팅 14 측정 기록 2절 |
+| ⑨: ④ 뒤에도 레거시는 활성 목록을 프레임마다 순회한다. Replication Graph는 액터를 150m 안에 걸치는 100m 칸마다 목록에 넣어 두고, 클라이언트가 서 있는 칸의 목록만 확인한다 | 레거시의 Consider List 414.5(⑧). Replication Graph는 Consider List를 만들지 않는다. 칸에 넣는 것은 `GetCellInfoForActor`(`ReplicationGraph.cpp:5688-5743`) | 1절, 포스팅 14 측정 기록 2절 |
+| ⑨: 연결당 송신 대역폭 8.7% 증가. Replication Graph의 간격은 정수 프레임이라 레거시가 평균 1.3프레임마다 확인하던 캐릭터를 매 프레임 확인한다 | 10,947 ÷ 10,072 − 1 = +8.69%. 이 묶음의 `LabCharacter` 호출은 프레임당 49.0(`act2-all-npcmove4-r2`) → 64.0(`act2-all-repgraph4-r2`)이다. 포스팅 14의 묶음에서는 +8.83%였고, 늘어난 액터 데이터의 77.4%가 캐릭터였다. 레거시의 평균 간격은 30 ÷ 100 + 1 = 1.3프레임, Replication Graph는 `RoundToInt(1.3)` = 1프레임이다 | 1절, 4절, 포스팅 14 측정 기록 2절 |
+| 갈래: Iris는 Replication Graph와 함께 쓸 수 없다 | 넷 드라이버는 Iris를 쓰면 리플리케이션 드라이버를 만들지 않는다(`Engine/Source/Runtime/Engine/Private/NetDriver.cpp:1867-1870`) | [ADR-0021](../Docs/Decisions/0021-replication-system-comparison-table.md) |
+| 갈래: Iris는 레거시보다 19.1%, Replication Graph보다 7.0% 짧았다 | 7.019 ÷ 8.672 − 1 = -19.06%, 7.019 ÷ 7.546 − 1 = -6.98%(Insights). CSV `work_avg_ms` 중앙값 8.398, 7.274 → 6.746 | 1절, 4절 |
+| 갈래: Iris는 상태를 프레임에 한 번 변환해 두고 클라이언트마다 패킷에 쓰기만 한다, 액터 채널을 쓰지 않는다 | Iris 실행의 `open_actor_channels_per_conn` 0(CSV). `UReplicationSystem::NetUpdate` | 2절, [포스팅 15 측정 기록](15-iris/measurements.md) 2절 |
+| 갈래: Iris의 리플리케이션 시간이 레거시의 절반 남짓(-45.6%) | 2.080 ÷ 3.826 − 1 = -45.6% | 1절 |
+| 갈래: Iris의 연결당 송신 대역폭 3.7% 증가 | 10,442 ÷ 10,072 − 1 = +3.67% | 1절, 4절 |
+| 갈래: 확인하는 간격을 레거시에 맞추고 우선순위를 모두 1.0으로, 엔진 그대로면 먼 액터를 늦게 보낸다 | `-Iris -IrisFlatPriority`. 서버 로그 `lab_iris_class`(NPC `period_frames=4`, 자원 노드 16), `lab_iris_prioritizer ... inner=1 outer=1 outside=1` | 위 실행 조건, 포스팅 15 측정 기록 2절 |
+| 갈래: 그 글에서 Replication Graph보다 11.2%, 레거시보다 18.4% 짧았다. 이 묶음은 7.0%, 19.1% | 포스팅 15의 6.228 ÷ 7.017 − 1 = -11.24%, 6.228 ÷ 7.636 − 1 = -18.44% | 포스팅 15 측정 기록 2절 |
+| 건축물 500개 | `-Buildings 500` | 위 공통 인자 |
+| 지도: 자리, 경로, 150m 원, 건축물이 놓이는 반지름 | `Scripts/make-relevancy-map.ps1 -Act2` | [1막의 세 최적화를 2막에 다시 적용의 측정 기록](06-three-techniques-again/measurements.md) 2절 |
+| 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, ①\~③ 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
+| 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
+
+### 4. 단계별 변화
+
+각 단계는 바로 앞 구성과 비교한다. 갈래는 레거시(⑧)와 비교하고, 마지막 줄만 Iris를 Replication Graph(⑨)와 비교한다. 비율은 1절의 Insights 값으로, 연결당 송신 대역폭은 CSV 중앙값으로 계산했다. "구별되지 않음"은 CSV 중앙값의 변화가 두 구성 중 큰 쪽의 변동 폭보다 작다는 뜻이다(2절).
+
+| 단계 | 줄어든 것 | 구별되지 않음 |
+| --- | --- | --- |
+| ① 거리 판정 | 서버 프레임 시간 평균 -83.1%, P99 -78.7%, 리플리케이션 시간 -84.5%, 연결당 송신 대역폭 -12.6%(CSV -4,435, 변동 폭 2,308), 연결당 열린 액터 채널 수 5,871 → 695 | 없음 |
+| ② Dormant 상태 | 서버 프레임 시간 평균 -48.4%, P99 -48.9%, 리플리케이션 시간 -55.6%, 연결당 열린 액터 채널 수 695 → 77. 연결당 송신 대역폭은 +1.9%(CSV +576, 변동 폭 176)로 늘었다 | 없음 |
+| ③ NPC 업데이트 빈도 | 연결당 송신 대역폭 -46.9%, 서버 프레임 시간 평균 -17.1%(CSV -3.410, 변동 폭 0.994), P99 -17.2%, 리플리케이션 시간 -21.9% | 없음 |
+| ④ 자원 노드 업데이트 빈도 | 서버 프레임 시간 평균 -47.4%, P99 -46.4%, 리플리케이션 시간 -66.8%, Consider List 3,891.1 → 414.4 | 연결당 송신 대역폭(CSV +5, 변동 폭 66) |
+| ⑤ 인벤토리를 소유자에게만 | 연결당 송신 대역폭 -25.3% | 서버 프레임 시간 평균(Insights -2.1%. CSV -0.178, 변동 폭 0.583), P99(CSV -0.644, 변동 폭 0.687), 리플리케이션 시간(CSV `netflush_avg_ms` -0.100, 변동 폭 0.320) |
+| ⑥ 인벤토리 FastArray | 연결당 송신 대역폭 -4.7%(CSV -578, 변동 폭 32) | 서버 프레임 시간 평균(Insights -0.5%. CSV -0.049, 변동 폭 0.502), P99(CSV +0.131, 변동 폭 0.879), 리플리케이션 시간(CSV `netflush_avg_ms` -0.029, 변동 폭 0.274) |
+| ⑦ NPC 보간 | 없음. 연결당 송신 대역폭은 +7.4%(CSV +868, 변동 폭 40)로 늘었다 | 서버 프레임 시간 평균(Insights +2.3%. CSV +0.199, 변동 폭 0.502), 리플리케이션 시간(CSV `netflush_avg_ms` +0.107, 변동 폭 0.274), `LabNpc`(0.840 → 0.868ms/프레임, 실행 하나씩) |
+| ⑧ NPC 이동 구조체 | 연결당 송신 대역폭 -20.5%(CSV -2,599, 변동 폭 40) | 서버 프레임 시간 평균(Insights -0.8%. CSV -0.068, 변동 폭 0.128), P99(CSV +0.049, 변동 폭 1.052), 리플리케이션 시간(CSV `netflush_avg_ms` -0.057, 변동 폭 0.077), `LabNpc`(0.868 → 0.836ms/프레임, 실행 하나씩) |
+| ⑨ Replication Graph | 서버 프레임 시간 평균 -13.0%(CSV -1.124, 변동 폭 0.311), P99 -12.7%(CSV -1.551, 변동 폭 0.982), 리플리케이션 시간 -25.1%(CSV `netflush_avg_ms` -0.984, 변동 폭 0.252). 연결당 송신 대역폭은 +8.7%(CSV +875, 변동 폭 24)로 늘었다 | 없음 |
+| Iris(레거시 ⑧과 비교) | 서버 프레임 시간 평균 -19.1%(CSV -1.652, 변동 폭 0.209), P99 -21.9%(CSV -3.187, 변동 폭 0.982), 리플리케이션 시간 -45.6%(CSV `netflush_avg_ms` -1.740, 변동 폭 0.065). 연결당 송신 대역폭은 +3.7%(CSV +370, 변동 폭 29)로 늘었다 | 없음 |
+| Iris(Replication Graph ⑨와 비교) | 서버 프레임 시간 평균 -7.0%(CSV -0.528, 변동 폭 0.311), P99 -10.6%(CSV -1.636, 변동 폭 0.715), 리플리케이션 시간 -27.4%(CSV `netflush_avg_ms` -0.756, 변동 폭 0.252), 연결당 송신 대역폭 -4.6%(CSV -505, 변동 폭 29) | 없음 |
+
+지난 묶음 `act2-all-*3`에서 ⑥은 서버 프레임 시간을 늘렸다(CSV +0.183, 변동 폭 0.182). 이 묶음에서는 구별되지 않았다(CSV -0.049, 변동 폭 0.502). 포스팅 10의 묶음과 `act2-all-*2`에서도 구별되지 않았다. ②의 연결당 송신 대역폭 증가(+576)는 ①의 서버가 60초에 1,527프레임만 돌아 보낸 것이 적었기 때문이다(②는 1,785프레임). ⑨의 송신 대역폭 증가는 그래프가 캐릭터를 매 프레임 보내기 때문이다([포스팅 14 측정 기록](14-replication-graph/measurements.md)).
+
+### 5. ①
+
+이 묶음의 ①은 33.402\~39.568ms(`work_avg_ms`)이고, 세 실행의 변동 폭 6.166이 다른 구성보다 크다. 중앙값 실행의 Consider List는 5,067.3으로 지난 묶음(5,678.1)보다 짧다. ①은 틱 예산을 조금 넘어 잰 날의 PC 상태에 따라 크게 달라진다. 이유는 아래 "2막: 여섯 단계" 5절에 있다.
+
+### 6. 각 글의 값과의 차이
+
+| 구성 | 이 묶음의 `work_avg_ms` 중앙값 | 그 구성을 잰 다른 묶음 | 차이 |
+| --- | ---: | --- | ---: |
+| 기준선 | 230.007 | 213.555(`act2-baseline11`, 2026-10-05) | +7.7% |
+| ① 거리 판정 | 38.806 | 35.674(`act2-relevancy1`, 2026-10-05) | +8.8% |
+| ② Dormant 상태 | 19.832 | 19.536(`act2-dormancy1`, 2026-10-05) | +1.5% |
+| ③ NPC 업데이트 빈도 | 16.422 | 18.060(`act2-nodeuf-base1`, 2026-10-06) | -9.1% |
+| ④ 자원 노드 업데이트 빈도 | 8.494 | 8.615(`act2-nodeuf1`, 2026-10-06) | -1.4% |
+| ⑤ 인벤토리를 소유자에게만 | 8.316 | 8.852(`act2-fastarr-base1`, 2026-10-06) | -6.1% |
+| ⑥ 인벤토리 FastArray | 8.267 | 8.586(`act2-fastarr1`, 2026-10-06) | -3.7% |
+| ⑦ NPC 보간 | 8.466 | 8.681(`act2-npcmove-base1`, 2026-10-07, 모션 기록을 켬) | -2.5% |
+| ⑧ NPC 이동 구조체 | 8.398 | 8.484(`act2-npcmove1`, 2026-10-07, 모션 기록을 켬) | -1.0% |
+| ⑧(포스팅 14의 레거시) | 8.398 | 8.662(`act2-rg-base1`, 2026-10-19 오후, 모션 기록을 켬) | -3.0% |
+| ⑧(포스팅 15의 레거시) | 8.398 | 7.388(`act2-iris-base2`, 2026-10-19 22:30\~, 모션 기록을 켬) | +13.7% |
+| ⑨ Replication Graph | 7.274 | 7.437(`act2-rg1`, 2026-10-19 16:22\~, 모션 기록을 켬) | -2.2% |
+| ⑨(포스팅 15의 Replication Graph) | 7.274 | 6.755(`act2-iris-rg2`, 2026-10-19 22:30\~, 모션 기록을 켬) | +7.7% |
+| Iris | 6.746 | 5.966(`act2-iris2`, 2026-10-19 22:30\~, 모션 기록을 켬) | +13.1% |
+
+이 묶음은 포스팅 15의 세 묶음(2026-10-19 밤)보다 7.7\~13.7% 길었다. 같은 날 오후의 포스팅 14 묶음과는 ⑧ -3.0%(`act2-rg-base1` 8.662), ⑨ -2.2%로 가깝다. 같은 묶음 안의 비교는 비슷하다: 레거시 → Replication Graph는 포스팅 14에서 -13.8%, 이 묶음에서 -13.0%이고, 레거시 → Iris는 포스팅 15에서 -18.4%, 이 묶음에서 -19.1%다. Replication Graph → Iris는 포스팅 15에서 -11.2%, 이 묶음에서 -7.0%로 차이가 크다(Insights 서버 프레임 시간 평균).
 
 ## 2막: 여덟 단계
 
-README의 "결과 한눈에 보기"가 2026-10-07 오후부터 쓰는 수치다. 포스팅 12(⑧)를 단계로 더하면서 아홉 구성을 다시 쟀다([AGENTS.md](../AGENTS.md) "규칙").
+README의 "결과 한눈에 보기"가 2026-10-07 오후부터 2026-10-20까지 쓰던 수치다. 포스팅 12(⑧)를 단계로 더하면서 아홉 구성을 다시 쟀다([AGENTS.md](../AGENTS.md) "규칙").
 
 | 구성(README의 단계 이름) | 실행 라벨 | 2막 요소 인자에 더한 인자 | 그 단계를 다룬 글 |
 | --- | --- | --- | --- |
@@ -128,7 +330,7 @@ README의 "결과 한눈에 보기"가 2026-10-07 오후부터 쓰는 수치다.
 | 지도: 자리, 경로, 150m 원, 건축물이 놓이는 반지름 | `Scripts/make-relevancy-map.ps1 -Act2` | [1막의 세 최적화를 2막에 다시 적용의 측정 기록](06-three-techniques-again/measurements.md) 2절 |
 | 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, ①\~③ 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
 | 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
-| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [STATUS.md](../Docs/STATUS.md) "확정할 값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
 | UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
 
 ### 4. 단계별 변화
@@ -278,7 +480,7 @@ README의 "결과 한눈에 보기"가 2026-10-07 오전부터 오후까지 쓰�
 | 지도: 자리, 경로, 150m 원, 건축물이 놓이는 반지름 | `Scripts/make-relevancy-map.ps1 -Act2` | [1막의 세 최적화를 2막에 다시 적용의 측정 기록](06-three-techniques-again/measurements.md) 2절 |
 | 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, ①\~③ 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
 | 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
-| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [STATUS.md](../Docs/STATUS.md) "확정할 값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
 | UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
 
 ### 4. 단계별 변화
@@ -412,7 +614,7 @@ README의 "결과 한눈에 보기"가 2026-10-06부터 2026-10-07까지 쓰던 
 | 지도: 자리, 경로, 150m 원, 건축물이 놓이는 반지름 | `Scripts/make-relevancy-map.ps1 -Act2` | [1막의 세 최적화를 2막에 다시 적용의 측정 기록](06-three-techniques-again/measurements.md) 2절 |
 | 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, ①\~③ 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
 | 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
-| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [STATUS.md](../Docs/STATUS.md) "확정할 값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
 | UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
 
 ### 4. 단계별 변화
@@ -493,7 +695,7 @@ README의 "결과 한눈에 보기"가 2026-10-05부터 2026-10-06까지 쓰던 
 | 1막: 198ms → 13.2ms | 198.43ms → 13.16ms | 아래 1막 1절 |
 | 클라이언트 8개의 창, 서버는 논리 프로세서 2\~7, 클라이언트는 8번부터 | 서버 마스크 252, 클라이언트 마스크 4294967040 | 화면은 시각 자료 전용 실행 `visual13-r1`(2026-10-05, 2막 구성, 세 단계 모두 적용)의 측정 구간에서 찍었다. [테스트베드 확장의 측정 기록](05-expanded-testbed/measurements.md) 11절. 마스크는 [ADR-0009](../Docs/Decisions/0009-server-cores-without-dpc-load.md) |
 | 맵 2km, 플레이어 여덟 명이 3m 간격으로 모여 서로 다른 방향으로 돈다 | 바닥 2km, `-PlayerSpacing 3`, 한 변 70m 정사각형, 홀수 자리는 반대 방향 | [2막 설계](../Docs/Planning/2026-10-03-act-2-design.md) 3.1, `Source/DSOptLab/LabGameMode.cpp`의 `GetSlotLocation` |
-| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [STATUS.md](../Docs/STATUS.md) "확정할 값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
+| 요소 표: 자원 노드 5,001, NPC 350(맵 300, 플레이어 곁 50), 건축물 500(1초마다 하나), 인벤토리 200칸, 상태 값 | 2막 확정값 | [measurement.md](../Docs/Guides/measurement.md) "확정값"의 2막 줄, [테스트베드 확장과 새 기준선](05-expanded-testbed/README.md) "무엇을 더했는가" |
 | 1막의 플레이어는 반지름 500m 원 위 | `PlayerRingRadius` 50,000cm | `Source/DSOptLab/LabScenarioConfig.h` |
 | UE 프로세스의 메모리 합계 27.5GB | 같음 | [테스트베드의 측정 기록](00-testbed/measurements.md) 1절(`calib-a-r1`, 1막 규모) |
 

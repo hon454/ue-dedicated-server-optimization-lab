@@ -6,6 +6,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "HAL/PlatformTime.h"
+#include "Iris/ReplicationState/PropertyNetSerializerInfoRegistry.h"
 #include "LabMotionLogSubsystem.h"
 #include "LabScenarioConfig.h"
 #include "LabVisual.h"
@@ -44,10 +45,15 @@ namespace
 		double Period = 1.0 / 30.0;
 		double Intercept = 0.0;
 
-		int64 Unwrap(uint8 Raw)
+		/** bAdvance가 false면 펼치기만 하고 가장 큰 번호를 바꾸지 않는다. 믿을 수 없는 번호(NPC의 첫 수신)에 쓴다. */
+		int64 Unwrap(uint8 Raw, bool bAdvance = true)
 		{
 			if (!bHasFrame)
 			{
+				if (!bAdvance)
+				{
+					return Raw;
+				}
 				bHasFrame = true;
 				LatestFrame = Raw;
 				return LatestFrame;
@@ -58,7 +64,10 @@ namespace
 				Delta -= 256;
 			}
 			const int64 Frame = LatestFrame + Delta;
-			LatestFrame = FMath::Max(LatestFrame, Frame);
+			if (bAdvance)
+			{
+				LatestFrame = FMath::Max(LatestFrame, Frame);
+			}
 			return Frame;
 		}
 
@@ -213,6 +222,12 @@ bool FLabNpcMove::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess
 	bOutSuccess = !Ar.IsError();
 	return true;
 }
+
+// Iris(포스팅 15)는 구조체의 NetSerialize를 부르지 않고 UPROPERTY 멤버를 각자의 기본 직렬화기로 보낸다
+// (PropertyNetSerializerInfoRegistry.cpp의 FDefaultStructPropertyNetSerializerInfo, ReplicationStateDescriptorBuilder.cpp의
+// "has custom serialization" 경고). 그러면 위의 1cm 반올림과 Yaw 1바이트가 빠진다. LastResort 직렬화기로 등록하면
+// Iris가 NetSerialize가 쓴 비트를 그대로 보낸다(LastResortPropertyNetSerializer.cpp). 레거시와 Replication Graph에는 영향이 없다.
+UE_NET_IMPLEMENT_NAMED_STRUCT_LASTRESORT_NETSERIALIZER_AND_REGISTRY_DELEGATES(LabNpcMove);
 
 ALabNpc::ALabNpc()
 {
@@ -418,8 +433,16 @@ bool ALabNpc::AddSnapshot(const FVector& Location, const FQuat& Rotation, uint8 
 	const UNetDriver* NetDriver = GetWorld()->GetNetDriver();
 	FLabServerClock& Clock = GetServerClock();
 	Clock.NominalPeriod = 1.0 / FMath::Clamp(NetDriver ? NetDriver->GetNetServerMaxTickRate() : 30, 1, 1000);
-	const int64 UnwrappedFrame = Clock.Unwrap(Frame);
-	Clock.AddSample(FPlatformTime::Seconds(), UnwrappedFrame);
+	// 처음 받은 상태는 오래되었을 수 있다. Iris는 어느 연결의 범위에도 없던 객체를 폴링하지 않고, 범위에 들어오면
+	// 마지막으로 폴링한 상태로 생성해 보낸다(ObjectReplicationBridge.cpp의 BuildPollList, 포스팅 15 관찰 자료 12.5절).
+	// 그 프레임 번호가 앞선 번호로 펼쳐지면 시계가 수 초 당겨져 모든 NPC가 멈춘다. 그래서 첫 수신은 시계에 넣지 않는다.
+	// 레거시와 Replication Graph는 보낼 때마다 PreReplication을 불러 첫 상태도 새것이다.
+	const bool bFirst = Snapshots.IsEmpty();
+	const int64 UnwrappedFrame = Clock.Unwrap(Frame, !bFirst);
+	if (!bFirst)
+	{
+		Clock.AddSample(FPlatformTime::Seconds(), UnwrappedFrame);
+	}
 
 	FSnapshot Snapshot;
 	Snapshot.Frame = static_cast<double>(UnwrappedFrame);
@@ -427,10 +450,23 @@ bool ALabNpc::AddSnapshot(const FVector& Location, const FQuat& Rotation, uint8 
 	Snapshot.Rotation = Rotation;
 
 	// 처음 받은 위치는 그대로 놓는다. 보간할 두 번째 위치가 아직 없다.
-	if (Snapshots.IsEmpty())
+	if (bFirst)
 	{
 		Snapshots.Add(Snapshot);
+		bFirstSnapshotConfirmed = false;
 		return true;
+	}
+	// 두 번째로 받은 위치가 첫 위치보다 이전 번호이거나 1초(30프레임) 넘게 뒤면 첫 위치가 오래된 상태였던 것이다.
+	// 첫 위치를 버리고 두 번째 위치로 바로 옮긴다. 정상 간격은 NPC 4프레임이다.
+	if (!bFirstSnapshotConfirmed)
+	{
+		bFirstSnapshotConfirmed = true;
+		if (Snapshot.Frame <= Snapshots.Last().Frame || Snapshot.Frame - Snapshots.Last().Frame > 30.0)
+		{
+			Snapshots.Reset();
+			Snapshots.Add(Snapshot);
+			return true;
+		}
 	}
 	// 같거나 이전 프레임의 위치는 버린다.
 	if (Snapshot.Frame <= Snapshots.Last().Frame)

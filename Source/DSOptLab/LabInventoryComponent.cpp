@@ -11,9 +11,11 @@ ULabInventoryBase::ULabInventoryBase()
 
 ELifetimeCondition ULabInventoryBase::GetItemsCondition()
 {
-	// GetLifetimeReplicatedProps는 클래스마다 한 번 불리고 서버와 클라이언트에서 모두 돈다. 인자는 서버에만 주므로 클라이언트에서는 COND_None이다.
-	// 조건은 보내는 쪽(서버)이 연결마다 보낼 프로퍼티를 거르는 데만 쓴다(RepLayout.cpp의 FilterChangeListToActive,
-	// FastArray는 DataReplication.cpp의 ReplicateCustomDeltaProperties).
+	// GetLifetimeReplicatedProps는 클래스마다 한 번 불리고 서버와 클라이언트에서 모두 돈다.
+	// 레거시에서 조건은 보내는 쪽(서버)이 연결마다 보낼 프로퍼티를 거르는 데만 쓴다(RepLayout.cpp의 FilterChangeListToActive,
+	// FastArray는 DataReplication.cpp의 ReplicateCustomDeltaProperties). Iris는 조건에 따라 프로퍼티를 다른 상태로 묶고
+	// 클라이언트가 받은 프로토콜을 자기 것과 비교하므로(ObjectReplicationBridge.cpp의 "Protocol mismatch"), 포스팅 15부터
+	// run-scenario.ps1이 인자를 클라이언트에도 주어 양쪽이 같은 조건을 등록한다.
 	return FLabServerConfig::Get().bInventoryOwnerOnly ? COND_OwnerOnly : COND_None;
 }
 

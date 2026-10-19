@@ -6,7 +6,7 @@
 
 모든 태스크에 공통이다.
 
-- 빌드와 실행은 [STATUS.md](../STATUS.md) "명령"의 명령으로 한다. 확정 규모 측정은 main 체크아웃에서 하고, 측정 중에는 다른 작업을 하지 않는다.
+- 빌드와 실행은 [STATUS.md](../STATUS.md) "명령"과 [commands.md](../Guides/commands.md)의 명령으로 한다. 확정 규모 측정은 main 체크아웃에서 하고, 측정 중에는 다른 작업을 하지 않는다.
 - 코드 태스크는 작은 규모 확인(`-Clients 2 -Nodes 100 -Npcs 10 -Warmup 20 -Measure 30 -NoTrace`)이 종료 코드 0으로 끝난 뒤에 커밋한다.
 - 실행 인자를 더하면 `LabScenarioConfig.h`, `Scripts/run-scenario.ps1`(UTF-8 BOM), 루트 README의 코드 표를 함께 고친다.
 - 엔진 동작에 기대는 값은 5.8.3 소스에서 확인하고 [engine-notes.md](../Reference/engine-notes.md)에 적는다.

@@ -32,6 +32,14 @@ public:
 private:
 	void SpawnWorld();
 
+	/**
+	 * Iris(포스팅 15)에서만 쓴다. 액터의 Net Update Frequency를 Iris가 레거시의 평균 고려 간격((틱 ÷ 빈도) + 1프레임)마다
+	 * 폴링하는 값으로 바꾼다. 포스팅 14의 ULabReplicationGraph::GetLegacyPeriodFrame과 같은 기준이다.
+	 */
+	void AlignIrisPollInterval(AActor* Actor);
+	FDelegateHandle IrisActorSpawnedHandle;
+	TSet<const UClass*> IrisLoggedClasses;
+
 	/** NPC의 배회를 시작하고, 준비된 플레이어를 자리로 옮겨 출발시킨다. 한 번만 동작한다. */
 	void StartScenario();
 

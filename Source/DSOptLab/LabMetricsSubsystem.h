@@ -38,6 +38,9 @@ private:
 		/** 연결이 생긴 뒤의 누계. 엔진이 ServerReplicateActors에서 연결마다 기록한다. */
 		int64 Replications = 0;
 		int64 SaturatedReplications = 0;
+		/** 연결이 생긴 뒤의 누계. 엔진이 UNetConnection::Tick의 끝에서 연결마다 기록한다. 레거시와 Iris 모두 남는다. */
+		int64 TrackedFrames = 0;
+		int64 SaturatedFrames = 0;
 		int32 NetSpeed = 0;
 	};
 
@@ -69,6 +72,8 @@ private:
 	int64 BytesAtMeasureStart = 0;
 	int64 ReplicationsAtMeasureStart = 0;
 	int64 SaturatedReplicationsAtMeasureStart = 0;
+	int64 TrackedFramesAtMeasureStart = 0;
+	int64 SaturatedFramesAtMeasureStart = 0;
 	double OpenChannelsPerConnectionSum = 0.0;
 	int64 ConsideredActorsSum = 0;
 

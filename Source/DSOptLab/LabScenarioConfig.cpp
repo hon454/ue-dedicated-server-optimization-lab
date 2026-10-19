@@ -13,6 +13,7 @@ const FLabScenarioConfig& FLabScenarioConfig::Get()
 		C.bMotionLog = FParse::Param(Cmd, TEXT("LabMotionLog"));
 		FParse::Value(Cmd, TEXT("LabNpcInterpDelay="), C.NpcInterpDelayMs);
 		C.bNpcCompactMove = FParse::Param(Cmd, TEXT("LabNpcCompactMove"));
+		C.bIris = FParse::Param(Cmd, TEXT("LabIris"));
 		return C;
 	}();
 	return Config;
@@ -48,6 +49,7 @@ const FLabServerConfig& FLabServerConfig::Get()
 		FParse::Value(Cmd, TEXT("LabNetEmulationProfile="), C.NetEmulationProfile);
 		C.bReplicationGraph = FParse::Param(Cmd, TEXT("LabReplicationGraph"));
 		C.bRepGraphNoTrickle = FParse::Param(Cmd, TEXT("LabRepGraphNoTrickle"));
+		C.bIrisFlatPriority = FParse::Param(Cmd, TEXT("LabIrisFlatPriority"));
 		return C;
 	}();
 	return Config;
@@ -118,6 +120,10 @@ FString FLabServerConfig::GetConfigName() const
 	{
 		Parts.Add(TEXT("RepGraphNoTrickle"));
 	}
+	if (bIrisFlatPriority != Defaults.bIrisFlatPriority)
+	{
+		Parts.Add(TEXT("IrisFlatPriority"));
+	}
 	if (!NetEmulationProfile.IsEmpty())
 	{
 		Parts.Add(FString::Printf(TEXT("NetEmulationProfile=%s"), *NetEmulationProfile));
@@ -131,6 +137,10 @@ FString FLabServerConfig::GetConfigName() const
 	if (Shared.bNpcCompactMove)
 	{
 		Parts.Add(TEXT("NpcCompactMove"));
+	}
+	if (Shared.bIris)
+	{
+		Parts.Add(TEXT("Iris"));
 	}
 	if (Shared.bMotionLog)
 	{

@@ -65,7 +65,7 @@
 
 - 선택 로직: `UEngine::WillNetDriverUseIris` (`UnrealEngine.cpp:14798-14884`). `bConfigCanUseIris && UE::Net::ShouldUseIrisReplication()`가 기본이고, 실행 인자 `-UseIrisReplication=0/1`이 모든 것을 덮어쓴다.
 - `BaseEngine.ini:346`에 `+IrisNetDriverConfigs=(NetDriverDefinition=GameNetDriver, bCanUseIris=true)`가 있지만, 콘솔 변수 `net.Iris.UseIrisReplication`의 코드 기본값이 0이고(`Engine/Source/Runtime/Net/Iris/Private/Iris/IrisConfig.cpp:15-16`) `Engine/Config/Base*.ini`와 이 프로젝트의 `Config/`에 이 값을 켜는 줄이 없다. Iris 플러그인도 `EnabledByDefault: false`다(`Engine/Plugins/Experimental/Iris/Iris.uplugin:13`).
-- Replication Graph: `ReplicationDriverClassName`이 비어 있으면 쓰지 않는다(`NetDriver.cpp:1822-1827`). 엔진과 프로젝트 설정 어디에도 값이 없다.
+- Replication Graph: `ReplicationDriverClassName`이 비어 있으면 쓰지 않는다(`NetDriver.cpp:1822-1827`). 엔진과 프로젝트 설정 어디에도 값이 없다. 이 프로젝트는 서버 인자 `-LabReplicationGraph`가 있을 때만 `CreateReplicationDriverDelegate`로 만든다(15절).
 - 결론: 기본이 레거시다. `Config/DefaultEngine.ini`에 아무것도 넣지 않았다(태스크 2.7).
 - 서버 로그 확인법: `LogNet: InitBase GameNetDriver (NetDriverDefinition GameNetDriver) using replication model Generic` (`NetDriver.cpp:1939`, 이름은 `GetReplicationModelName`, `NetDriver.cpp:2369-2383`). `Generic`이 레거시, `Iris`가 Iris, 그 밖의 이름은 Replication Graph 클래스다.
 
@@ -386,3 +386,16 @@
 | 송신: `FlushNet`에서 패킷을 보내기 직전에 `PktLoss` 확률로 버리고, 지연 설정이 있으면 보낼 시각을 붙여 `Delayed` 배열에 넣는다. 늦춘 패킷은 연결의 `Tick`에서 시각이 지난 것부터 보내고, 첫 번째로 시각이 안 된 패킷에서 멈춰 순서를 지킨다(`PktJitter`일 때만 순서를 바꾼다). 그래서 지연은 틱 간격(서버 30Hz, 클라이언트 약 28fps) 단위로 반올림된다 | `NetConnection.cpp:2497-2503`, `2601-2693`(`CheckOutgoingPacketEmulation`), `2697-2705`(`ShouldDropOutgoingPacketForLossSimulation`), `4796`, `5156-5192`(`UpdateDelayedPackets`) |
 | 수신: 받은 패킷을 처리하기 전에 `PktIncomingLoss` 확률로 버리고, `PktIncomingLagMin`\~`Max` 사이의 난수만큼 늦춰 `DelayedIncomingPackets`에 넣는다. 늦춘 패킷은 월드 틱의 `PostTickDispatch`에서 시각이 지난 것부터 처리하고 역시 순서를 지킨다. 클라이언트의 서버 연결도 이 경로를 탄다 | `NetConnection.cpp:3184-3229`(`CheckIncomingPacketEmulation`), `2304-2312`, `2376-2408`(`ReinjectDelayedPackets`), `NetDriver.cpp:2985` |
 | 패킷을 잃으면 그 패킷에 담긴 프로퍼티는 재전송 대상으로 표시되고, 그 액터가 다음에 리플리케이트될 때 그때의 현재 값으로 간다. 다음 차례는 `NetUpdateFrequency`로 정해지므로 손실 하나가 갱신 간격을 약 두 배로 늘린다(NPC는 약 134 → 268ms) | 13절의 마지막 줄, `NetDriver.cpp:5319`(`NextUpdateTime`), `DataReplication.cpp:1872`(`NumNaks`가 있으면 건너뛰지 않음) |
+
+## 15. Replication Graph (2026-10-19, 태스크 31)
+
+엔진 소스에서 읽고 포스팅 14의 실행으로 확인한 것이다. 자세한 표는 포스팅 14의 [관찰 자료](../../Posts/14-replication-graph/candidates.md) 2절, 5절, 9.5절, 10.4절에 있다. 아래에서 `RG.cpp`는 `Engine/Plugins/Runtime/ReplicationGraph/Source/Private/ReplicationGraph.cpp`, `RG.h`는 같은 플러그인의 `Source/Public/ReplicationGraph.h`다.
+
+| 사실 | 소스 위치 |
+| --- | --- |
+| 리플리케이션 드라이버가 있으면 `ServerReplicateActors`가 곧바로 드라이버에 넘긴다. 레거시의 Consider List 만들기와 우선순위 정렬이 돌지 않으므로, Replication Graph 실행에는 Consider List 길이(`lab_consider_list`)가 남지 않는다 | `NetDriver.cpp:6295-6298` |
+| 넷 드라이버는 Iris를 쓰지 않을 때만 리플리케이션 드라이버를 만든다. Iris와 Replication Graph는 함께 쓸 수 없다 | `NetDriver.cpp:1867-1870` |
+| 이 프로젝트는 서버 인자 `-LabReplicationGraph`가 있을 때만 `UReplicationDriver::CreateReplicationDriverDelegate`를 묶어 `GameNetDriver`에 `ULabReplicationGraph`를 만든다 | `Source/DSOptLab/DSOptLab.cpp:13-37` |
+| `GameNetDriver` 타이머(`TickFlush`)는 그래프의 일도 감싼다. 기본 트레이스에서 그 아래에 `UReplicationGraph_ServerReplicateActors`가 생긴다 | `NetDriver.cpp:1174`, `RG.cpp:1144` |
+| 보내는 간격은 초가 아니라 프레임 수(`ReplicationPeriodFrame` = 반올림(`NetServerMaxTickRate` ÷ 빈도), 최소 1)다. 레거시는 1/빈도 뒤에 0\~1프레임 난수를 더해 다시 고려하므로, 빈도 100인 캐릭터가 레거시에서는 평균 1.3프레임, 그래프에서는 1프레임마다 간다(`act2-rg-base1`, `act2-rg1`에서 캐릭터 호출 49.6 → 64.0회/프레임) | `RG.h:1083-1093` |
+| 연결별 Dormancy 노드는 한 번의 gather에서 지울 Dormant 액터가 없으면 남은 액터 하나를 거리 검사 없이 보낸다(trickle, 한 프레임에 하나). 콘솔 변수 `Net.RepGraph.TrickleDistCullOnDormancyNodes`의 기본값은 1이다. 켜 두면 클라이언트가 150m 밖의 Dormant 자원 노드를 갖게 된다(176 → 380개, `act2-rg1`) | `RG.cpp:165, 4717-4721` |

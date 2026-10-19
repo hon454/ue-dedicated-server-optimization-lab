@@ -1,9 +1,11 @@
 #include "LabGameMode.h"
 
+#include "Engine/NetDriver.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
 #include "HAL/PlatformMisc.h"
+#include "Iris/ReplicationSystem/Prioritization/SphereNetObjectPrioritizer.h"
 #include "Math/RandomStream.h"
 #include "DSOptLab.h"
 #include "LabBuilding.h"
@@ -46,12 +48,56 @@ void ALabGameMode::BeginPlay()
 		}
 	}
 
+	// Iris로 도는 서버에서만 액터의 폴링 간격을 레거시의 평균 고려 간격에 맞춘다(포스팅 15). 이미 있는 액터와 앞으로 스폰할 액터 모두다.
+	const UNetDriver* NetDriver = GetWorld()->GetNetDriver();
+	if (FLabScenarioConfig::Get().bIris && NetDriver && NetDriver->IsUsingIrisReplication())
+	{
+		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+		{
+			AlignIrisPollInterval(*It);
+		}
+		IrisActorSpawnedHandle = GetWorld()->AddOnActorSpawnedHandler(
+			FOnActorSpawned::FDelegate::CreateUObject(this, &ALabGameMode::AlignIrisPollInterval));
+
+		// 기본 우선순위기의 설정을 남긴다. -IrisFlatPriority 실행은 OuterPriority와 OutsidePriority가 1이어야 한다.
+		const USphereNetObjectPrioritizerConfig* Prioritizer = GetDefault<USphereNetObjectPrioritizerConfig>();
+		UE_LOG(LogDSOptLab, Display, TEXT("lab_iris_prioritizer inner_radius_cm=%.0f outer_radius_cm=%.0f inner=%g outer=%g outside=%g"),
+			Prioritizer->InnerRadius, Prioritizer->OuterRadius, Prioritizer->InnerPriority, Prioritizer->OuterPriority, Prioritizer->OutsidePriority);
+	}
+
 	SpawnWorld();
 
 	// 측정 실행은 기대한 수의 클라이언트가 준비를 보고한 뒤에 시작한다(HandlePlayerReady). 그 밖의 실행은 바로 시작한다.
 	if (!FLabServerConfig::Get().bMeasure)
 	{
 		StartScenario();
+	}
+}
+
+void ALabGameMode::AlignIrisPollInterval(AActor* Actor)
+{
+	if (!Actor || !Actor->GetIsReplicated() || Actor->GetNetUpdateFrequency() <= 0.f)
+	{
+		return;
+	}
+
+	// 레거시는 다음 고려 시각을 1/빈도 + 0\~1프레임의 난수 뒤로 잡아서 평균 간격이 (틱 ÷ 빈도) + 1프레임이다
+	// (NetDriver.cpp의 ServerReplicateActors_BuildConsiderList). Iris는 빈도를 "내림(틱 ÷ 빈도) − 1프레임을 건너뜀"으로 바꿔
+	// 내림(틱 ÷ 빈도)프레임마다 폴링한다(ObjectPollFrequencyLimiter.h의 ConvertFrequencyToFramesBetweenUpdates, 난수 없음).
+	// 그대로 두면 NPC(빈도 10)가 4프레임이 아니라 3프레임마다 간다. 그래서 정수 간격 P를 정하고 틱 ÷ (P + 0.5)를 넣어
+	// 내림한 값이 P가 되게 한다. 빈도 10은 P 4(6.67), 2는 P 16(1.82), 100은 P 1(20)이다. 실행 중 바꾼 빈도는 Iris가 따라간다
+	// (net.Iris.EnableDynamicNetUpdateFrequency 기본값 true, EngineReplicationBridge.cpp).
+	const float TickRate = static_cast<float>(FMath::Max(GetWorld()->GetNetDriver()->GetNetServerMaxTickRate(), 1));
+	const float LegacyFrequency = Actor->GetNetUpdateFrequency();
+	const int32 PeriodFrames = FMath::Max(1, FMath::RoundToInt(TickRate / LegacyFrequency + 1.f));
+	const float IrisFrequency = TickRate / (static_cast<float>(PeriodFrames) + 0.5f);
+	Actor->SetNetUpdateFrequency(IrisFrequency);
+
+	if (!IrisLoggedClasses.Contains(Actor->GetClass()))
+	{
+		IrisLoggedClasses.Add(Actor->GetClass());
+		UE_LOG(LogDSOptLab, Display, TEXT("lab_iris_class class=%s net_update_frequency=%g iris_frequency=%g period_frames=%d"),
+			*Actor->GetClass()->GetName(), LegacyFrequency, IrisFrequency, PeriodFrames);
 	}
 }
 
