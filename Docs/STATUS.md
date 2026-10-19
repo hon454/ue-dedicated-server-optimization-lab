@@ -10,7 +10,7 @@
 
 - **루트 README의 결과는 2막 아홉 구성(기준선과 ①\~⑧)을 연달아 잰 `act2-all-*3`이다(2026-10-07).** 포스팅 12를 ⑧ NPC 이동 구조체로 더하면서 모든 구성을 다시 쟀다(13:04\~14:15, 본체 화면, 사용자가 무거운 프로그램을 닫은 뒤). 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 여덟 단계"에 있다. ⑦ → ⑧은 `out_bytes_per_sec_per_conn` 중앙값 12,681 → 10,094(-20.4%), `work_avg_ms` 8.690 → 8.493(구별되지 않음)이다. 이 묶음에서는 ⑤ → ⑥의 `work_avg_ms`가 +0.183으로 변동 폭 0.182를 겨우 넘었다(포스팅 10과 `act2-all-*2`에서는 구별되지 않음). 기준선 `r1`은 다른 두 실행보다 17% 느렸고 원인은 확인하지 않았다. ①을 빼면 각 글의 묶음과 -3.3\~+9.2% 다르다. 틱 예산을 조금 넘는 ① 거리 판정은 잰 날마다 크게 다르므로 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 지난 묶음 `act2-all-*2`의 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "README와 시각화 페이지 갱신"에 있다.
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 아홉 단계(포스팅 12까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 시뮬레이션의 한계는 [Site/README.md](../Site/README.md)에 있다. 단계를 더하는 기준은 [AGENTS.md](../AGENTS.md) "규칙"에 있다.
-- 다음 시각 자료 라벨은 `visual24`이다(`visual22`, `visual23`은 포스팅 13의 시연용 NPC 루프백과 `Bad`, 2026-10-07. `visual20`, `visual21`은 포스팅 11의 시연용 NPC 전후).
+- 다음 시각 자료 라벨은 `visual26`이다(`visual24`, `visual25`는 포스팅 15의 Iris 기본 우선순위기와 우선순위 1.0, 2026-10-20).
 
 ## 다음 할 일
 
@@ -68,4 +68,4 @@
 
 ## 사용자에게 요청한 일
 
-- **[사람] 포스팅 15 초안의 "문제"와 "원리" 승인, 영상 촬영 허가.** [본문](../Posts/15-iris/README.md) 초안(2,950자)과 [측정 기록](../Posts/15-iris/measurements.md)을 썼다. 영상 계획(`visual24`, `visual25`, 두 클라이언트 창 영역 10초씩)은 [관찰 자료](../Posts/15-iris/candidates.md) 14절에 있다. Insights 캡처 세 장은 측정 기록 5절에 넣었다.
+- **[사람] 포스팅 15의 영상 선택.** 사용자가 "문제"와 "원리"를 승인했다(2026-10-20). 허가받은 영상 두 개(`visual24` 기본 우선순위기, `visual25` 우선순위 1.0)를 `Saved/Screenshots/Lab/iris-prio-*.gif`로 찍었다. 본문 우선순위 인용구에 넣을지 고른다([관찰 자료](../Posts/15-iris/candidates.md) 14절). 그다음 태그를 붙인다.
