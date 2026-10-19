@@ -112,6 +112,8 @@ Iris의 `open_actor_channels_per_conn`과 `saturated_ratio`는 늘 0이다(액�
 | --- | --- | --- |
 | 서버 프레임 시간 평균 231ms → 7.55ms(아홉 단계) | 230.621ms → 7.546ms(⑨), 7.546 ÷ 230.621 − 1 = -96.7% | 1절 |
 | 틱 예산 33.3ms, 6.9배를 쓰다가 4분의 1이 안 되게 | 230.621 ÷ 33.333 = 6.92, 7.546 ÷ 33.333 = 0.226 | 틱 예산은 1000 ÷ `NetServerMaxTickRate` 30(`Engine/Config/BaseEngine.ini:1867`) |
+| ⑧의 설정에서 Iris로 바꾸면 7.02ms로 가장 짧았다 | Iris 7.019ms. ⑧ 8.672ms, ⑨ 7.546ms보다 짧다(Insights) | 1절 |
+| 열한 구성의 수치가 각 글의 수치와 조금 다르다 | 각 글의 묶음과의 `work_avg_ms` 차이 -9.1\~+13.7% | 6절 |
 | 이어 쌓기 표, 갈래 표, 세 차트의 값 | 1절. 표는 유효 숫자 세 자리, 차트는 소수 둘째 자리 | 같음 |
 | ① 150m, ③ 100에서 10으로 | `NetCullDistanceSquared` 225,000,000(`Engine/Source/Runtime/Engine/Private/Actor.cpp:312`), `NetUpdateFrequency` 기본값 100(`Actor.cpp:295-296`), NPC 10(`Source/DSOptLab/LabScenarioConfig.h:40`) | 엔진 소스, 코드 |
 | ④ 100에서 2로, 16프레임에 한 번 | `-LabNodeUpdateFrequency=2`(`Source/DSOptLab/LabResourceNode.cpp`의 `SetNetUpdateFrequency`). 다음 고려 시각이 500\~533ms 뒤라 16프레임마다 | [포스팅 8 측정 기록](08-node-update-frequency/measurements.md) 2절 |
@@ -119,9 +121,9 @@ Iris의 `open_actor_channels_per_conn`과 `saturated_ratio`는 늘 0이다(액�
 | ⑥ 칸에 번호를 붙여 바뀐 칸만(`FFastArraySerializer`) | `FFastArraySerializerItem`의 `ReplicationID`, `BuildChangedAndDeletedBuffers` | [포스팅 10 측정 기록](10-inventory-fastarray/measurements.md) 2절 |
 | ⑦ 받은 위치 두 개 사이를 150ms 늦게, 서버 프레임 번호 | `-LabNpcInterpDelay=150`, `ALabNpc`의 `ServerFrame`(`uint8`, 서버 프레임 번호의 아래 8비트) | [포스팅 11 측정 기록](11-npc-interpolation/measurements.md) 2절, `Source/DSOptLab/LabNpc.h` |
 | ⑧ 평면 위치, 방향, 서버 프레임 번호만 담은 구조체를 직접 직렬화(`NetSerialize`), 엔진의 이동 데이터(`ReplicatedMovement`)는 보내지 않는다 | `-LabNpcCompactMove`. `FLabNpcMove`(집 기준 X, Y 13비트씩, Yaw 8비트, 프레임 번호 8비트)의 `NetSerialize`와 `WithNetSerializer`. `ALabNpc`는 `SetReplicatingMovement(false)`이고 `ServerFrame`을 따로 보내지 않는다 | [포스팅 12 측정 기록](12-npc-move-netserialize/measurements.md) 1절, `Source/DSOptLab/LabNpc.h` |
-| ⑨ 레거시 대신 Replication Graph, 맵을 100m 칸으로 나누고 클라이언트가 서 있는 칸의 목록만 확인한다 | `-LabReplicationGraph`(게임 모듈이 `ULabReplicationGraph`를 만든다), `CellSize` 10000(`Source/DSOptLab/LabReplicationGraph.cpp`) | [포스팅 14 측정 기록](14-replication-graph/measurements.md) 2절 |
+| ⑨ 리플리케이션 시스템을 Replication Graph로, 맵을 100m 칸으로 나누고 클라이언트가 서 있는 칸의 목록만 확인한다, 액터를 보내는 방법은 레거시와 같다 | `-LabReplicationGraph`(게임 모듈이 `ULabReplicationGraph`를 만든다), `CellSize` 10000(`Source/DSOptLab/LabReplicationGraph.cpp`) | [포스팅 14 측정 기록](14-replication-graph/measurements.md) 2절 |
 | ①은 같은 구성이 35.9ms였다 | 35.904ms(`act2-relevancy1-r2`, 2026-10-05) | 아래 "2막: 1막의 세 단계" 1절 |
-| ①이 잰 날마다 크게 다르다, 프레임이 길어지면 고려할 시각이 된 액터가 늘어 다시 길어진다 | 5절 | 아래 "2막: 여섯 단계" 5절, engine-notes.md 12절 |
+| ①이 잰 날마다 크게 다르다, 프레임이 길어지면 확인할 차례가 된 액터가 늘어 다시 길어진다 | 5절 | 아래 "2막: 여섯 단계" 5절, engine-notes.md 12절 |
 | ①의 연결당 송신 대역폭이 ②보다 작다 | 30,660 대 31,236. 60초의 `frames` 1,527 대 1,785 | 2절 |
 | ②가 서버 프레임 시간을 다시 절반 가까이 줄였다 | 20.125 ÷ 39.022 − 1 = -48.4% | 1절, 4절 |
 | ④가 서버 프레임 시간을 절반 가까이 줄였다 | 8.772 ÷ 16.689 − 1 = -47.4% | 1절, 4절 |
@@ -129,7 +131,7 @@ Iris의 `open_actor_channels_per_conn`과 `saturated_ratio`는 늘 0이다(액�
 | ③은 연결당 송신 대역폭을 47% 줄였다 | 16,575 ÷ 31,236 − 1 = -46.9% | 1절, 4절 |
 | ⑤는 4분의 1을, ⑥은 약 5%를 더 줄였다 | 12,381 ÷ 16,580 − 1 = -25.3%, 11,803 ÷ 12,381 − 1 = -4.7% | 1절, 4절 |
 | ⑤와 ⑥의 서버 프레임 시간 변화는 구별되지 않았다 | ⑤ CSV -0.178(변동 폭 0.583), ⑥ CSV -0.049(변동 폭 0.502) | 4절 |
-| ⑥은 연결마다 배열을 확인해서 CPU를 줄이지 못한다 | 포스팅 10의 결과 | [포스팅 10 측정 기록](10-inventory-fastarray/measurements.md) |
+| ⑥은 클라이언트마다 배열이 바뀌었는지 보느라 CPU를 줄이지 못한다 | 포스팅 10의 결과 | [포스팅 10 측정 기록](10-inventory-fastarray/measurements.md) |
 | ⑦: NPC 하나의 위치가 약 134ms마다 오고, NPC가 약 40cm를 건너뛴다 | 수신 간격 평균 133.6ms(`act2-interp-base2` 중앙값), 300cm/s × 0.1336 = 40.1cm | [포스팅 11 측정 기록](11-npc-interpolation/measurements.md) 2절, 4절 |
 | ⑦: 표시 속도 오차 평균 440cm/s → 15.0cm/s | 중앙값 439.9 → 15.0(`act2-interp-base2`, `act2-interp2`, 모션 기록을 켠 묶음). 표시 속도 오차는 클라이언트 프레임 한 칸 동안 화면 속 NPC의 속도와 서버 NPC의 속도의 차다([ADR-0020](../Docs/Decisions/0020-npc-motion-quality-metrics.md)) | 포스팅 11 측정 기록 4절 |
 | ⑦: NPC가 81ms 더 늦게 보인다 | 표시 지연 중앙값 74 → 155ms. 155 − 74 = 81 | 포스팅 11 측정 기록 4절 |
@@ -141,8 +143,8 @@ Iris의 `open_actor_channels_per_conn`과 `saturated_ratio`는 늘 0이다(액�
 | ⑧: 줄어든 양은 ⑦이 늘린 양의 약 세 배 | ⑧ 12,671 − 10,072 = 2,599, ⑦ 12,671 − 11,803 = 868. 2,599 ÷ 868 = 2.99 | 1절 |
 | ⑧: 서버 프레임 시간과 화면 속 NPC의 품질 변화는 구별되지 않았다 | 서버 프레임 시간은 4절(CSV -0.068, 변동 폭 0.128). 품질 지표는 포스팅 12의 `act2-npcmove-base1`, `act2-npcmove1`(모션 기록을 켠 묶음)에서 모두 구별되지 않았다 | 4절, 포스팅 12 측정 기록 4절 |
 | ⑨: 서버 프레임 시간 13.0%, 리플리케이션 시간 25.1% 감소 | 7.546 ÷ 8.672 − 1 = -12.98%, 2.865 ÷ 3.826 − 1 = -25.1%. 포스팅 14의 묶음에서는 -13.8%, -26.1%였다 | 1절, 4절, 포스팅 14 측정 기록 2절 |
-| ⑨: 레거시는 먼 자원 노드까지 정해진 간격마다 확인하고, 그래프는 클라이언트가 서 있는 칸의 목록만 확인한다 | 레거시의 Consider List 414.5(⑧). 그래프는 Consider List를 만들지 않는다 | 1절, 포스팅 14 측정 기록 2절 |
-| ⑨: 그래프가 캐릭터를 매 프레임 보내서 연결당 송신 대역폭 8.7% 증가 | 10,947 ÷ 10,072 − 1 = +8.69%. 이 묶음의 `LabCharacter` 호출은 프레임당 49.0(`act2-all-npcmove4-r2`) → 64.0(`act2-all-repgraph4-r2`)이다. 포스팅 14의 묶음에서는 +8.83%였고, 늘어난 액터 데이터의 77.4%가 캐릭터였다 | 1절, 4절, 포스팅 14 측정 기록 2절 |
+| ⑨: ④ 뒤에도 레거시는 활성 목록을 프레임마다 순회한다. Replication Graph는 액터를 150m 안에 걸치는 100m 칸마다 목록에 넣어 두고, 클라이언트가 서 있는 칸의 목록만 확인한다 | 레거시의 Consider List 414.5(⑧). Replication Graph는 Consider List를 만들지 않는다. 칸에 넣는 것은 `GetCellInfoForActor`(`ReplicationGraph.cpp:5688-5743`) | 1절, 포스팅 14 측정 기록 2절 |
+| ⑨: 연결당 송신 대역폭 8.7% 증가. Replication Graph의 간격은 정수 프레임이라 레거시가 평균 1.3프레임마다 확인하던 캐릭터를 매 프레임 확인한다 | 10,947 ÷ 10,072 − 1 = +8.69%. 이 묶음의 `LabCharacter` 호출은 프레임당 49.0(`act2-all-npcmove4-r2`) → 64.0(`act2-all-repgraph4-r2`)이다. 포스팅 14의 묶음에서는 +8.83%였고, 늘어난 액터 데이터의 77.4%가 캐릭터였다. 레거시의 평균 간격은 30 ÷ 100 + 1 = 1.3프레임, Replication Graph는 `RoundToInt(1.3)` = 1프레임이다 | 1절, 4절, 포스팅 14 측정 기록 2절 |
 | 갈래: Iris는 Replication Graph와 함께 쓸 수 없다 | 넷 드라이버는 Iris를 쓰면 리플리케이션 드라이버를 만들지 않는다(`Engine/Source/Runtime/Engine/Private/NetDriver.cpp:1867-1870`) | [ADR-0021](../Docs/Decisions/0021-replication-system-comparison-table.md) |
 | 갈래: Iris는 레거시보다 19.1%, Replication Graph보다 7.0% 짧았다 | 7.019 ÷ 8.672 − 1 = -19.06%, 7.019 ÷ 7.546 − 1 = -6.98%(Insights). CSV `work_avg_ms` 중앙값 8.398, 7.274 → 6.746 | 1절, 4절 |
 | 갈래: Iris는 상태를 프레임에 한 번 변환해 두고 클라이언트마다 패킷에 쓰기만 한다, 액터 채널을 쓰지 않는다 | Iris 실행의 `open_actor_channels_per_conn` 0(CSV). `UReplicationSystem::NetUpdate` | 2절, [포스팅 15 측정 기록](15-iris/measurements.md) 2절 |
@@ -176,6 +178,7 @@ Iris의 `open_actor_channels_per_conn`과 `saturated_ratio`는 늘 0이다(액�
 | Iris(Replication Graph ⑨와 비교) | 서버 프레임 시간 평균 -7.0%(CSV -0.528, 변동 폭 0.311), P99 -10.6%(CSV -1.636, 변동 폭 0.715), 리플리케이션 시간 -27.4%(CSV `netflush_avg_ms` -0.756, 변동 폭 0.252), 연결당 송신 대역폭 -4.6%(CSV -505, 변동 폭 29) | 없음 |
 
 지난 묶음 `act2-all-*3`에서 ⑥은 서버 프레임 시간을 늘렸다(CSV +0.183, 변동 폭 0.182). 이 묶음에서는 구별되지 않았다(CSV -0.049, 변동 폭 0.502). 포스팅 10의 묶음과 `act2-all-*2`에서도 구별되지 않았다. ②의 연결당 송신 대역폭 증가(+576)는 ①의 서버가 60초에 1,527프레임만 돌아 보낸 것이 적었기 때문이다(②는 1,785프레임). ⑨의 송신 대역폭 증가는 그래프가 캐릭터를 매 프레임 보내기 때문이다([포스팅 14 측정 기록](14-replication-graph/measurements.md)).
+
 ### 5. ①
 
 이 묶음의 ①은 33.402\~39.568ms(`work_avg_ms`)이고, 세 실행의 변동 폭 6.166이 다른 구성보다 크다. 중앙값 실행의 Consider List는 5,067.3으로 지난 묶음(5,678.1)보다 짧다. ①은 틱 예산을 조금 넘어 잰 날의 PC 상태에 따라 크게 달라진다. 이유는 아래 "2막: 여섯 단계" 5절에 있다.
@@ -193,12 +196,13 @@ Iris의 `open_actor_channels_per_conn`과 `saturated_ratio`는 늘 0이다(액�
 | ⑥ 인벤토리 FastArray | 8.267 | 8.586(`act2-fastarr1`, 2026-10-06) | -3.7% |
 | ⑦ NPC 보간 | 8.466 | 8.681(`act2-npcmove-base1`, 2026-10-07, 모션 기록을 켬) | -2.5% |
 | ⑧ NPC 이동 구조체 | 8.398 | 8.484(`act2-npcmove1`, 2026-10-07, 모션 기록을 켬) | -1.0% |
+| ⑧(포스팅 14의 레거시) | 8.398 | 8.662(`act2-rg-base1`, 2026-10-19 오후, 모션 기록을 켬) | -3.0% |
 | ⑧(포스팅 15의 레거시) | 8.398 | 7.388(`act2-iris-base2`, 2026-10-19 22:30\~, 모션 기록을 켬) | +13.7% |
 | ⑨ Replication Graph | 7.274 | 7.437(`act2-rg1`, 2026-10-19 16:22\~, 모션 기록을 켬) | -2.2% |
 | ⑨(포스팅 15의 Replication Graph) | 7.274 | 6.755(`act2-iris-rg2`, 2026-10-19 22:30\~, 모션 기록을 켬) | +7.7% |
 | Iris | 6.746 | 5.966(`act2-iris2`, 2026-10-19 22:30\~, 모션 기록을 켬) | +13.1% |
 
-포스팅 15의 세 묶음(2026-10-19 밤)은 이 묶음보다 7.7\~13.7% 짧았다. 같은 날 오후의 포스팅 14 묶음과는 ⑧ -1.0%(포스팅 12 묶음), ⑨ -2.2%로 가깝다. 같은 묶음 안의 비교는 비슷하다: 레거시 → Replication Graph는 포스팅 14에서 -13.8%, 이 묶음에서 -13.0%이고, 레거시 → Iris는 포스팅 15에서 -18.4%, 이 묶음에서 -19.1%다. Replication Graph → Iris는 포스팅 15에서 -11.2%, 이 묶음에서 -7.0%로 차이가 크다(Insights 서버 프레임 시간 평균).
+이 묶음은 포스팅 15의 세 묶음(2026-10-19 밤)보다 7.7\~13.7% 길었다. 같은 날 오후의 포스팅 14 묶음과는 ⑧ -3.0%(`act2-rg-base1` 8.662), ⑨ -2.2%로 가깝다. 같은 묶음 안의 비교는 비슷하다: 레거시 → Replication Graph는 포스팅 14에서 -13.8%, 이 묶음에서 -13.0%이고, 레거시 → Iris는 포스팅 15에서 -18.4%, 이 묶음에서 -19.1%다. Replication Graph → Iris는 포스팅 15에서 -11.2%, 이 묶음에서 -7.0%로 차이가 크다(Insights 서버 프레임 시간 평균).
 
 ## 2막: 여덟 단계
 
