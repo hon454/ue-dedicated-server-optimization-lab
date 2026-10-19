@@ -6,7 +6,7 @@
 
 **1막(포스팅 0\~4)과 2막의 포스팅 5\~14가 끝났다.** 끝낸 태스크의 경위는 아래 "포스팅 진행" 표의 작업 기록에 있다. 여기에는 다음 작업을 제약하는 것만 둔다.
 
-- **태스크 32(포스팅 15, Iris)를 진행 중이다(2026-10-19).** 선택과 구현은 [관찰 자료](../Posts/15-iris/candidates.md) 10\~11절, 명령은 [commands.md](Guides/commands.md) "구성별 인자"에 있다. 확정 규모 네 묶음을 쟀다(아래 "측정 결과").
+- **태스크 32(포스팅 15, `post-15-iris`)가 끝났다(2026-10-20).** 다음 태스크를 시작할 때 이 줄과 "측정 결과"의 표를 `Docs/Worklog/15-iris.md`로 옮긴다. 같은 설정에서 Iris(우선순위 1.0)가 서버 프레임 시간 7.64 → 6.23ms로 레거시보다 18.4%, Replication Graph보다 11.2% 짧았다(`act2-iris-base2`, `act2-iris-rg2`, `act2-iris2`). 선택, 구현, 측정, 보간 수정(`67cceff`)의 경위는 [관찰 자료](../Posts/15-iris/candidates.md) 10\~14절, 명령은 [commands.md](Guides/commands.md) "구성별 인자"에 있다.
 
 - **루트 README의 결과는 2막 아홉 구성(기준선과 ①\~⑧)을 연달아 잰 `act2-all-*3`이다(2026-10-07).** 포스팅 12를 ⑧ NPC 이동 구조체로 더하면서 모든 구성을 다시 쟀다(13:04\~14:15, 본체 화면, 사용자가 무거운 프로그램을 닫은 뒤). 값은 [누적 수치의 측정 기록](../Posts/measurements.md) "2막: 여덟 단계"에 있다. ⑦ → ⑧은 `out_bytes_per_sec_per_conn` 중앙값 12,681 → 10,094(-20.4%), `work_avg_ms` 8.690 → 8.493(구별되지 않음)이다. 이 묶음에서는 ⑤ → ⑥의 `work_avg_ms`가 +0.183으로 변동 폭 0.182를 겨우 넘었다(포스팅 10과 `act2-all-*2`에서는 구별되지 않음). 기준선 `r1`은 다른 두 실행보다 17% 느렸고 원인은 확인하지 않았다. ①을 빼면 각 글의 묶음과 -3.3\~+9.2% 다르다. 틱 예산을 조금 넘는 ① 거리 판정은 잰 날마다 크게 다르므로 연달아 잰 묶음 안에서만 비교한다([engine-notes.md](Reference/engine-notes.md) 12절). 지난 묶음 `act2-all-*2`의 경위는 [Worklog/11-npc-interpolation.md](Worklog/11-npc-interpolation.md)의 "README와 시각화 페이지 갱신"에 있다.
 - **시리즈 웹 페이지** [UE Dedicated Server, 단계별로 최적화해 보기](https://hon454.github.io/ue-dedicated-server-optimization-lab/)는 [Site/index.html](../Site/index.html) 한 파일이고, 1막의 네 단계와 2막의 아홉 단계(포스팅 12까지)를 고를 수 있다. main의 `Site/`가 바뀐 채로 푸시되면 워크플로 `Deploy Pages`가 다시 올린다. 수치의 출처와 시뮬레이션의 한계는 [Site/README.md](../Site/README.md)에 있다. 단계를 더하는 기준은 [AGENTS.md](../AGENTS.md) "규칙"에 있다.
@@ -14,7 +14,7 @@
 
 ## 다음 할 일
 
-1. 태스크 32(포스팅 15, Iris 전환과 실측 비교)를 [2막 구현 계획](Planning/2026-10-03-act-2-implementation-plan.md) "2막 포스팅 주기"대로 진행한다.
+1. 2막에서 계획한 포스팅이 끝났다. 다음 작업을 사용자에게 묻는다(아래 2번이 남아 있다).
 2. README의 ⑨ 단계와 리플리케이션 시스템 갈래 표(레거시, Replication Graph, Iris)는 Iris 글을 마친 뒤 모든 구성을 한 번에 연달아 재서 더한다([ADR-0021](Decisions/0021-replication-system-comparison-table.md), 2026-10-19). 웹 페이지의 ⑨는 포스팅 14의 두 묶음으로 더할 수 있다.
 
 ## 포스팅 진행
@@ -36,7 +36,7 @@
 | 12. NPC 이동을 필요한 비트만 담은 구조체로 보내기 | 완료 | `post-12-npc-move-netserialize` | [12-npc-move-netserialize](Worklog/12-npc-move-netserialize.md) |
 | 13. 지연과 패킷 손실에서의 동기화 품질(진단) | 완료 | `post-13-lag-and-packet-loss` | [13-lag-and-packet-loss](Worklog/13-lag-and-packet-loss.md) |
 | 14. 레거시 리플리케이션을 Replication Graph로 바꾸기 | 완료 | `post-14-replication-graph` | [14-replication-graph](Worklog/14-replication-graph.md) |
-| 15. 레거시 리플리케이션을 Iris로 바꾸기 | 초안 | | |
+| 15. 레거시 리플리케이션을 Iris로 바꾸기 | 완료 | `post-15-iris` | (다음 태스크 때 `15-iris`) |
 
 ## 명령
 
@@ -68,4 +68,4 @@
 
 ## 사용자에게 요청한 일
 
-- **[사람] 포스팅 15의 영상 선택.** 사용자가 "문제"와 "원리"를 승인했다(2026-10-20). 허가받은 영상 두 개(`visual24` 기본 우선순위기, `visual25` 우선순위 1.0)를 `Saved/Screenshots/Lab/iris-prio-*.gif`로 찍었다. 본문 우선순위 인용구에 넣을지 고른다([관찰 자료](../Posts/15-iris/candidates.md) 14절). 그다음 태그를 붙인다.
+- 없음.

@@ -64,6 +64,7 @@
 | 100m 밖의 NPC는 10프레임마다 간다 | 1.0 ÷ 0.1 = 10. NPC 수신 간격 P99 407.2\~407.6ms(약 12프레임, 폴링 간격 4프레임과 겹침) | 계산, 관찰 자료 13.3절 |
 | 표시 속도 오차 초당 15.0cm → 98.6cm | 세 실행의 중앙값: `act2-iris2` 14.9, 15.0, 15.1 → 15.0, `act2-iris-prio2` 99.5, 98.6, 97.4 → 98.6 | 관찰 자료 13.3절 |
 | 표시 속도 오차의 정의 | [ADR-0020](../../Docs/Decisions/0020-npc-motion-quality-metrics.md), [measurement.md](../../Docs/Guides/measurement.md) "수치의 이름과 출처" | 측정 정의 |
+| 우선순위 인용구의 영상: 엔진 그대로의 Iris, 10초, 왼쪽 1번 클라이언트 내려다보기, 오른쪽 2번 클라이언트 3인칭 | 시각 자료 전용 실행 `visual24-r1`(1절의 인자에 `-Iris`, `-MotionLog` 없음, 2026-10-20 00:01). `Scripts/capture-video.ps1 -Region "959,0,1922,541" -RaiseSlots "1,2" -NoMouse -AllowMeasuring -Seconds 10`, GIF 960px 8fps 48색(2.47MB). 수치는 쓰지 않는다. 비교용 `visual25-r1`(`-IrisFlatPriority`)의 `iris-prio-flat.gif`는 `Saved/Screenshots/Lab/`에 두고 본문에 넣지 않았다 | 영상, 관찰 자료 14절 |
 | 서버 프레임 시간은 구별되지 않았다(기본 우선순위) | CSV `work_avg_ms` 중앙값 5.966 → 6.159, 차이 0.193이 변동 폭 0.231보다 작다 | 관찰 자료 13.1절 |
 | 화면 속 NPC의 두 지표는 세 구성에서 구별되지 않았다 | 표시 위치 오차 평균 45.00\~45.41cm, 표시 지연 151\~152ms, 표시 속도 오차 평균 14.9\~15.4cm/s(레거시, 그래프, Iris의 9실행) | 관찰 자료 13.3절 |
 | 처음 잰 묶음에서 Iris의 일부 클라이언트에서 NPC가 멈췄다 | `act2-iris1-r1`의 클라이언트 0, 2, 3, 5, 7이 표시 속도 오차 67\~124cm/s | 관찰 자료 12.3절 |
@@ -107,7 +108,7 @@
 
 - 캡처의 값은 `export-insights.ps1`의 값(4절)과 같다. 예: Iris의 `GameNetDriver` 3.39초 ÷ 1,795 = 1.889ms(내보내기 1.888).
 - Iris의 `ReplicationSystem_NetUpdate` 아래(프레임당, ÷ 1,795): `ReplicationSystem_UpdateFiltering` 0.518ms(그 가운데 `UNetObjectGridFilter_Filter` 0.377ms), `ReplicationBridge_PollAndCopy` 0.231ms, `ReplicationSystem_UpdateConnectionsScope` 0.0698ms, `ReplicationSystem_UpdatePrioritization` 0.0650ms, `ReplicationBridge_PreUpdate` 0.0617ms, `ReplicationSystem_QuantizeDirtyStateData` 0.0363ms, `ReplicationSystem_UpdateWorldLocations` 0.0352ms.
-- 영상은 허가를 받은 뒤에 찍는다(관찰 자료 14절).
+- 영상: 사용자가 허가한 목록대로 `visual24`, `visual25`를 찍었다(관찰 자료 14절). 사용자가 기본 우선순위기 영상을 본문 우선순위 인용구에 넣기로 했다(2026-10-20, `images/iris-prio-default.gif`).
 
 ## 6. 확인하지 않은 것
 
