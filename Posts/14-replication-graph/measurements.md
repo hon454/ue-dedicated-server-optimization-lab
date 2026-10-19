@@ -26,17 +26,19 @@
 
 | 본문의 수치 | 정밀한 값 | 출처 |
 | --- | --- | --- |
-| 연결당 송신 대역폭 +8.8%, 10,100 → 11,000바이트/초 | CSV 중앙값 10,073 → 10,962(변동 폭 14, 47), 10,962 ÷ 10,073 − 1 = +8.8% | 관찰 자료 9.1절(`act2-rg-base1`, `act2-rg1`) |
+| 연결당 송신 대역폭 +8.83%, 10,100 → 11,000바이트/초 | CSV 중앙값 10,073 → 10,962(변동 폭 14, 47), 10,962 ÷ 10,073 − 1 = +8.83% | 관찰 자료 9.1절(`act2-rg-base1`, `act2-rg1`) |
 | 서버 프레임 시간 평균 8.94 → 7.71ms, -13.8% | Timing Insights 8.944(`act2-rg-base1-r3`) → 7.710(`act2-rg1-r1`), 7.710 ÷ 8.944 − 1 = -13.8% | 관찰 자료 9.2절 |
 | 리플리케이션 시간 3.96 → 2.92ms, -26.1% | `GameNetDriver` 프레임당 Incl 3.958 → 2.923, 2.923 ÷ 3.958 − 1 = -26.1% | 관찰 자료 9.2절 |
-| 1번 클라이언트에 존재하는 자원 노드 176 → 380개 | 화면 글자 `nodes=176`(`act2-rg-base1-r2-topdown-04`), `nodes=380`(`act2-rg1-r2-topdown-04`), t=75초 | 자동 스크린샷 |
+| 1번 클라이언트에 존재하는 자원 노드 176 → 380개, +204개 | 화면 글자 `nodes=176`(`act2-rg-base1-r2-topdown-04`), `nodes=380`(`act2-rg1-r2-topdown-04`), t=75초. 380 − 176 = 204 | 자동 스크린샷, 계산 |
 | 개념도의 칸 100m, 150m, 칸 경계, 400m | `CellSize` 10000(`Source/DSOptLab/LabReplicationGraph.cpp`), `NetCullDistanceSquared` 225,000,000(`Engine/Source/Runtime/Engine/Private/Actor.cpp:312`). 칸 번호 = (위치 − `SpatialBias`) ÷ `CellSize`(`RG.cpp:5737-5741, 6268-6275`), `SpatialBias` = −`UE_OLD_WORLD_MAX` = −2,097,152cm(`Engine/Source/Runtime/Engine/Public/EngineDefines.h:37`). 2,097,152 = 209 × 10,000 + 7,152이므로 경계는 x, y = 28.48m + 100m × n. 시점 칸의 목록에는 칸을 150m 넓힌 100 + 2 × 150 = 400m 사각형 안의 액터가 든다(`RG.cpp:5688-5743`) | 엔진 소스, 계산, `Scripts/make-repgraph-cell.ps1` |
 | 개념도의 시점, 점의 밀도 | 시점 (−5m, 60m)(`act2-rg-trk1-r2-topdown-04`의 화면 글자 `pos`), 밀도 5,001 ÷ 1,900² = 0.00139개/m²(`LabScenarioConfig.h`의 `WorldHalfExtent` 95,000cm). 점의 위치는 스크립트의 고정 시드로 뿌린 예시다 | 자동 스크린샷, 계산 |
 | 모든 클라이언트에서 Dormant 상태가 되어야 활성 목록에서 빠진다 | `FNetworkObjectList::MarkDormant`가 모든 연결에서 Dormant일 때만 옮긴다(`Engine/Source/Runtime/Engine/Private/NetworkObjectList.cpp:348-376`) | 엔진 소스, [포스팅 7](../07-net-driver-breakdown/measurements.md) |
 | 16프레임에 한 번 | 빈도 2: 500\~533ms 뒤 | [포스팅 8 측정 기록](../08-node-update-frequency/measurements.md) 2절 |
-| 문제의 표: ① 0.959ms, ② 0.845ms, ③ 1.87ms | `Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845, `Process Prioritized Actors Time` 1.868(`act2-nodeuf-split1-r3`, 포스팅 8의 적용 후. ⑤\~⑧ 전의 구성이고 이 글의 묶음에서는 재지 않았다) | 포스팅 8 측정 기록 2절 |
-| ①의 약 3분의 2는 차례가 아닌 자원 노드를 순회하는 시간 | 4,857.2 × 0.128µs = 0.622ms, 0.622 ÷ 0.959 = 64.8% | 포스팅 8 측정 기록 2절 |
+| 문제의 표: 1단계 0.959ms, 2단계 0.845ms, 3단계 1.87ms(그 글의 적용 후 구성에서 잰 값) | `Consider Actors Time` 0.959, `Prioritize Actors Time` 0.845, `Process Prioritized Actors Time` 1.868(`act2-nodeuf-split1-r3`, 포스팅 8의 적용 후. ⑤\~⑧ 전의 구성이고 이 글의 묶음에서는 재지 않았다) | 포스팅 8 측정 기록 2절 |
+| 1단계의 약 3분의 2는 차례가 아닌 자원 노드를 순회하는 시간 | 4,857.2 × 0.128µs = 0.622ms, 0.622 ÷ 0.959 = 64.8% | 포스팅 8 측정 기록 2절 |
 | 레거시는 엔진의 기본 리플리케이션 방식 | Iris를 쓰지 않고(`net.Iris.UseIrisReplication` 기본값 0, `Engine/Source/Runtime/Net/Iris/Private/Iris/IrisConfig.cpp:15-16`) `ReplicationDriverClassName`이 비어 있으면 드라이버 없이 넷 드라이버가 직접 보낸다(`ND.cpp:1820-1831`). 서버 로그의 모델 이름은 `Generic`이다 | 엔진 소스, [engine-notes.md](../../Docs/Reference/engine-notes.md) 2절 |
+| Net Update Frequency는 서버가 액터를 확인하는 빈도 | 레거시는 다음 확인 시각을 1 ÷ 빈도 뒤로 잡는다(`ND.cpp:5421-5425`). 그래프는 빈도로 정한 프레임 간격마다 확인한다(`RG.cpp:2097-2098`) | 엔진 소스 |
+| 수치는 구성마다 세 번 실행한 중앙값 | 중앙값 실행은 1절의 표, CSV 중앙값은 3절 | 실행 조건 |
 | Dormant 상태는 서버가 깨우기 전까지 확인하지 않는 상태 | 레거시: 모든 연결에서 Dormant면 활성 목록에서 빠지고(`NetworkObjectList.cpp:348-376`), 일부 연결에서 Dormant면 그 연결의 확인을 건너뛴다. 그래프: `bDormantOnConnection`인 액터는 확인 루프의 처음에 건너뛴다(`RG.cpp:1522-1531`). 깨우는 것은 `FlushNetDormancy`와 Dormant 설정 변경이다 | 엔진 소스 |
 | 레거시와 같은 함수가 보낸다 | 그래프의 `ReplicateSingleActor`가 `UActorChannel::ReplicateActor`를 부른다(`RG.cpp:2151, 2157`). 레거시도 같은 함수다(`ND.cpp:5830`) | 엔진 소스 |
 | 레거시가 만드는 목록을 대신한다 | 드라이버가 있으면 `ServerReplicateActors`가 바로 넘기고 Consider List를 만들지 않는다(`ND.cpp:6295-6298`) | 엔진 소스 |
@@ -46,10 +48,11 @@
 | 예제는 움직이는 액터를 세 묶음으로 나눠 3프레임에 한 번 모은다 | `UReplicationGraphNode_ActorListFrequencyBuckets::FSettings::NumBuckets` 기본값 3(`RG.h:247`), 프레임마다 한 묶음만 돌려준다(`RG.cpp:3915-3920`). 엔진의 예제 그래프 `UBasicReplicationGraph`는 모든 액터를 `AddActor_Dormancy`로 넣는다(`BasicReplicationGraph.cpp:91-116`) | 엔진 소스 |
 | 레거시는 다음 고려 시각에 0\~1프레임의 난수를 더한다 | `NextUpdateTime = TimeSeconds + RandDelay + NextUpdateDelta`, `RandDelay = FRand() * ServerTickTime`(`ND.cpp:5421-5425`). 그 시각을 넘긴 첫 프레임에 고려한다(`ND.cpp:5318-5319`) | 엔진 소스 |
 | NPC 4프레임, 자원 노드 16프레임, 캐릭터 평균 1.3프레임 | 평균 간격 = (30 ÷ 빈도) + 1프레임. 빈도 10 → 4, 2 → 16, 100 → 1.3. 그래프는 `RoundToInt(30 ÷ 빈도 + 1)` → 4, 16, 1(서버 로그 `lab_repgraph_class`). 빈도 10이 4프레임인 것은 1막에서 실행으로 확인했다 | 계산, [engine-notes.md](../../Docs/Reference/engine-notes.md) 2절, 관찰 자료 7절 |
-| 예상: 활성 목록 5,272개 | 서버 로그 `lab_network_objects active=5272`(`act2-rg-base1-r3`) | 서버 로그 |
 | 예상: 그래프는 클라이언트마다 약 75개를 확인한다 | 칸 목록의 자원 노드 약 222개(400m × 400m × 0.00139)는 자리를 잡으면 Dormant 상태로 빠진다. NPC 약 63개(무리 주변 50 + 맵 300 × 160,000 ÷ 3,610,000), 캐릭터 8, 소유자 액터와 모든 연결의 액터 몇 개 | 관찰 자료 4절, 계산 |
-| 예상: ①과 ②의 1.80ms | 0.959 + 0.845 = 1.804 | 계산 |
+| 예상: 1단계와 2단계의 시간 1.80ms | 0.959 + 0.845 = 1.804 | 계산 |
 | 예상: 캐릭터를 보내는 횟수 약 1.3배 | 1.3프레임 → 1프레임, 1.3 ÷ 1 | 계산 |
+| 예상과 실제: 캐릭터를 보내는 횟수 1.29배 | `LabCharacter` 호출 프레임당 49.6(`act2-rg-base1-r3`) → 64.0(`act2-rg1-r1`), 64.0 ÷ 49.6 = 1.290 | 관찰 자료 9.5절 |
+| 실제의 확인하는 일은 예상의 기준보다 넓다 | 예상의 1.80ms는 `-StatNamedEvents` 실행의 1단계(`Consider Actors Time`)와 2단계(`Prioritize Actors Time`)다. 실제의 2.45ms는 기본 트레이스의 `GameNetDriver` Excl이라 클래스 타이머 밖의 넷 드라이버 일(연결 틱, 3단계의 클래스 밖 시간 등)도 들어 있다 | 관찰 자료 9.2절, 포스팅 8 측정 기록 |
 | 결과 표: 서버 프레임 시간 평균 17.8, 8.94, 7.81, 7.71ms | Timing Insights 17.788(`act2-rg-base-nodedef1-r1`), 8.944(`act2-rg-base1-r3`), 7.809(`act2-rg-nodedef1-r3`), 7.710(`act2-rg1-r1`) | 관찰 자료 9.2절 |
 | 결과 표: 리플리케이션 시간 12.7, 3.96, 2.95, 2.92ms | `GameNetDriver` 프레임당 Incl 12.681, 3.958, 2.946, 2.923(같은 실행) | 관찰 자료 9.2절 |
 | 차트의 값 | 17.788, 8.944, 7.809, 7.710 | 관찰 자료 9.2절 |
@@ -60,16 +63,16 @@
 | 보내는 일 1.51 → 1.79ms | 클래스 타이머와 RPC 타이머의 합. 레거시: `GameNetDriver` 바로 아래 줄의 합 1.511. 그래프: `UReplicationGraph_ServerReplicateActors` Incl 2.561 − Excl 0.774 = 1.787(바로 아래 줄의 합 1.786과 같다) | 관찰 자료 9.2절, `Saved/InsightsExport/act2-rg1-r1/summary.txt` |
 | 캐릭터를 더 자주 보낸 몫 | `LabCharacter` 호출 프레임당 49.6 → 64.0(`act2-rg-trk-base1-r3` → `act2-rg-trk1-r3`는 49.4 → 64.0) | 관찰 자료 9.5절, 10.2절 |
 | 한 클라이언트에 보낸 캐릭터 데이터 3,080 → 3,880바이트/초 | Networking Insights `Connection 0`, `Outgoing`의 `BP_LabCharacter_C` 1,435,500비트 ÷ 58.339초 ÷ 8 = 3,075.8, 1,819,718비트 ÷ 58.584초 ÷ 8 = 3,882.7(`act2-rg-trk-base1-r3`, `act2-rg-trk1-r3`) | 관찰 자료 11절 |
-| 늘어난 액터 데이터의 77% | `Actor` 9,224.0 → 10,266.4바이트/초(+1,042.4), 캐릭터 +806.9, 806.9 ÷ 1,042.4 = 77.4% | 관찰 자료 11절 |
+| 늘어난 액터 데이터의 77.4% | `Actor` 9,224.0 → 10,266.4바이트/초(+1,042.4), 캐릭터 +806.9, 806.9 ÷ 1,042.4 = 77.4% | 관찰 자료 11절 |
 | 나머지는 캐릭터 데이터마다 붙는 머리 정보 | `BunchHeader` 2,219.3 → 2,486.9바이트/초(+267.6), Bunch 수 34,949 → 37,301. 캐릭터 Count 9,502 → 11,986 | 관찰 자료 11절 |
-| 자원 노드가 보낸 데이터는 초당 2바이트로 같았다 | `LabResourceNode` 866비트 ÷ 58.339초 ÷ 8 = 1.86, 907 ÷ 58.584 ÷ 8 = 1.94바이트/초 | 관찰 자료 11절 |
+| 자원 노드 데이터는 초당 1.9바이트로 같았다 | `LabResourceNode` 866비트 ÷ 58.339초 ÷ 8 = 1.86, 907 ÷ 58.584 ÷ 8 = 1.94바이트/초 | 관찰 자료 11절 |
 | trickle: 176 → 380개, 끄면 176개 | 화면 글자 `nodes=`(`act2-rg-trk-base1-r2-topdown-04` 176, `act2-rg-trk1-r2-topdown-04` 380, `act2-rg-notrk1-r2-topdown-04` 176), t=75초. 서버 로그의 모든 연결에서 Dormant 상태인 자원 노드 114, 241, 114 | 자동 스크린샷, 관찰 자료 10.3절 |
 | 한 프레임에 하나씩 거리와 상관없이 보낸다, 받은 액터는 목록에서 빠진다 | gather에서 지울 Dormant 액터가 없으면 남은 액터 하나에 `bForceCullDistanceToZero`를 켠다(`RG.cpp:4717-4721`). 컬 거리 0은 거리 검사를 하지 않는다(`RG.cpp:1571`). Dormant 상태가 되면 그 플래그를 끄고 목록에서 지운다(`RG.cpp:4702-4708`) | 엔진 소스 |
 | 콘솔 변수 `Net.RepGraph.TrickleDistCullOnDormancyNodes` | 기본값 1(`RG.cpp:165`). 이 글은 `-LabRepGraphNoTrickle`일 때 그래프가 초기화하며 0으로 둔다 | 엔진 소스, `Source/DSOptLab/LabReplicationGraph.cpp` |
 | trickle을 끄면 서버 프레임 시간 7.64 → 8.04ms | Timing Insights 7.640(`act2-rg-trk1-r3`) → 8.039(`act2-rg-notrk1-r3`). CSV `work_avg_ms` 중앙값 7.362 → 7.763, 차이 0.401이 변동 폭 0.341보다 크다. 그래프 자체 시간(`UReplicationGraph_ServerReplicateActors` Excl) 0.771 → 1.183 | 관찰 자료 10.1절, 10.2절 |
 | 함께 잰 지금 구성 8.83ms | Timing Insights 8.832(`act2-rg-trk-base1-r3`) | 관찰 자료 10.2절 |
 | trickle을 꺼도 연결당 송신 대역폭은 같았다 | CSV 중앙값 10,969 → 10,964, 차이 5가 변동 폭 21, 30보다 작다 | 관찰 자료 10.1절 |
-| 그래프는 보낼지 확인하는 방법만 바꾸므로 보내는 액터와 횟수가 같으면 송신량도 같다 | [Unreal Engine - Replication Graph](https://hon454.github.io/posts/unreal-engine-replication-graph/) TL;DR의 "어느 연결에 무엇을 보낼지가 같다면 송신량도 같다"를 풀어 썼다. 그래프도 레거시와 같은 `UActorChannel::ReplicateActor`로 보낸다(`RG.cpp:2151, 2157`) | 외부 글, 엔진 소스 |
+| 그래프는 보낼 액터를 고르는 방법만 바꾸므로 보내는 액터와 횟수가 같으면 연결당 송신 대역폭도 같다 | [Unreal Engine - Replication Graph](https://hon454.github.io/posts/unreal-engine-replication-graph/) TL;DR의 "어느 연결에 무엇을 보낼지가 같다면 송신량도 같다"를 풀어 썼다. 그래프도 레거시와 같은 `UActorChannel::ReplicateActor`로 보낸다(`RG.cpp:2151, 2157`) | 외부 글, 엔진 소스 |
 | NPC의 표시 위치 오차와 표시 지연은 네 구성에서 구별되지 않았다 | 표시 위치 오차 평균 45.29\~46.60cm(빈도 기본값 레거시 48.08\~48.73cm는 서버 프레임이 길어 표시 지연이 약 8ms 길다), 표시 지연 152\~155ms. NPC 수신 간격 평균 레거시 133.4\~133.7ms, 그래프 133.7\~134.5ms | 관찰 자료 9.3절, 10.5절 |
 | 배운 것: 서버 프레임 시간 13.8% | 위 요약 표의 줄 | 관찰 자료 9.2절 |
 
@@ -103,7 +106,7 @@
 ## 5. 확인하지 않은 것
 
 - ⑧에서의 ①, ②의 크기. 문제의 표는 포스팅 8의 적용 후(④)에서 읽었다.
-- 그래프의 따지는 일(1.14ms)의 내역. `-StatNamedEvents` 실행을 하지 않아 gather, 연결별 정렬, 움직이는 액터의 칸 옮기기를 나누지 않았다.
+- 그래프의 확인하는 일(1.14ms)의 내역. `-StatNamedEvents` 실행을 하지 않아 gather, 연결별 정렬, 움직이는 액터의 칸 옮기기를 나누지 않았다.
 - 보내는 일이 늘어난 몫 가운데 캐릭터를 더 보낸 몫과 그래프가 액터마다 더 하는 일의 비율.
 - Networking Insights의 패킷 범위는 측정 구간보다 약 50패킷 짧다. 초당 값으로 비교했다.
 - 0번 연결의 송신량 증가(+10.9%)가 CSV 연결 평균(+8.8%)보다 큰 이유. 0번이 제자리에서 채집하는 연결이라서로 본다.
